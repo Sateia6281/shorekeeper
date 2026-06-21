@@ -2171,8 +2171,6 @@ html, body {
 // ============================================================
 // KONFIGURASI
 // ============================================================
-const BOT_TOKEN = '8950107483:AAFR7qPRaOEXS7BumQ73ivMmvo158d2muQQ';
-const ADMIN_ID = 6284402885;
 const API_URL = window.location.origin || '';
 
 // ============================================================
@@ -2768,13 +2766,12 @@ async function submitFreeRequest() {
     btn.innerHTML = 'KEY DIDAPATKAN!';
     btn.className = 'btn btn-g';
     
-    // Kirim notifikasi ke Telegram
+    // Kirim notifikasi ke Telegram (lewat backend, gak expose token)
     try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        await fetch(`${API_URL}/api/notify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                chat_id: ADMIN_ID,
                 text: '🎁 FREE KEY DIAMBIL!\nUSER ID: ' + userId + '\nKEY: ' + key + '\nWAKTU: ' + now
             })
         });
@@ -2881,12 +2878,11 @@ function submitReview() {
     renderReviews();
     toast('REVIEW TERKIRIM, MAKASIH!', '#888');
     
-    // Kirim ke Telegram
-    fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+    // Kirim ke Telegram (lewat backend, gak expose token)
+    fetch(`${API_URL}/api/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            chat_id: ADMIN_ID,
             text: 'REVIEW BARU\n\n' + '★'.repeat(selStar) + '\n' + name + (city ? ', ' + city : '') + '\n' + text
         })
     }).catch(() => {});
@@ -2968,11 +2964,10 @@ function startChat() {
     document.getElementById('chatMain').style.display = 'block';
     document.getElementById('chatUserName').innerText = name.toUpperCase();
     
-    fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+    fetch(`${API_URL}/api/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            chat_id: ADMIN_ID,
             text: 'CHAT BARU\n' + name + '\nCHAT ID: ' + activeChatId + '\n\nBALAS: REPLY ' + activeChatId + ' [PESAN]'
         })
     }).catch(() => {});
@@ -3018,11 +3013,10 @@ async function sendMsg() {
     renderMsgs();
     
     try {
-        await fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+        await fetch(`${API_URL}/api/notify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                chat_id: ADMIN_ID,
                 text: 'CHAT CUSTOMER\n' + name + '\n' + text + '\n\nCHAT ID: ' + activeChatId + '\n\nBALAS: REPLY ' + activeChatId + ' [PESAN]'
             })
         });

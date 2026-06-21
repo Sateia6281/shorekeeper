@@ -12,9 +12,14 @@ const PORT = process.env.PORT || 3000;
 // GANTI BOT_TOKEN DI BAWAH INI dengan token BARU dari @BotFather
 // (token lama udah kebuka di chat, WAJIB di-revoke & ganti baru)
 // ============================================================
-const BOT_TOKEN = '8950107483:AAFR7qPRaOEXS7BumQ73ivMmvo158d2muQQ';
-const ADMIN_ID = 6284402885;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const ADMIN_ID = process.env.ADMIN_ID || 6284402885;
 const DATA_FILE = path.join(__dirname, 'data.json');
+
+if (!BOT_TOKEN) {
+    console.error('❌ BOT_TOKEN belum di-set! Set di Railway > Variables, atau di file .env kalau lokal.');
+    process.exit(1);
+}
 
 // ============================================================
 // MIDDLEWARE
@@ -394,6 +399,28 @@ function showStockBot(chatId) {
     reply += `\n━━━━━━━━━━━━━━━\n📊 TOTAL: ${total} key`;
     bot.sendMessage(chatId, reply);
 }
+
+async function sendTelegramText(text) {
+    try {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: ADMIN_ID, text })
+        });
+    } catch (e) {
+        console.error('Telegram notify error:', e);
+    }
+}
+
+// Notifikasi generik dari frontend (free key, review, chat) -> tanpa expose token ke browser
+app.post('/api/notify', (req, res) => {
+    const { text } = req.body;
+    if (!text || typeof text !== 'string' || text.length > 2000) {
+        return res.status(400).json({ success: false, message: 'Invalid text' });
+    }
+    sendTelegramText(text);
+    res.json({ success: true });
+});
 
 // ============================================================
 // API ENDPOINTS
