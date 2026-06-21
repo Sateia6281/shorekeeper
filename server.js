@@ -356,6 +356,25 @@ bot.on('message', async (msg) => {
         return;
     }
 
+    // ADMIN: REPLY <chatId> <pesan> -> simpen balesan ke chat website
+    const replyMatch = text.match(/^REPLY\s+(\S+)\s+([\s\S]+)/i);
+    if (replyMatch && String(chatId) === String(ADMIN_ID)) {
+        const targetChatId = replyMatch[1];
+        const replyText = replyMatch[2].trim();
+
+        if (!data.chatMessages) data.chatMessages = {};
+        if (!data.chatMessages[targetChatId]) data.chatMessages[targetChatId] = [];
+        data.chatMessages[targetChatId].push({
+            from: 'admin',
+            text: replyText,
+            time: new Date().toISOString()
+        });
+        saveData(data);
+
+        bot.sendMessage(chatId, `✅ Balasan terkirim ke chat ${targetChatId}`);
+        return;
+    }
+
     if (String(chatId) !== String(ADMIN_ID)) {
         const name = msg.from.first_name || 'User';
         bot.sendMessage(ADMIN_ID, `💬 DARI USER\n👤 ${name}\n🆔 ${chatId}\n📝 ${text}`);

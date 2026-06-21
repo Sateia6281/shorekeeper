@@ -2948,6 +2948,7 @@ function initChat() {
         document.getElementById('chatMain').style.display = 'block';
         document.getElementById('chatUserName').innerText = name.toUpperCase();
         renderMsgs();
+        startChatPolling();
     }
 }
 
@@ -2973,6 +2974,7 @@ function startChat() {
     }).catch(() => {});
     
     renderMsgs();
+    startChatPolling();
 }
 
 function renderMsgs() {
@@ -2994,6 +2996,34 @@ function renderMsgs() {
     c.scrollTop = c.scrollHeight;
 }
 
+let _chatPollInterval = null;
+
+function startChatPolling() {
+    if (_chatPollInterval) clearInterval(_chatPollInterval);
+    pollChatMsgs();
+    _chatPollInterval = setInterval(pollChatMsgs, 4000);
+}
+
+async function pollChatMsgs() {
+    if (!activeChatId) return;
+    try {
+        const res = await fetch(`${API_URL}/api/chat/${activeChatId}`);
+        const result = await res.json();
+        if (result && Array.isArray(result.messages)) {
+            const local = getChatMsgs(activeChatId);
+            if (result.messages.length > local.length) {
+                const formatted = result.messages.map(m => ({
+                    from: m.from,
+                    text: m.text,
+                    time: m.time ? new Date(m.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : nowTime()
+                }));
+                saveChatMsgs(activeChatId, formatted);
+                renderMsgs();
+            }
+        }
+    } catch (e) {}
+}
+
 let _sending = false;
 
 async function sendMsg() {
@@ -3011,6 +3041,14 @@ async function sendMsg() {
     msgs.push({ from: 'user', text, time: nowTime() });
     saveChatMsgs(activeChatId, msgs);
     renderMsgs();
+    
+    try {
+        await fetch(`${API_URL}/api/chat/${activeChatId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ from: 'user', text })
+        });
+    } catch (e) {}
     
     try {
         await fetch(`${API_URL}/api/notify`, {
