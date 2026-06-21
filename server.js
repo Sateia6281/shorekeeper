@@ -12,15 +12,9 @@ const PORT = process.env.PORT || 3000;
 // GANTI BOT_TOKEN DI BAWAH INI dengan token BARU dari @BotFather
 // (token lama udah kebuka di chat, WAJIB di-revoke & ganti baru)
 // ============================================================
-require('dotenv').config();
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const ADMIN_ID = process.env.ADMIN_ID || 6284402885;
+const BOT_TOKEN = '8950107483:AAFR7qPRaOEXS7BumQ73ivMmvo158d2muQQ';
+const ADMIN_ID = 6284402885;
 const DATA_FILE = path.join(__dirname, 'data.json');
-
-if (!BOT_TOKEN) {
-    console.error('❌ BOT_TOKEN belum di-set! Bikin file .env dan isi BOT_TOKEN=token_lo');
-    process.exit(1);
-}
 
 // ============================================================
 // MIDDLEWARE
