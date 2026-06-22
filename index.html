@@ -34,6 +34,9 @@
             --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --radius-full: 999px;
+            --topbar-bg: rgba(242, 242, 247, 0.85);
+            --nav-bg: rgba(255, 255, 255, 0.92);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -46,6 +49,8 @@
                 --text3: #8e8e93;
                 --border: #38383a;
                 --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+                --topbar-bg: rgba(0, 0, 0, 0.85);
+                --nav-bg: rgba(28, 28, 30, 0.92);
             }
         }
 
@@ -63,36 +68,97 @@
         ::-webkit-scrollbar { width: 0; background: transparent; }
         * { scrollbar-width: none; -ms-overflow-style: none; }
 
-        /* ===== LOADING ===== */
-        #loader {
+        /* ===== SPLASH SCREEN ===== */
+        #splashScreen {
             position: fixed;
             inset: 0;
+            z-index: 10000;
             background: var(--bg);
-            z-index: 9999;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            padding: 20px;
         }
-        #loader.hide {
+        #splashScreen.hide {
             opacity: 0;
+            transform: scale(1.05);
             pointer-events: none;
         }
-        #loader .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--blue);
+        .splash-avatar {
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            overflow: hidden;
+            border: 4px solid var(--blue);
+            box-shadow: 0 20px 60px rgba(0, 122, 255, 0.3);
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #loader p {
-            margin-top: 14px;
-            font-size: 0.7rem;
+        .splash-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .splash-avatar .placeholder-avatar {
+            font-size: 4rem;
             color: var(--text3);
-            letter-spacing: 1px;
+            opacity: 0.3;
+            font-weight: 300;
+        }
+        .splash-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+        .splash-title span {
+            color: var(--blue);
+        }
+        .splash-sub {
+            font-size: 0.75rem;
+            color: var(--text3);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .splash-loader {
+            margin-top: 30px;
+            width: 40px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .splash-loader .bar {
+            height: 100%;
+            width: 0%;
+            background: var(--blue);
+            border-radius: 4px;
+            animation: loadBar 1.5s ease forwards;
+        }
+        @keyframes loadBar {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .splash-dear {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        .splash-dear b {
+            color: var(--blue);
+        }
+
+        /* ===== LOADING (old) ===== */
+        #loader {
+            display: none;
         }
 
         /* ============================================================
@@ -118,6 +184,10 @@
             transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                         opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             will-change: transform, opacity;
+            display: none;
+        }
+        .page-wrapper.active {
+            display: block;
         }
 
         /* ===== PAGE TRANSISI ===== */
@@ -173,7 +243,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(var(--bg), 0.85);
+            background: var(--topbar-bg);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             padding: 12px 16px 10px;
@@ -265,14 +335,14 @@
         }
 
         /* ============================================================
-           BOTTOM NAV - iOS STYLE
+           BOTTOM NAV - dengan SVG Icons
            ============================================================ */
         .bnav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(var(--bg-card), 0.92);
+            background: var(--nav-bg);
             backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             border-top: 0.5px solid var(--border);
@@ -306,12 +376,24 @@
             color: var(--blue);
         }
         .bnav-item .bicon {
-            font-size: 1.2rem;
-            line-height: 1;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition-spring);
         }
-        .bnav-item.active .bicon {
-            transform: scale(1.05);
+        .bnav-item .bicon svg {
+            width: 22px;
+            height: 22px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .bnav-item.active .bicon svg {
+            stroke: var(--blue);
         }
         .bnav-item .badge {
             position: absolute;
@@ -329,10 +411,46 @@
         }
 
         /* ============================================================
-           CONTENT STYLES
+           CONTENT STYLES (sama seperti sebelumnya)
            ============================================================ */
         .page-content {
             padding: 14px 16px 20px;
+        }
+
+        /* BRAND BANNER */
+        .brand-banner {
+            position: relative;
+            width: 100%;
+            height: 190px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .brand-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+            display: block;
+        }
+        .brand-banner::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%);
+        }
+        .brand-banner-text {
+            position: absolute;
+            left: 14px;
+            bottom: 10px;
+            color: #fff;
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+            z-index: 1;
         }
 
         /* HERO */
@@ -1574,11 +1692,17 @@
 <body>
 
 <!-- ============================================================
-     LOADER
+     SPLASH SCREEN - Dear Neastse
      ============================================================ -->
-<div id="loader">
-    <div class="spinner"></div>
-    <p>Shorekeeper Elite</p>
+<div id="splashScreen">
+    <div class="splash-avatar">
+        <!-- Ganti src dengan gambar anime kamu -->
+        <img src="https://i.pravatar.cc/300?img=11" alt="Anime Avatar" id="splashAvatarImg">
+    </div>
+    <div class="splash-title">Shorekeeper <span>Elite</span></div>
+    <div class="splash-dear">Dear <b>Neastse</b> 🤍</div>
+    <div class="splash-sub">Blood Strike Tool</div>
+    <div class="splash-loader"><div class="bar"></div></div>
 </div>
 
 <!-- ============================================================
@@ -1602,6 +1726,7 @@
                 </svg>
                 Kembali
             </button>
+            <!-- LOGO TETAP PAKAI GAMBAR -->
             <div class="topbar-icon" onclick="goHome()">
                 <img src="icon.jpg" alt="Logo" id="siteIcon">
             </div>
@@ -1620,6 +1745,12 @@
          ============================================================ -->
     <div class="page-wrapper active" id="page-home" data-page="home">
         <div class="page-content">
+
+            <!-- BRAND BANNER -->
+            <div class="brand-banner">
+                <img src="icon.jpg" alt="Shorekeeper">
+                <div class="brand-banner-text">SHOREKEEPER × BLOOD STRIKE</div>
+            </div>
 
             <!-- COUNTDOWN -->
             <div class="countdown-box">
@@ -1936,23 +2067,33 @@
 </div>
 
 <!-- ============================================================
-     BOTTOM NAV
+     BOTTOM NAV - PAKAI SVG ICONS (bukan emot)
      ============================================================ -->
 <nav class="bnav" id="bottomNav">
     <button class="bnav-item active" data-page="home" onclick="navigateTo('home')">
-        <span class="bicon">🏠</span>Home
+        <span class="bicon">
+            <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+        </span>Home
     </button>
     <button class="bnav-item" data-page="paket" onclick="navigateTo('paket')">
-        <span class="bicon">📦</span>Paket
+        <span class="bicon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        </span>Paket
     </button>
     <button class="bnav-item" data-page="freekey" onclick="navigateTo('freekey')">
-        <span class="bicon">🎁</span>Gratis
+        <span class="bicon">
+            <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+        </span>Gratis
     </button>
     <button class="bnav-item" data-page="cekkey" onclick="navigateTo('cekkey')">
-        <span class="bicon">🔍</span>Key
+        <span class="bicon">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        </span>Key
     </button>
     <button class="bnav-item" data-page="chat" onclick="navigateTo('chat')">
-        <span class="bicon">💬</span>Chat
+        <span class="bicon">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </span>Chat
     </button>
 </nav>
 
@@ -2053,6 +2194,15 @@
 
 <script>
 // ============================================================
+// SPLASH SCREEN - Hilang setelah loading
+// ============================================================
+setTimeout(() => {
+    const splash = document.getElementById('splashScreen');
+    splash.classList.add('hide');
+    setTimeout(() => splash.style.display = 'none', 800);
+}, 2000);
+
+// ============================================================
 // KONFIGURASI
 // ============================================================
 const API_URL = window.location.origin || '';
@@ -2071,56 +2221,54 @@ function navigateTo(page, direction = 'right') {
 
     if (!nextEl) return;
 
-    // Haptic feedback (vibrasi)
     if (navigator.vibrate) navigator.vibrate(10);
 
-    // Reset semua class
+    const allTransClasses = ['active', 'inactive', 'slide-in-right', 'slide-in-left', 'slide-out-left', 'slide-out-right'];
+
     document.querySelectorAll('.page-wrapper').forEach(el => {
-        el.classList.remove('active', 'slide-in-right', 'slide-in-left', 'slide-out-left', 'slide-out-right');
-        el.style.display = 'none';
+        if (el !== currentEl && el !== nextEl) {
+            el.classList.remove(...allTransClasses);
+            el.style.display = 'none';
+        }
     });
 
-    // Sembunyikan current dengan animasi keluar
-    if (currentEl) {
-        currentEl.style.display = 'block';
-        if (direction === 'right') {
-            currentEl.classList.add('slide-out-left');
-        } else {
-            currentEl.classList.add('slide-out-right');
-        }
-    }
+    const outClass = direction === 'right' ? 'slide-out-left' : 'slide-out-right';
+    const inClass = direction === 'right' ? 'slide-in-right' : 'slide-in-left';
 
-    // Tampilkan next dengan animasi masuk
+    nextEl.classList.remove(...allTransClasses);
+    nextEl.classList.add(inClass);
     nextEl.style.display = 'block';
-    if (direction === 'right') {
-        nextEl.classList.add('slide-in-right');
-    } else {
-        nextEl.classList.add('slide-in-left');
+
+    if (currentEl) {
+        currentEl.classList.remove(...allTransClasses);
+        currentEl.classList.add(outClass);
+        currentEl.style.display = 'block';
     }
 
-    // Trigger reflow
     void nextEl.offsetWidth;
 
-    if (direction === 'right') {
-        nextEl.classList.remove('slide-in-right');
-        if (currentEl) currentEl.classList.remove('slide-out-left');
-    } else {
-        nextEl.classList.remove('slide-in-left');
-        if (currentEl) currentEl.classList.remove('slide-out-right');
+    if (direction === 'right' || direction === 'left') {
+        nextEl.classList.add('active');
+        if (currentEl) currentEl.classList.add('inactive');
     }
 
-    nextEl.classList.add('active');
+    if (currentEl) {
+        setTimeout(() => {
+            currentEl.style.display = 'none';
+            currentEl.classList.remove(outClass, 'inactive');
+        }, 420);
+    }
+    setTimeout(() => {
+        nextEl.classList.remove(inClass);
+    }, 420);
 
-    // Update UI
     currentPage = page;
     pageHistory.push(page);
     updateNav(page);
     updateBackButton();
 
-    // Scroll ke atas
     nextEl.scrollTop = 0;
 
-    // Trigger render functions
     if (page === 'paket') renderPackages();
     if (page === 'review') renderReviews();
     if (page === 'chat') initChat();
@@ -2149,18 +2297,6 @@ function updateBackButton() {
     const btn = document.getElementById('backBtn');
     btn.classList.toggle('show', pageHistory.length > 1);
 }
-
-// ============================================================
-// LOADING
-// ============================================================
-function hideLoader() {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.classList.add('hide');
-        setTimeout(() => loader.style.display = 'none', 500);
-    }
-}
-setTimeout(hideLoader, 1200);
 
 // ============================================================
 // STOK
@@ -2910,6 +3046,8 @@ function toggleTheme() {
     document.documentElement.style.setProperty('--text2', isDark ? '#ebebf5' : '#3a3a3c');
     document.documentElement.style.setProperty('--text3', isDark ? '#8e8e93' : '#8e8e93');
     document.documentElement.style.setProperty('--border', isDark ? '#38383a' : '#e5e5ea');
+    document.documentElement.style.setProperty('--topbar-bg', isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(242, 242, 247, 0.85)');
+    document.documentElement.style.setProperty('--nav-bg', isDark ? 'rgba(28, 28, 30, 0.92)' : 'rgba(255, 255, 255, 0.92)');
     document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
     localStorage.setItem('sk_theme', isDark ? 'dark' : 'light');
     if (navigator.vibrate) navigator.vibrate(5);
@@ -2925,6 +3063,8 @@ function toggleTheme() {
         document.documentElement.style.setProperty('--text2', '#ebebf5');
         document.documentElement.style.setProperty('--text3', '#8e8e93');
         document.documentElement.style.setProperty('--border', '#38383a');
+        document.documentElement.style.setProperty('--topbar-bg', 'rgba(0, 0, 0, 0.85)');
+        document.documentElement.style.setProperty('--nav-bg', 'rgba(28, 28, 30, 0.92)');
         document.getElementById('themeBtn').innerText = '☀️';
     }
 })();
