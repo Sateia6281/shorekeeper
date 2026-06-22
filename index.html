@@ -89,9 +89,9 @@
         .splash-avatar {
             width: 160px;
             height: 160px;
-            border-radius: 50%;
+            border-radius: 30px;
             overflow: hidden;
-            border: 4px solid var(--blue);
+            border: none;
             box-shadow: 0 20px 60px rgba(0, 122, 255, 0.3);
             margin-bottom: 24px;
             background: var(--bg-card);
@@ -761,48 +761,55 @@
 
         /* PKG LIST */
         .pkg-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
         }
         .pkg {
             background: var(--bg-card);
             border-radius: var(--radius);
-            padding: 14px 16px;
+            padding: 12px 8px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            text-align: center;
             cursor: pointer;
             box-shadow: var(--shadow);
             border: 0.5px solid var(--border);
             transition: var(--transition-spring);
             position: relative;
+            min-height: 130px;
         }
         .pkg:active {
-            transform: scale(0.97);
+            transform: scale(0.96);
         }
         .pkg.hot {
             border-color: var(--blue);
             background: var(--blue-light);
         }
-        .pkg-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .pkg-desc {
-            font-size: 0.5rem;
-            color: var(--text3);
-            margin-top: 2px;
+        .pkg-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--blue), #5ac8fa);
+            display: block;
         }
         .pkg-price {
             font-size: 0.8rem;
             font-weight: 700;
-            text-align: right;
+            color: var(--blue);
+            text-align: center;
         }
-        .pkg-usd {
-            font-size: 0.48rem;
+        .pkg-duration {
+            font-size: 0.65rem;
             color: var(--text3);
-            margin-top: 1px;
+            text-align: center;
+            margin-top: 2px;
         }
         .hot-tag {
             position: absolute;
@@ -835,6 +842,45 @@
         .stock-badge.empty {
             background: rgba(255, 59, 48, 0.15);
             color: var(--red);
+        }
+
+        /* GAME SELECTOR */
+        .game-grid {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .game-card {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        .game-card:active {
+            transform: scale(0.95);
+        }
+        .game-card-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+        }
+        .game-card-info {
+            display: none;
+        }
+        .game-card-name {
+            display: none;
+        }
+        .game-card-sub {
+            display: none;
         }
 
         /* PAYMENT TAGS */
@@ -1736,27 +1782,7 @@
     <!-- ============================================================
          TOPBAR
          ============================================================ -->
-    <div class="topbar" id="topbar">
-        <div class="topbar-left">
-            <button class="back-btn" id="backBtn" onclick="goBack()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-                Kembali
-            </button>
-            <!-- LOGO TETAP PAKAI GAMBAR -->
-            <div class="topbar-icon" onclick="goHome()">
-                <img src="icon.jpg" alt="Logo" id="siteIcon">
-            </div>
-            <div>
-                <div class="topbar-title">Shorekeeper</div>
-                <div class="topbar-sub">Blood Strike Tool</div>
-            </div>
-        </div>
-        <div class="topbar-right">
-            <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️</button>
-        </div>
-    </div>
+    <!-- TOPBAR REMOVED - Logo moved to paket page -->
 
     <!-- ============================================================
          PAGE WRAPPER - HOME
@@ -1764,37 +1790,21 @@
     <div class="page-wrapper active" id="page-home" data-page="home">
         <div class="page-content">
 
-<!-- BRAND BANNER - VERSION VIDEO -->
-<div class="brand-banner" style="position:relative;overflow:hidden;background:#000;">
-    <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;">
-        <source src="baner-video.mp4" type="video/mp4">
-    </video>
-    <div class="brand-banner-text">SHOREKEEPER × BLOOD STRIKE</div>
-</div>
+            <!-- BRAND BANNER - VERSION VIDEO -->
+            <div class="brand-banner" style="position:relative;overflow:hidden;background:#000;margin-bottom:14px;">
+                <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;">
+                    <source src="baner-video.mp4" type="video/mp4">
+                </video>
+                <div class="brand-banner-text">SELAMAT DATANG PARA PELANGGAN</div>
+            </div>
 
-            <!-- COUNTDOWN -->
-            <div class="countdown-box">
-                <div class="cd-label">🔥 Promo Berakhir Dalam</div>
-                <div class="cd-timer">
-                    <span><span id="cdH">12</span><span class="cd-label-sm">Jam</span></span>
-                    <span class="cd-sep">:</span>
-                    <span><span id="cdM">34</span><span class="cd-label-sm">Menit</span></span>
-                    <span class="cd-sep">:</span>
-                    <span><span id="cdS">56</span><span class="cd-label-sm">Detik</span></span>
+            <!-- GAME SELECTOR - SIMPLE ICON -->
+            <div style="margin-bottom:14px;text-align:center;">
+                <div class="sec-title">🎮 Blood Strike Tool</div>
+                <div class="sec-sub" onclick="navigateTo('paket')" style="cursor:pointer;color:var(--blue);font-weight:600;">
+                    Tap untuk lihat paket →
                 </div>
-            </div>
-
-            <!-- TICKER -->
-            <div class="ticker">
-                <div class="tdot-live"></div>
-                <span id="tickerTxt">Andi dari Jakarta baru beli Lifetime</span>
-            </div>
-
-            <!-- ADMIN STATUS -->
-            <div class="admin-status" id="adminStatusHome">
-                <span class="dot online" id="adminDotHome"></span>
-                <span id="adminTextHome">Admin Online</span>
-                <span style="color:var(--text3);">• Respon 5 Menit</span>
+                <div id="gameList" class="game-grid"></div>
             </div>
 
             <!-- HERO -->
@@ -1931,13 +1941,12 @@
          ============================================================ -->
     <div class="page-wrapper" id="page-paket" data-page="paket">
         <div class="page-content">
-            <div class="sec-title">📦 Pilih Paket</div>
-            <div class="sec-sub">Tap paket untuk mulai order</div>
-            <div id="pkgStockInfo" style="font-size:0.55rem;color:var(--text3);margin-bottom:8px;"></div>
             <div class="pkg-list" id="pkgList"></div>
+            <div id="pkgStockInfo" style="font-size:0.55rem;color:var(--text3);margin:8px 0;"></div>
             <div style="margin-top:12px;text-align:center;font-size:0.58rem;color:var(--text3);">
                 <span>Mau gratis? <a href="#" onclick="navigateTo('freekey');return false;" style="color:var(--blue);">Dapatkan Key Gratis 1 Hari</a></span>
             </div>
+            <button onclick="goHome()" style="width:100%;padding:10px;margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);cursor:pointer;font-size:0.75rem;font-weight:600;">← Kembali ke Home</button>
         </div>
     </div>
 
@@ -2314,8 +2323,7 @@ function updateNav(page) {
 }
 
 function updateBackButton() {
-    const btn = document.getElementById('backBtn');
-    btn.classList.toggle('show', pageHistory.length > 1);
+    // Topbar sudah dihapus, function ini jadi dummy
 }
 
 // ============================================================
@@ -2400,36 +2408,26 @@ function saveFreeRequests(r) {
 // PAKET
 // ============================================================
 const pkgs = [
-    { id: '1JAM', label: '1Jam', name: '1 JAM', idr: 'Rp 5.000', usd: '$0.3', qris: 'qris-1jam.jpg' },
-    { id: '5JAM', label: '5Jam', name: '5 JAM', idr: 'Rp 10.000', usd: '$0.6', qris: 'qris-5jam.jpg' },
-    { id: '1DAY', label: '1Day', name: '1 HARI', idr: 'Rp 20.000', usd: '$1.2', qris: 'qris-1hari.jpg' },
-    { id: '3DAY', label: '3Day', name: '3 HARI', idr: 'Rp 50.000', usd: '$3', qris: 'qris-3hari.jpg' },
-    { id: '7DAY', label: '7Day', name: '7 HARI', idr: 'Rp 100.000', usd: '$6', hot: true, qris: 'qris-7hari.jpg' },
-    { id: '15DAY', label: '15Day', name: '15 HARI', idr: 'Rp 150.000', usd: '$9', qris: 'qris-15hari.jpg' },
-    { id: '30DAY', label: '30Day', name: '30 HARI', idr: 'Rp 200.000', usd: '$12', qris: 'qris-30hari.jpg' },
-    { id: 'LIFE', label: 'Lifetime', name: 'LIFETIME', idr: 'Rp 300.000', usd: '$18', qris: 'qris-lifetime.jpg' },
+    { id: '1JAM', label: '1Jam', name: '1 JAM', idr: 'Rp 5.000', usd: '$0.3', qris: 'qris-1jam.jpg', logo: 'icon.jpg' },
+    { id: '5JAM', label: '5Jam', name: '5 JAM', idr: 'Rp 10.000', usd: '$0.6', qris: 'qris-5jam.jpg', logo: 'icon.jpg' },
+    { id: '1DAY', label: '1Day', name: '1 HARI', idr: 'Rp 20.000', usd: '$1.2', qris: 'qris-1hari.jpg', logo: 'icon.jpg' },
+    { id: '3DAY', label: '3Day', name: '3 HARI', idr: 'Rp 50.000', usd: '$3', qris: 'qris-3hari.jpg', logo: 'icon.jpg' },
+    { id: '7DAY', label: '7Day', name: '7 HARI', idr: 'Rp 100.000', usd: '$6', hot: true, qris: 'qris-7hari.jpg', logo: 'icon.jpg' },
+    { id: '15DAY', label: '15Day', name: '15 HARI', idr: 'Rp 150.000', usd: '$9', qris: 'qris-15hari.jpg', logo: 'icon.jpg' },
+    { id: '30DAY', label: '30Day', name: '30 HARI', idr: 'Rp 200.000', usd: '$12', qris: 'qris-30hari.jpg', logo: 'icon.jpg' },
+    { id: 'LIFE', label: 'Lifetime', name: 'LIFETIME', idr: 'Rp 300.000', usd: '$18', qris: 'qris-lifetime.jpg', logo: 'icon.jpg' },
 ];
 
 function renderPackages() {
     const list = document.getElementById('pkgList');
     if (!list) return;
-    let html = '';
-    pkgs.forEach(p => {
-        const c = getStockCount(p.label);
-        let b = '';
-        if (c === 0) b = '<span class="stock-badge empty">HABIS</span>';
-        else if (c <= 3) b = '<span class="stock-badge low">SISA ' + c + '</span>';
-        else b = '<span class="stock-badge available">' + c + ' TERSEDIA</span>';
+    let html = ''; // Mulai dari kosong
+    pkgs.forEach((p, idx) => {
         html += `<div class="pkg${p.hot ? ' hot' : ''}" onclick="openOrder('${p.id}')">
             ${p.hot ? '<div class="hot-tag">TERLARIS</div>' : ''}
-            <div>
-                <div class="pkg-name">${p.name} ${b}</div>
-                <div class="pkg-desc">${p.id === 'LIFE' ? 'Bayar sekali, selamanya' : 'Akses penuh ' + p.name}</div>
-            </div>
-            <div>
-                <div class="pkg-price">${p.idr}</div>
-                <div class="pkg-usd">${p.usd}</div>
-            </div>
+            <img src="${p.logo}" alt="${p.name}" class="pkg-icon" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22%3E%3Crect width=%2248%22 height=%2248%22 fill=%22%230a7aff%22/%3E%3Ctext x=%2724%27 y=%2730%27 text-anchor=%22middle%22 font-size=%2716%27 fill=%22white%22%3E📦%3C/text%3E%3C/svg%3E'">
+            <div class="pkg-price">${p.idr}</div>
+            <div class="pkg-duration">${p.name}</div>
         </div>`;
     });
     list.innerHTML = html;
@@ -2437,6 +2435,36 @@ function renderPackages() {
     const info = document.getElementById('pkgStockInfo');
     if (info) info.innerText = '📦 Total stok key: ' + total + ' | Klik paket untuk order';
     renderStockStatus();
+}
+
+function renderGameList() {
+    const list = document.getElementById('gameList');
+    if (!list) return;
+    // Hanya tampilkan Bloodstrike untuk sekarang
+    const games = [
+        {
+            id: 'bloodstrike',
+            name: 'Blood Strike',
+            img: 'bloodstrike.jpg',
+            sub: 'Aim Assist, ESP, No Recoil'
+        }
+    ];
+    let html = '';
+    games.forEach(g => {
+        html += `<div class="game-card" onclick="selectGame('${g.id}')">
+            <img src="${g.img}" alt="${g.name}" class="game-card-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22%3E%3Crect width=%2260%22 height=%2260%22 fill=%22%23e5e5ea%22/%3E%3Ctext x=%2230%22 y=%2738%22 text-anchor=%22middle%22 font-size=%2224%22%3E🎮%3C/text%3E%3C/svg%3E'">
+            <div class="game-card-info">
+                <div class="game-card-name">${g.name}</div>
+                <div class="game-card-sub">${g.sub}</div>
+            </div>
+        </div>`;
+    });
+    list.innerHTML = html;
+}
+
+function selectGame(gameId) {
+    localStorage.setItem('sk_selected_game', gameId);
+    navigateTo('paket');
 }
 
 function renderStockStatus() {
@@ -3092,6 +3120,7 @@ function toggleTheme() {
 // ============================================================
 // INIT
 // ============================================================
+renderGameList();
 renderPackages();
 renderFreeStatus();
 renderReviews();
