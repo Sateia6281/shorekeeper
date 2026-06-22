@@ -406,6 +406,7 @@ try {
             text += '/broadcast - Kirim pesan ke semua user\n';
             text += '/addkey [key] [label] - Tambah key\n';
             text += '/delkey [key] - Hapus key\n';
+            text += '/resetstock - Reset SEMUA stok key\n';
         }
         
         text += '\n🌐 Website: https://shorekeeper-production.up.railway.app';
@@ -461,6 +462,28 @@ try {
             }
         }
         if (!found) bot.sendMessage(chatId, `❌ Key ${key} tidak ditemukan`);
+    });
+
+    bot.onText(/\/resetstock$/, (msg) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+        const keyboard = {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '⚠️ Ya, Hapus SEMUA Key', callback_data: 'resetstock_confirm' }],
+                    [{ text: '❌ Batal', callback_data: 'resetstock_cancel' }]
+                ]
+            }
+        };
+        const totalBefore = getTotalStock();
+        bot.sendMessage(
+            chatId,
+            `⚠️ **RESET SEMUA STOK KEY**\n━━━━━━━━━━━━━━━\n\nIni akan menghapus SEMUA key (${totalBefore} key) dari SEMUA paket.\nTindakan ini tidak bisa dibatalkan.\n\nLanjutkan?`,
+            { parse_mode: 'Markdown', ...keyboard }
+        );
     });
 
     // ============================================================
@@ -991,6 +1014,25 @@ try {
             return;
         }
 
+        if (data_cb === 'resetstock_confirm') {
+            if (String(chatId) !== String(ADMIN_ID)) {
+                bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                return;
+            }
+            const totalBefore = getTotalStock();
+            for (const label in data.stock) {
+                data.stock[label] = [];
+            }
+            saveData(data);
+            bot.sendMessage(chatId, `✅ SEMUA STOK DIRESET!\n━━━━━━━━━━━━━━━\n🗑️ ${totalBefore} key dihapus dari semua paket.\n📊 Total stok sekarang: 0 key`);
+            return;
+        }
+
+        if (data_cb === 'resetstock_cancel') {
+            bot.sendMessage(chatId, '❌ Reset stok dibatalkan.');
+            return;
+        }
+
         // ============================================================
         // MENU UTAMA
         // ============================================================
@@ -1067,6 +1109,7 @@ try {
                 text += '/broadcast - Kirim pesan ke semua user\n';
                 text += '/addkey [key] [label] - Tambah key\n';
                 text += '/delkey [key] - Hapus key\n';
+                text += '/resetstock - Reset SEMUA stok key\n';
             }
             
             text += '\n🌐 Website: https://shorekeeper-production.up.railway.app';
