@@ -1,7 +1,3 @@
-// ============================================================
-// SERVER.JS - FULL VERSION (TANPA BLOKIR USER!)
-// ============================================================
-
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -15,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 // KONFIGURASI
 // ============================================================
 const BOT_TOKEN = '8950107483:AAEWtWky1Xe99ZN8SJvHhUo2EugtACiv0Cs';
-const ADMIN_ID = '6284402885'; // HANYA UNTUK NOTIFIKASI!
+const ADMIN_ID = '6284402885';
 const DATA_FILE = path.join(__dirname, 'data.json');
 
 console.log('📂 __dirname:', __dirname);
@@ -64,7 +60,9 @@ function loadData() {
         lastOrderId: 0,
         totalSold: 0,
         reviews: [],
-        chatMessages: {}
+        chatMessages: {},
+        promos: [],
+        totalRevenue: 0
     };
 }
 
@@ -122,6 +120,7 @@ function confirmOrder(orderId) {
     order.confirmedAt = new Date().toISOString();
     data.orders.push(order);
     data.totalSold = (data.totalSold || 0) + 1;
+    data.totalRevenue = (data.totalRevenue || 0) + parseInt(order.price.replace(/\D/g, '')) || 0;
     saveData(data);
     return order;
 }
@@ -151,6 +150,15 @@ function getTotalStock() {
     return total;
 }
 
+function generateRandomKey() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 const PKGS = [
     { id: '1JAM', label: '1Jam', name: '1 JAM', idr: 'Rp 5.000', usd: '$0.3' },
     { id: '5JAM', label: '5Jam', name: '5 JAM', idr: 'Rp 10.000', usd: '$0.6' },
@@ -163,10 +171,105 @@ const PKGS = [
 ];
 
 // ============================================================
-// TELEGRAM BOT - SEMUA USER BISA AKSES!
+// PARSE BATCH TEXT
+// ============================================================
+function parseBatchText(text, defaultLabel = '1Day') {
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
+    const results = [];
+
+    const labelMap = {
+        '1jam': '1Jam', '1 jam': '1Jam', '1j': '1Jam',
+        '5jam': '5Jam', '5 jam': '5Jam', '5j': '5Jam',
+        '1day': '1Day', '1 day': '1Day', '1d': '1Day',
+        '1hari': '1Day', '1 hari': '1Day',
+        '3day': '3Day', '3 day': '3Day', '3d': '3Day',
+        '3hari': '3Day', '3 hari': '3Day',
+        '7day': '7Day', '7 day': '7Day', '7d': '7Day',
+        '7hari': '7Day', '7 hari': '7Day',
+        '15day': '15Day', '15 day': '15Day', '15d': '15Day',
+        '15hari': '15Day', '15 hari': '15Day',
+        '30day': '30Day', '30 day': '30Day', '30d': '30Day',
+        '30hari': '30Day', '30 hari': '30Day',
+        'lifetime': 'Lifetime', 'life': 'Lifetime', 'lt': 'Lifetime',
+        'free': 'Free1Day', 'gratis': 'Free1Day'
+    };
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.match(/^(#|Kunci|Perangkat|Lamanya|Kedaluwarsa|Tindakan|Menunjukkan|entri|Mencari|Selamat|K R U N C H P O I N T)/i)) continue;
+        if (trimmed.match(/^[─═━—\-]+$/)) continue;
+
+        // Format: "BS-KEYEYSY 0/1 1HARI" atau "BS-KEYEYSY 1HARI"
+        const statusMatch = trimmed.match(/^(BS-[A-Z0-9-]+)\s+(?:(\d+\/\d+)\s+)?([\d\s]+(?:Day|day|Jam|jam|Hari|hari|Lifetime|life|FREE|free))/i);
+        if (statusMatch) {
+            const key = statusMatch[1];
+            const status = statusMatch[2] || null;
+            const labelText = statusMatch[3].trim().toLowerCase().replace(/\s+/g, ' ').trim();
+            
+            let foundLabel = null;
+            for (const [keyMap, value] of Object.entries(labelMap)) {
+                if (labelText.includes(keyMap)) { foundLabel = value; break; }
+            }
+            
+            results.push({ key, label: foundLabel || defaultLabel, status: status });
+            continue;
+        }
+
+        // Format panel: "1097  BS  BS-KEYEYSY  0/1  1HARI"
+        const panelMatch = trimmed.match(/^\s*(\d+)\s+BS\s+(BS-[A-Z0-9-]+)\s+(?:(\d+\/\d+)\s+)?([\d\s]+(?:Day|day|Jam|jam|Hari|hari|Lifetime|life|FREE|free))/i);
+        if (panelMatch) {
+            const key = panelMatch[2];
+            const status = panelMatch[3] || null;
+            const labelText = panelMatch[4].trim().toLowerCase().replace(/\s+/g, ' ').trim();
+            
+            let foundLabel = null;
+            for (const [keyMap, value] of Object.entries(labelMap)) {
+                if (labelText.includes(keyMap)) { foundLabel = value; break; }
+            }
+            
+            results.push({ key, label: foundLabel || defaultLabel, status: status });
+            continue;
+        }
+
+        // Key doang: "BS-KEYEYSY"
+        const keyOnly = trimmed.match(/^(BS-[A-Z0-9-]+)$/);
+        if (keyOnly) {
+            const key = keyOnly[1];
+            let detectedLabel = null;
+            for (const [label, keys] of Object.entries(data.stock)) {
+                if (keys.includes(key)) {
+                    detectedLabel = label;
+                    break;
+                }
+            }
+            results.push({ key, label: detectedLabel || defaultLabel });
+            continue;
+        }
+
+        // Key anywhere
+        const anyKey = trimmed.match(/BS-[A-Z0-9-]+/);
+        if (anyKey) {
+            const key = anyKey[0];
+            let detectedLabel = null;
+            for (const [keyMap, value] of Object.entries(labelMap)) {
+                if (trimmed.toLowerCase().includes(keyMap)) {
+                    detectedLabel = value;
+                    break;
+                }
+            }
+            results.push({ key, label: detectedLabel || defaultLabel });
+            continue;
+        }
+    }
+    return results;
+}
+
+// ============================================================
+// TELEGRAM BOT
 // ============================================================
 console.log('🤖 Mencoba start Telegram Bot...');
 let bot = null;
+let tempPromo = null;
 
 try {
     bot = new TelegramBot(BOT_TOKEN, { polling: true });
@@ -181,7 +284,12 @@ try {
     });
 
     // ============================================================
-    // MENU UNTUK SEMUA USER
+    // USER STATE
+    // ============================================================
+    const userStates = new Map();
+
+    // ============================================================
+    // MENU UTAMA
     // ============================================================
     function getMainMenu() {
         return {
@@ -197,22 +305,29 @@ try {
         };
     }
 
-    // ✅ SEMUA USER BISA AKSES /start
+    // ============================================================
+    // COMMANDS UNTUK SEMUA USER
+    // ============================================================
     bot.onText(/\/start/, (msg) => {
         const chatId = msg.chat.id;
         const name = msg.from.first_name || 'User';
-        bot.sendMessage(chatId,
-            `🏠 SHOREKEEPER ELITE\n━━━━━━━━━━━━━━━\n\nSelamat datang ${name}! 🚀\n\nGunakan menu di bawah untuk memulai.`,
-            getMainMenu()
-        );
+        const isAdmin = String(chatId) === String(ADMIN_ID);
+        
+        let text = `🏠 SHOREKEEPER ELITE\n━━━━━━━━━━━━━━━\n\nSelamat datang ${name}! 🚀\n\n`;
+        
+        if (isAdmin) {
+            const pending = getPendingOrders().length;
+            const promos = (data.promos || []).length;
+            text += `👑 **ADMIN MODE**\n📋 Pending: ${pending}\n📢 Promo aktif: ${promos}\n\n`;
+        }
+        
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...getMainMenu() });
     });
 
-    // ✅ SEMUA USER BISA AKSES /menu
     bot.onText(/\/menu/, (msg) => {
         bot.sendMessage(msg.chat.id, '📋 Menu Utama', getMainMenu());
     });
 
-    // ✅ SEMUA USER BISA AKSES /buy
     bot.onText(/\/buy|beli/i, (msg) => {
         const chatId = msg.chat.id;
         let text = '📦 DAFTAR PAKET\n━━━━━━━━━━━━━━━\n\n';
@@ -225,7 +340,6 @@ try {
         bot.sendMessage(chatId, text);
     });
 
-    // ✅ SEMUA USER BISA AKSES /stok
     bot.onText(/\/stok/, (msg) => {
         const chatId = msg.chat.id;
         let reply = '📊 STOK KEY\n━━━━━━━━━━━━━━━\n\n';
@@ -238,7 +352,6 @@ try {
         bot.sendMessage(chatId, reply);
     });
 
-    // ✅ SEMUA USER BISA AKSES /tutorial
     bot.onText(/\/tutorial/, (msg) => {
         const chatId = msg.chat.id;
         bot.sendMessage(chatId,
@@ -253,7 +366,6 @@ try {
         );
     });
 
-    // ✅ SEMUA USER BISA AKSES /free
     bot.onText(/\/free/, (msg) => {
         const chatId = msg.chat.id;
         bot.sendMessage(chatId,
@@ -267,26 +379,42 @@ try {
         );
     });
 
-    // ✅ SEMUA USER BISA AKSES /help
     bot.onText(/\/help/, (msg) => {
         const chatId = msg.chat.id;
-        bot.sendMessage(chatId,
-            '❓ BANTUAN\n━━━━━━━━━━━━━━━\n\n' +
-            '/start - Menu utama\n' +
-            '/menu - Tampilkan menu\n' +
-            '/buy - Lihat paket\n' +
-            '/stok - Cek stok\n' +
-            '/tutorial - Panduan\n' +
-            '/free - Key gratis\n' +
-            '/help - Bantuan ini\n\n' +
-            '🌐 Website: https://shorekeeper-production.up.railway.app'
-        );
+        const isAdmin = String(chatId) === String(ADMIN_ID);
+        
+        let text = '❓ BANTUAN\n━━━━━━━━━━━━━━━\n\n';
+        text += '/start - Menu utama\n';
+        text += '/menu - Tampilkan menu\n';
+        text += '/buy - Lihat paket\n';
+        text += '/stok - Cek stok\n';
+        text += '/tutorial - Panduan\n';
+        text += '/free - Key gratis\n';
+        text += '/help - Bantuan ini\n';
+        
+        if (isAdmin) {
+            text += '\n👑 **ADMIN COMMANDS:**\n';
+            text += '/genkey - Generate key baru\n';
+            text += '/batch - Import banyak key\n';
+            text += '/pending - Lihat pending orders\n';
+            text += '/approve [id] - Setujui order\n';
+            text += '/reject [id] - Tolak order\n';
+            text += '/promo - Menu promo lengkap\n';
+            text += '/stats - Statistik lengkap\n';
+            text += '/orders - Lihat semua order\n';
+            text += '/search - Cari order\n';
+            text += '/broadcast - Kirim pesan ke semua user\n';
+            text += '/addkey [key] [label] - Tambah key\n';
+            text += '/delkey [key] - Hapus key\n';
+        }
+        
+        text += '\n🌐 Website: https://shorekeeper-production.up.railway.app';
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
     });
 
     // ============================================================
-    // ADMIN COMMANDS - KHUSUS ADMIN
+    // ADMIN COMMANDS
     // ============================================================
-    // ✅ HANYA ADMIN YANG BISA AKSES COMMAND INI
     const labelMap = {
         '1jam': '1Jam', '1 jam': '1Jam', '1j': '1Jam',
         '5jam': '5Jam', '5 jam': '5Jam', '5j': '5Jam',
@@ -335,6 +463,66 @@ try {
         if (!found) bot.sendMessage(chatId, `❌ Key ${key} tidak ditemukan`);
     });
 
+    // ============================================================
+    // BATCH IMPORT
+    // ============================================================
+    bot.onText(/\/batch/, (msg) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+        userStates.set(chatId, { step: 'batch_import', defaultLabel: '1Day' });
+        bot.sendMessage(chatId,
+            '📥 **BATCH IMPORT KEY**\n━━━━━━━━━━━━━━━\n\n' +
+            'Kirim daftar key sekarang (1 pesan, boleh banyak baris)\n\n' +
+            'Format yang didukung:\n' +
+            '• `BS-KEYEYSY 0/1 1HARI`\n' +
+            '• `BS-KEYEYSY 1HARI`\n' +
+            '• `BS-KEYEYSY`\n' +
+            '• `1097 BS BS-KEYEYSY 0/1 1HARI`\n\n' +
+            'Kirim daftar key sekarang!',
+            { parse_mode: 'Markdown' }
+        );
+    });
+
+    // ============================================================
+    // GENERATE KEY
+    // ============================================================
+    bot.onText(/\/genkey/, (msg) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+
+        const keyboard = {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '1 JAM', callback_data: 'gen_1JAM' }],
+                    [{ text: '5 JAM', callback_data: 'gen_5JAM' }],
+                    [{ text: '1 HARI', callback_data: 'gen_1DAY' }],
+                    [{ text: '3 HARI', callback_data: 'gen_3DAY' }],
+                    [{ text: '⭐ 7 HARI', callback_data: 'gen_7DAY' }],
+                    [{ text: '15 HARI', callback_data: 'gen_15DAY' }],
+                    [{ text: '30 HARI', callback_data: 'gen_30DAY' }],
+                    [{ text: '👑 LIFETIME', callback_data: 'gen_Lifetime' }],
+                    [{ text: '🎁 FREE 1 HARI', callback_data: 'gen_Free1Day' }],
+                    [{ text: '❌ BATAL', callback_data: 'gen_cancel' }],
+                ]
+            }
+        };
+
+        bot.sendMessage(chatId,
+            '🔑 **GENERATE KEY BARU**\n━━━━━━━━━━━━━━━\n\n' +
+            'Pilih paket di bawah untuk generate key:',
+            { parse_mode: 'Markdown', ...keyboard }
+        );
+    });
+
+    // ============================================================
+    // PENDING ORDERS
+    // ============================================================
     bot.onText(/\/pending/, (msg) => {
         const chatId = msg.chat.id;
         if (String(chatId) !== String(ADMIN_ID)) {
@@ -346,14 +534,14 @@ try {
             bot.sendMessage(chatId, '📋 Tidak ada pending orders.');
             return;
         }
-        let text = '📋 PENDING ORDERS\n━━━━━━━━━━━━━━━\n\n';
+        let text = '📋 **PENDING ORDERS**\n━━━━━━━━━━━━━━━\n\n';
         pending.forEach((o, i) => {
             text += `${i+1}. 🆔 ${o.orderId}\n`;
             text += `   📦 ${o.package} - ${o.price}\n`;
             text += `   📧 ${o.email}\n\n`;
         });
         text += `\n✅ /approve [orderId]\n❌ /reject [orderId]`;
-        bot.sendMessage(chatId, text);
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
     });
 
     bot.onText(/\/approve (.+)/, (msg, match) => {
@@ -366,7 +554,6 @@ try {
         const order = confirmOrder(orderId);
         if (order) {
             bot.sendMessage(chatId, `✅ ORDER DISETUJUI!\n🔑 ${order.key}\n📦 ${order.package}`);
-            // Kirim key ke user
             bot.sendMessage(order.userChatId || order.phone,
                 `✅ KEY AKTIF!\n🔑 ${order.key}\n📦 ${order.package}`
             ).catch(() => {});
@@ -391,14 +578,423 @@ try {
     });
 
     // ============================================================
-    // CALLBACK QUERY - SEMUA USER BISA PAKAI
+    // STATS
+    // ============================================================
+    bot.onText(/\/stats/, (msg) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+
+        const totalOrders = data.orders.length;
+        const totalPending = (data.pendingOrders || []).length;
+        const totalStock = getTotalStock();
+        const totalRevenue = data.totalRevenue || 0;
+        const promos = (data.promos || []).length;
+
+        let text = '📊 **STATISTIK SHOREKEEPER**\n━━━━━━━━━━━━━━━\n\n';
+        text += `💰 Total Pendapatan: Rp ${totalRevenue.toLocaleString()}\n`;
+        text += `📦 Total Order: ${totalOrders}\n`;
+        text += `⏳ Pending: ${totalPending}\n`;
+        text += `📊 Total Stok: ${totalStock}\n`;
+        text += `📢 Promo Aktif: ${promos}\n`;
+        text += `📅 Total Terjual: ${data.totalSold || 0}\n`;
+        text += `━━━━━━━━━━━━━━━\n`;
+        text += `📌 Update: ${new Date().toLocaleString('id-ID')}`;
+
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    });
+
+    // ============================================================
+    // ORDERS LIST
+    // ============================================================
+    bot.onText(/\/orders/, (msg) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+
+        const orders = data.orders || [];
+        if (orders.length === 0) {
+            bot.sendMessage(chatId, '📋 Belum ada order.');
+            return;
+        }
+
+        let text = '📋 **SEMUA ORDER**\n━━━━━━━━━━━━━━━\n\n';
+        const recent = orders.slice(-10).reverse();
+        recent.forEach((o, i) => {
+            const status = o.status === 'approved' ? '✅ SUKSES' : '❌ DITOLAK';
+            text += `${i+1}. 🆔 ${o.orderId}\n`;
+            text += `   📦 ${o.package} - ${o.price}\n`;
+            text += `   📊 ${status}\n\n`;
+        });
+
+        if (orders.length > 10) {
+            text += `━━━━━━━━━━━━━━━\n📌 Total: ${orders.length} order (tampil 10 terakhir)`;
+        }
+
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    });
+
+    // ============================================================
+    // SEARCH ORDER
+    // ============================================================
+    bot.onText(/\/search (.+)/, (msg, match) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+
+        const query = match[1].trim().toUpperCase();
+        const allOrders = [...(data.orders || []), ...(data.pendingOrders || [])];
+        const found = allOrders.filter(o => 
+            o.orderId.includes(query) || 
+            (o.email && o.email.toUpperCase().includes(query)) ||
+            (o.phone && o.phone.includes(query))
+        );
+
+        if (found.length === 0) {
+            bot.sendMessage(chatId, `❌ Tidak ditemukan hasil untuk: ${query}`);
+            return;
+        }
+
+        let text = `🔍 **HASIL PENCARIAN**\n━━━━━━━━━━━━━━━\n\n`;
+        found.slice(0, 5).forEach(o => {
+            const status = o.status === 'pending' ? '⏳ PENDING' : o.status === 'approved' ? '✅ SUKSES' : '❌ DITOLAK';
+            text += `🆔 ${o.orderId}\n`;
+            text += `📦 ${o.package} - ${o.price}\n`;
+            text += `📧 ${o.email || '-'}\n`;
+            text += `📊 ${status}\n\n`;
+        });
+
+        if (found.length > 5) {
+            text += `━━━━━━━━━━━━━━━\n📌 Menampilkan 5 dari ${found.length} hasil`;
+        }
+
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    });
+
+    // ============================================================
+    // BROADCAST
+    // ============================================================
+    bot.onText(/\/broadcast (.+)/, (msg, match) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+
+        const message = match[1].trim();
+        const allUsers = new Set();
+        
+        // Kumpulkan semua user dari orders
+        (data.orders || []).forEach(o => {
+            if (o.userChatId) allUsers.add(o.userChatId);
+            if (o.phone) allUsers.add(o.phone);
+        });
+
+        // Kumpulkan dari pending orders
+        (data.pendingOrders || []).forEach(o => {
+            if (o.userChatId) allUsers.add(o.userChatId);
+            if (o.phone) allUsers.add(o.phone);
+        });
+
+        if (allUsers.size === 0) {
+            bot.sendMessage(chatId, '❌ Tidak ada user untuk dikirim broadcast.');
+            return;
+        }
+
+        bot.sendMessage(chatId, `📢 Mengirim broadcast ke ${allUsers.size} user...`);
+
+        let sent = 0;
+        allUsers.forEach(userId => {
+            bot.sendMessage(userId, 
+                `📢 **BROADCAST**\n━━━━━━━━━━━━━━━\n\n${message}`
+            ).then(() => {
+                sent++;
+            }).catch(() => {});
+        });
+
+        setTimeout(() => {
+            bot.sendMessage(chatId, `✅ Broadcast terkirim ke ${sent} user dari ${allUsers.size} target.`);
+        }, 3000);
+    });
+
+    // ============================================================
+    // PROMO - MENU LENGKAP DENGAN TOMBOL
+    // ============================================================
+    bot.onText(/\/promo/, (msg) => {
+        const chatId = msg.chat.id;
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+            return;
+        }
+
+        const keyboard = {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '📋 Lihat Promo Aktif', callback_data: 'promo_list' }],
+                    [{ text: '➕ Buat Promo Baru', callback_data: 'promo_create' }],
+                    [{ text: '🗑️ Hapus Promo', callback_data: 'promo_delete' }],
+                    [{ text: '📢 Broadcast Promo', callback_data: 'promo_broadcast' }],
+                ]
+            }
+        };
+
+        const promos = data.promos || [];
+        const activeCount = promos.filter(p => new Date(p.expiry) > new Date()).length;
+        
+        bot.sendMessage(chatId,
+            `📢 **MENU PROMO**\n━━━━━━━━━━━━━━━\n\n` +
+            `📋 Promo aktif: ${activeCount}\n` +
+            `📦 Total promo: ${promos.length}\n\n` +
+            `Pilih aksi di bawah:`,
+            { parse_mode: 'Markdown', ...keyboard }
+        );
+    });
+
+    // ============================================================
+    // CALLBACK QUERY - SEMUA HANDLER
     // ============================================================
     bot.on('callback_query', async (callback) => {
         const chatId = callback.message.chat.id;
-        const cbData = callback.data;
+        const data_cb = callback.data;
+
+        if (String(chatId) !== String(ADMIN_ID)) {
+            bot.answerCallbackQuery(callback.id, { text: '⛔ Hanya untuk admin!', show_alert: true });
+            return;
+        }
+
         bot.answerCallbackQuery(callback.id);
 
-        if (cbData === 'buy_key') {
+        // ============================================================
+        // GENERATE KEY
+        // ============================================================
+        if (data_cb.startsWith('gen_')) {
+            const label = data_cb.replace('gen_', '');
+            if (label === 'cancel') {
+                bot.sendMessage(chatId, '❌ Generate key dibatalkan.');
+                return;
+            }
+
+            const key = 'BS-' + generateRandomKey();
+            if (addKey(label, key)) {
+                const pkg = PKGS.find(p => p.id === label);
+                const pkgName = pkg ? pkg.name : label;
+                bot.sendMessage(chatId,
+                    `✅ **KEY BERHASIL DIGENERATE!**\n━━━━━━━━━━━━━━━\n\n` +
+                    `🔑 \`${key}\`\n` +
+                    `📦 ${pkgName}\n` +
+                    `📊 Stok ${label}: ${getStockCount(label)} key\n\n` +
+                    `📋 Klik tombol di bawah untuk salin:`,
+                    {
+                        parse_mode: 'Markdown',
+                        reply_markup: {
+                            inline_keyboard: [
+                                [{ text: '📋 Salin Key', callback_data: `copy_${key}` }],
+                                [{ text: '🔄 Generate Lagi', callback_data: 'genkey_again' }],
+                            ]
+                        }
+                    }
+                );
+            } else {
+                bot.sendMessage(chatId, `❌ Gagal generate key untuk ${label}`);
+            }
+            return;
+        }
+
+        if (data_cb === 'genkey_again') {
+            bot.sendMessage(chatId, '🔑 Pilih paket lagi:', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '1 JAM', callback_data: 'gen_1JAM' }],
+                        [{ text: '5 JAM', callback_data: 'gen_5JAM' }],
+                        [{ text: '1 HARI', callback_data: 'gen_1DAY' }],
+                        [{ text: '3 HARI', callback_data: 'gen_3DAY' }],
+                        [{ text: '⭐ 7 HARI', callback_data: 'gen_7DAY' }],
+                        [{ text: '15 HARI', callback_data: 'gen_15DAY' }],
+                        [{ text: '30 HARI', callback_data: 'gen_30DAY' }],
+                        [{ text: '👑 LIFETIME', callback_data: 'gen_Lifetime' }],
+                        [{ text: '🎁 FREE 1 HARI', callback_data: 'gen_Free1Day' }],
+                        [{ text: '❌ BATAL', callback_data: 'gen_cancel' }],
+                    ]
+                }
+            });
+            return;
+        }
+
+        if (data_cb.startsWith('copy_')) {
+            const key = data_cb.replace('copy_', '');
+            bot.sendMessage(chatId, `📋 Key: \`${key}\``, { parse_mode: 'Markdown' });
+            return;
+        }
+
+        // ============================================================
+        // PROMO
+        // ============================================================
+        if (data_cb === 'promo_list') {
+            const promos = data.promos || [];
+            if (promos.length === 0) {
+                bot.sendMessage(chatId, '📋 Belum ada promo.');
+                return;
+            }
+
+            let text = '📋 **DAFTAR PROMO**\n━━━━━━━━━━━━━━━\n\n';
+            promos.forEach((p, i) => {
+                const status = new Date(p.expiry) > new Date() ? '✅ Aktif' : '❌ Kadaluarsa';
+                text += `${i+1}. 🆔 ${p.id}\n`;
+                text += `   📦 ${p.package} - Diskon ${p.discount}%\n`;
+                text += `   📅 Sampai: ${p.expiry}\n`;
+                text += `   📊 Status: ${status}\n\n`;
+            });
+            text += `━━━━━━━━━━━━━━━\nTotal: ${promos.length} promo`;
+            bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+            return;
+        }
+
+        if (data_cb === 'promo_create') {
+            const keyboard = {
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '1 JAM', callback_data: 'promo_pkg_1JAM' }],
+                        [{ text: '5 JAM', callback_data: 'promo_pkg_5JAM' }],
+                        [{ text: '1 HARI', callback_data: 'promo_pkg_1DAY' }],
+                        [{ text: '3 HARI', callback_data: 'promo_pkg_3DAY' }],
+                        [{ text: '⭐ 7 HARI', callback_data: 'promo_pkg_7DAY' }],
+                        [{ text: '15 HARI', callback_data: 'promo_pkg_15DAY' }],
+                        [{ text: '30 HARI', callback_data: 'promo_pkg_30DAY' }],
+                        [{ text: '👑 LIFETIME', callback_data: 'promo_pkg_Lifetime' }],
+                        [{ text: '❌ BATAL', callback_data: 'promo_cancel' }],
+                    ]
+                }
+            };
+
+            bot.sendMessage(chatId,
+                '📦 **PILIH PAKET**\n━━━━━━━━━━━━━━━\n\n' +
+                'Pilih paket yang mau didiskon:',
+                { parse_mode: 'Markdown', ...keyboard }
+            );
+            return;
+        }
+
+        if (data_cb.startsWith('promo_pkg_')) {
+            const packageId = data_cb.replace('promo_pkg_', '');
+            if (packageId === 'cancel') {
+                bot.sendMessage(chatId, '❌ Pembuatan promo dibatalkan.');
+                return;
+            }
+
+            userStates.set(chatId, { step: 'promo_discount', packageId: packageId });
+            bot.sendMessage(chatId,
+                `💰 **MASUKKAN DISKON**\n━━━━━━━━━━━━━━━\n\n` +
+                `📦 Paket: ${packageId}\n\n` +
+                `Kirim **persentase diskon** (angka 1-100):\n` +
+                `Contoh: \`50\` untuk diskon 50%`,
+                { parse_mode: 'Markdown' }
+            );
+            return;
+        }
+
+        if (data_cb === 'promo_delete') {
+            const promos = data.promos || [];
+            if (promos.length === 0) {
+                bot.sendMessage(chatId, '📋 Belum ada promo untuk dihapus.');
+                return;
+            }
+
+            let keyboard = { reply_markup: { inline_keyboard: [] } };
+            promos.forEach(p => {
+                keyboard.reply_markup.inline_keyboard.push([
+                    { text: `🗑️ ${p.id} - ${p.package} (${p.discount}%)`, callback_data: `promo_del_${p.id}` }
+                ]);
+            });
+            keyboard.reply_markup.inline_keyboard.push([{ text: '❌ BATAL', callback_data: 'promo_cancel' }]);
+
+            bot.sendMessage(chatId,
+                '🗑️ **HAPUS PROMO**\n━━━━━━━━━━━━━━━\n\n' +
+                'Pilih promo yang mau dihapus:',
+                { parse_mode: 'Markdown', ...keyboard }
+            );
+            return;
+        }
+
+        if (data_cb.startsWith('promo_del_')) {
+            const promoId = data_cb.replace('promo_del_', '');
+            const promos = data.promos || [];
+            const index = promos.findIndex(p => p.id === promoId);
+            
+            if (index === -1) {
+                bot.sendMessage(chatId, `❌ Promo ${promoId} tidak ditemukan!`);
+                return;
+            }
+
+            promos.splice(index, 1);
+            saveData(data);
+            bot.sendMessage(chatId, `✅ Promo ${promoId} berhasil dihapus!`);
+            return;
+        }
+
+        if (data_cb === 'promo_broadcast') {
+            const promos = data.promos || [];
+            const active = promos.filter(p => new Date(p.expiry) > new Date());
+            
+            if (active.length === 0) {
+                bot.sendMessage(chatId, '❌ Tidak ada promo aktif untuk di-broadcast.');
+                return;
+            }
+
+            let message = '📢 **PROMO SPESIAL!**\n━━━━━━━━━━━━━━━\n\n';
+            active.forEach(p => {
+                const pkgName = PKGS.find(pkg => pkg.id === p.package)?.name || p.package;
+                message += `📦 ${pkgName}\n`;
+                message += `💰 Diskon ${p.discount}%\n`;
+                message += `📅 Sampai: ${p.expiry}\n\n`;
+            });
+            message += `━━━━━━━━━━━━━━━\n🌐 Order sekarang: https://shorekeeper-production.up.railway.app`;
+
+            const allUsers = new Set();
+            (data.orders || []).forEach(o => {
+                if (o.userChatId) allUsers.add(o.userChatId);
+                if (o.phone) allUsers.add(o.phone);
+            });
+            (data.pendingOrders || []).forEach(o => {
+                if (o.userChatId) allUsers.add(o.userChatId);
+                if (o.phone) allUsers.add(o.phone);
+            });
+
+            if (allUsers.size === 0) {
+                bot.sendMessage(chatId, '❌ Tidak ada user untuk dikirim broadcast.');
+                return;
+            }
+
+            bot.sendMessage(chatId, `📢 Mengirim broadcast promo ke ${allUsers.size} user...`);
+
+            let sent = 0;
+            allUsers.forEach(userId => {
+                bot.sendMessage(userId, message, { parse_mode: 'Markdown' })
+                    .then(() => sent++)
+                    .catch(() => {});
+            });
+
+            setTimeout(() => {
+                bot.sendMessage(chatId, `✅ Broadcast promo terkirim ke ${sent} user.`);
+            }, 3000);
+            return;
+        }
+
+        if (data_cb === 'promo_cancel') {
+            bot.sendMessage(chatId, '❌ Aksi dibatalkan.');
+            userStates.delete(chatId);
+            return;
+        }
+
+        // ============================================================
+        // MENU UTAMA
+        // ============================================================
+        if (data_cb === 'buy_key') {
             let text = '📦 DAFTAR PAKET\n━━━━━━━━━━━━━━━\n\n';
             PKGS.forEach(pkg => {
                 const count = getStockCount(pkg.id);
@@ -407,7 +1003,10 @@ try {
             });
             text += '━━━━━━━━━━━━━━━\n🌐 Beli via website: https://shorekeeper-production.up.railway.app';
             bot.sendMessage(chatId, text);
-        } else if (cbData === 'cek_stok') {
+            return;
+        }
+
+        if (data_cb === 'cek_stok') {
             let reply = '📊 STOK KEY\n━━━━━━━━━━━━━━━\n\n';
             let total = 0;
             for (const [label, keys] of Object.entries(data.stock)) {
@@ -416,7 +1015,10 @@ try {
             }
             reply += `\n━━━━━━━━━━━━━━━\n📊 TOTAL: ${total} key`;
             bot.sendMessage(chatId, reply);
-        } else if (cbData === 'tutorial') {
+            return;
+        }
+
+        if (data_cb === 'tutorial') {
             bot.sendMessage(chatId,
                 '📖 TUTORIAL\n━━━━━━━━━━━━━━━\n\n' +
                 '1️⃣ Download APK di website\n' +
@@ -425,7 +1027,10 @@ try {
                 '4️⃣ Masukkan key\n' +
                 '5️⃣ Selesai! 🎉'
             );
-        } else if (cbData === 'free_key') {
+            return;
+        }
+
+        if (data_cb === 'free_key') {
             bot.sendMessage(chatId,
                 '🎁 KEY GRATIS 1 HARI\n━━━━━━━━━━━━━━━\n\n' +
                 '1️⃣ Share link ke 3 grup\n' +
@@ -434,28 +1039,150 @@ try {
                 '4️⃣ Key langsung aktif!\n\n' +
                 '🌐 https://shorekeeper-production.up.railway.app'
             );
-        } else if (cbData === 'help') {
-            bot.sendMessage(chatId,
-                '❓ BANTUAN\n━━━━━━━━━━━━━━━\n\n' +
-                '/start - Menu utama\n' +
-                '/buy - Lihat paket\n' +
-                '/stok - Cek stok\n' +
-                '/tutorial - Panduan\n' +
-                '/free - Key gratis\n' +
-                '/help - Bantuan ini\n\n' +
-                '🌐 https://shorekeeper-production.up.railway.app'
-            );
+            return;
+        }
+
+        if (data_cb === 'help') {
+            const isAdmin = true;
+            let text = '❓ BANTUAN\n━━━━━━━━━━━━━━━\n\n';
+            text += '/start - Menu utama\n';
+            text += '/menu - Tampilkan menu\n';
+            text += '/buy - Lihat paket\n';
+            text += '/stok - Cek stok\n';
+            text += '/tutorial - Panduan\n';
+            text += '/free - Key gratis\n';
+            text += '/help - Bantuan ini\n';
+            
+            if (isAdmin) {
+                text += '\n👑 **ADMIN COMMANDS:**\n';
+                text += '/genkey - Generate key baru\n';
+                text += '/batch - Import banyak key\n';
+                text += '/pending - Lihat pending orders\n';
+                text += '/approve [id] - Setujui order\n';
+                text += '/reject [id] - Tolak order\n';
+                text += '/promo - Menu promo lengkap\n';
+                text += '/stats - Statistik lengkap\n';
+                text += '/orders - Lihat semua order\n';
+                text += '/search - Cari order\n';
+                text += '/broadcast - Kirim pesan ke semua user\n';
+                text += '/addkey [key] [label] - Tambah key\n';
+                text += '/delkey [key] - Hapus key\n';
+            }
+            
+            text += '\n🌐 Website: https://shorekeeper-production.up.railway.app';
+            bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+            return;
         }
     });
 
     // ============================================================
-    // AUTO-REPLY - SEMUA USER
+    // MESSAGE HANDLER - BATCH & PROMO INPUT
     // ============================================================
     bot.on('message', (msg) => {
         const chatId = msg.chat.id;
         const text = msg.text || '';
         if (text.startsWith('/')) return;
 
+        // ============================================================
+        // BATCH IMPORT
+        // ============================================================
+        if (userStates.has(chatId) && userStates.get(chatId).step === 'batch_import') {
+            const state = userStates.get(chatId);
+            const parsed = parseBatchText(text, state.defaultLabel);
+
+            if (parsed.length === 0) {
+                bot.sendMessage(chatId, '❌ Tidak ada key valid! Cek lagi formatnya.');
+                userStates.delete(chatId);
+                return;
+            }
+
+            let added = 0, duplicate = 0, summary = {};
+            parsed.forEach(item => {
+                if (addKey(item.label, item.key)) {
+                    added++;
+                    summary[item.label] = (summary[item.label] || 0) + 1;
+                } else {
+                    duplicate++;
+                }
+            });
+
+            let reply = `✅ **BATCH IMPORT SELESAI!**\n━━━━━━━━━━━━━━━\n\n✅ ${added} key berhasil ditambahkan\n`;
+            if (duplicate > 0) reply += `⚠️ ${duplicate} key duplikat\n`;
+            reply += `\n📊 **PER PAKET:**\n`;
+            for (const [label, count] of Object.entries(summary)) reply += `   ${label}: +${count}\n`;
+            reply += `\n📦 Total stok sekarang: ${getTotalStock()} key`;
+
+            bot.sendMessage(chatId, reply, { parse_mode: 'Markdown' });
+            userStates.delete(chatId);
+            return;
+        }
+
+        // ============================================================
+        // PROMO - INPUT DISKON
+        // ============================================================
+        if (userStates.has(chatId) && userStates.get(chatId).step === 'promo_discount') {
+            const state = userStates.get(chatId);
+            const discount = parseInt(text.trim());
+            
+            if (isNaN(discount) || discount < 1 || discount > 100) {
+                bot.sendMessage(chatId, '❌ Masukkan angka 1-100!');
+                return;
+            }
+            
+            userStates.set(chatId, { step: 'promo_expiry', packageId: state.packageId, discount: discount });
+            bot.sendMessage(chatId,
+                `📅 **MASUKKAN TANGGAL KADALUARSA**\n━━━━━━━━━━━━━━━\n\n` +
+                `📦 Paket: ${state.packageId}\n` +
+                `💰 Diskon: ${discount}%\n\n` +
+                `Kirim **tanggal kadaluarsa** (format: YYYY-MM-DD):\n` +
+                `Contoh: \`2025-12-31\``,
+                { parse_mode: 'Markdown' }
+            );
+            return;
+        }
+
+        // ============================================================
+        // PROMO - INPUT EXPIRY
+        // ============================================================
+        if (userStates.has(chatId) && userStates.get(chatId).step === 'promo_expiry') {
+            const state = userStates.get(chatId);
+            const expiry = text.trim();
+            
+            if (!expiry.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                bot.sendMessage(chatId, '❌ Format salah! Gunakan YYYY-MM-DD');
+                return;
+            }
+            
+            const promoId = 'PROMO' + Date.now().toString(36).toUpperCase();
+            const promo = {
+                id: promoId,
+                package: state.packageId,
+                discount: state.discount,
+                expiry: expiry,
+                createdAt: new Date().toISOString()
+            };
+            
+            if (!data.promos) data.promos = [];
+            data.promos.push(promo);
+            saveData(data);
+            
+            bot.sendMessage(chatId,
+                `✅ **PROMO BERHASIL DIBUAT!**\n━━━━━━━━━━━━━━━\n\n` +
+                `🆔 ${promoId}\n` +
+                `📦 ${state.packageId}\n` +
+                `💰 Diskon: ${state.discount}%\n` +
+                `📅 Kadaluarsa: ${expiry}\n\n` +
+                `📋 Ketik /listpromo untuk lihat semua promo.`,
+                { parse_mode: 'Markdown' }
+            );
+            
+            userStates.delete(chatId);
+            return;
+        }
+
+        // ============================================================
+        // AUTO-REPLY
+        // ============================================================
         const lower = text.toLowerCase();
         let reply = null;
 
@@ -493,7 +1220,8 @@ app.get('/api/stock', (req, res) => {
         stock: data.stock,
         total: getTotalStock(),
         totalSold: data.totalSold || 0,
-        pending: (data.pendingOrders || []).length
+        pending: (data.pendingOrders || []).length,
+        promos: (data.promos || []).filter(p => new Date(p.expiry) > new Date())
     });
 });
 
@@ -541,7 +1269,16 @@ app.post('/api/order/create', (req, res) => {
     saveData(data);
     if (bot) {
         bot.sendMessage(ADMIN_ID,
-            `📦 ORDER BARU!\n🆔 ${order.orderId}\n📦 ${order.package}\n💰 ${order.price}\n📧 ${order.email}\n📱 ${order.phone}\n🔑 ${order.key}\n\n✅ /approve ${order.orderId}\n❌ /reject ${order.orderId}`
+            `📦 **ORDER BARU!**\n━━━━━━━━━━━━━━━\n\n` +
+            `🆔 ${order.orderId}\n` +
+            `📦 ${order.package}\n` +
+            `💰 ${order.price}\n` +
+            `📧 ${order.email}\n` +
+            `📱 ${order.phone}\n` +
+            `🔑 \`${order.key}\`\n\n` +
+            `✅ /approve ${order.orderId}\n` +
+            `❌ /reject ${order.orderId}`,
+            { parse_mode: 'Markdown' }
         ).catch(() => {});
     }
     res.json({ success: true, orderId: orderId, status: 'pending' });
@@ -632,6 +1369,8 @@ app.get('/api/stats', (req, res) => {
         totalSold: data.totalSold || 0,
         totalStock: getTotalStock(),
         pending: (data.pendingOrders || []).length,
+        totalRevenue: data.totalRevenue || 0,
+        promos: (data.promos || []).length,
         timestamp: new Date().toISOString()
     });
 });
@@ -643,5 +1382,6 @@ app.listen(PORT, () => {
     console.log(`\n🚀 Server running on port ${PORT}`);
     console.log(`📊 Total stok: ${getTotalStock()} key`);
     console.log(`📋 Pending orders: ${(data.pendingOrders || []).length}`);
+    console.log(`📢 Promos: ${(data.promos || []).length}`);
     console.log(`\n🌐 Website: http://localhost:${PORT}`);
 });

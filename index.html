@@ -1,2105 +1,1959 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Shorekeeper Elite</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-}
-html {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-}
-::-webkit-scrollbar {
-    width: 0px;
-    height: 0px;
-    background: transparent;
-}
-* {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Shorekeeper Elite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-:root {
-    --bg-primary: #0a0a1a;
-    --bg-secondary: #120a24;
-    --bg-card: rgba(20, 10, 40, 0.85);
-    --bg-card-hover: rgba(30, 15, 60, 0.9);
-    --text-primary: #ffffff;
-    --text-secondary: #b8b0d0;
-    --text-muted: #7a6a9a;
-    --border-color: rgba(108, 60, 225, 0.2);
-    --color-purple: #6C3CE1;
-    --color-purple-light: #8B5CF6;
-    --color-purple-dark: #4C1D95;
-    --color-blue: #4FACFE;
-    --color-blue-light: #7EC8FF;
-    --color-pink: #EC4899;
-    --gradient-main: linear-gradient(135deg, #6C3CE1, #4FACFE);
-    --gradient-glow: linear-gradient(135deg, rgba(108, 60, 225, 0.3), rgba(79, 172, 254, 0.3));
-    --shadow-glow: 0 0 40px rgba(108, 60, 225, 0.2);
-    --radius: 16px;
-    --radius-sm: 10px;
-    --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-}
+        :root {
+            --bg: #f2f2f7;
+            --bg-card: #ffffff;
+            --bg-input: #f2f2f7;
+            --text: #1c1c1e;
+            --text2: #3a3a3c;
+            --text3: #8e8e93;
+            --border: #e5e5ea;
+            --blue: #007aff;
+            --blue-light: rgba(0, 122, 255, 0.12);
+            --green: #34c759;
+            --orange: #ff9500;
+            --red: #ff3b30;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --radius: 14px;
+            --radius-sm: 10px;
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
 
-body {
-    background: var(--bg-primary);
-    background-image: 
-        radial-gradient(ellipse at 10% 20%, rgba(108, 60, 225, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 80%, rgba(79, 172, 254, 0.1) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 70%);
-    color: var(--text-primary);
-    font-family: var(--font-display);
-    overflow-x: hidden;
-    min-height: 100vh;
-    transition: background 0.4s, color 0.4s;
-    -webkit-font-smoothing: antialiased;
-}
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #000000;
+                --bg-card: #1c1c1e;
+                --bg-input: #2c2c2e;
+                --text: #ffffff;
+                --text2: #ebebf5;
+                --text3: #8e8e93;
+                --border: #38383a;
+                --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            }
+        }
 
-body.light {
-    --bg-primary: #f0ecf9;
-    --bg-secondary: #e8e0f5;
-    --bg-card: rgba(255, 255, 255, 0.85);
-    --bg-card-hover: rgba(255, 255, 255, 0.95);
-    --text-primary: #1a102a;
-    --text-secondary: #4a3a6a;
-    --text-muted: #8a7aaa;
-    --border-color: rgba(108, 60, 225, 0.15);
-    background-image: 
-        radial-gradient(ellipse at 10% 20%, rgba(108, 60, 225, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 80%, rgba(79, 172, 254, 0.06) 0%, transparent 50%);
-}
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
 
-.mono {
-    font-family: var(--font-mono);
-    font-feature-settings: "tnum";
-}
+        ::-webkit-scrollbar { width: 0; background: transparent; }
+        * { scrollbar-width: none; -ms-overflow-style: none; }
 
-/* ===== GLOW EFFECTS ===== */
-.glow-text {
-    background: var(--gradient-main);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-.glow-border {
-    border: 1px solid transparent;
-    background-image: var(--gradient-main);
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-}
-.glow-shadow {
-    box-shadow: var(--shadow-glow);
-}
+        /* ===== LOADING ===== */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease;
+        }
+        #loader.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #loader .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--blue);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loader p {
+            margin-top: 14px;
+            font-size: 0.7rem;
+            color: var(--text3);
+            letter-spacing: 1px;
+        }
 
-/* ===== LOADING ===== */
-#loader {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-primary);
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.5s;
-}
-#loader.hide {
-    opacity: 0;
-    pointer-events: none;
-}
-#loader .spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(108, 60, 225, 0.2);
-    border-top-color: var(--color-purple-light);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-#loader .load-text {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    margin-top: 14px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-}
-#loader .load-bar {
-    width: 120px;
-    height: 3px;
-    background: rgba(108, 60, 225, 0.2);
-    border-radius: 4px;
-    margin-top: 16px;
-    overflow: hidden;
-}
-#loader .load-bar::after {
-    content: '';
-    display: block;
-    width: 40%;
-    height: 100%;
-    background: var(--gradient-main);
-    border-radius: 4px;
-    animation: loadSlide 1s ease-in-out infinite;
-}
-@keyframes loadSlide {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(350%); }
-}
+        /* ============================================================
+           PAGE CONTAINER - SWIPE & TRANSISI
+           ============================================================ */
+        .app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
 
-/* ===== FLOATING CHAT ===== */
-.floating-chat {
-    position: fixed;
-    bottom: 90px;
-    right: 16px;
-    z-index: 800;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.floating-chat a {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--bg-card);
-    border: 1.5px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    text-decoration: none;
-    color: var(--text-primary);
-    box-shadow: var(--shadow-glow);
-    transition: all 0.3s;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    position: relative;
-}
-.floating-chat a:hover {
-    transform: scale(1.1);
-    border-color: var(--color-purple-light);
-}
-.floating-chat a .badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--color-purple-light);
-    border: 2px solid var(--bg-primary);
-    font-size: 0.4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-weight: 700;
-}
+        .page-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 0 80px 0;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                        opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform, opacity;
+        }
 
-/* ===== BOTTOM NAV ===== */
-.bnav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--bg-card);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    z-index: 999;
-    padding-bottom: env(safe-area-inset-bottom);
-}
-.bnav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 0 8px;
-    gap: 2px;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 0.48rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    position: relative;
-}
-.bnav-item.active {
-    color: var(--color-purple-light);
-}
-.bnav-item.active::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 20%;
-    right: 20%;
-    height: 2px;
-    background: var(--gradient-main);
-    border-radius: 0 0 4px 4px;
-}
-.bnav-item .bicon {
-    font-size: 1.2rem;
-    line-height: 1;
-    transition: transform 0.3s;
-}
-.bnav-item.active .bicon {
-    transform: scale(1.15);
-}
-.bnav-item .bnav-badge {
-    position: absolute;
-    top: 4px;
-    right: 50%;
-    transform: translateX(calc(50% + 20px));
-    background: var(--color-pink);
-    color: #fff;
-    font-size: 0.4rem;
-    padding: 1px 6px;
-    border-radius: 10px;
-    font-weight: 700;
-}
+        /* ===== PAGE TRANSISI ===== */
+        .page-wrapper.slide-in-right {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        .page-wrapper.slide-in-right.active {
+            transform: translateX(0);
+            opacity: 1;
+        }
 
-/* ===== TOPBAR ===== */
-.topbar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--bg-card);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    padding: 12px 16px 10px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.topbar-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    cursor: pointer;
-    flex-shrink: 0;
-    border: 1.5px solid var(--border-color);
-}
-.topbar-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.top-logo {
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-.top-logo span {
-    background: var(--gradient-main);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-.top-logo-sub {
-    font-size: 0.4rem;
-    color: var(--text-muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.theme-toggle {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-.theme-toggle:hover {
-    border-color: var(--color-purple-light);
-}
+        .page-wrapper.slide-out-left {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .page-wrapper.slide-out-left.inactive {
+            transform: translateX(-30%);
+            opacity: 0;
+        }
 
-/* ===== PAGE ===== */
-.page {
-    display: none;
-    padding: 14px 14px 90px;
-    animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.page.active {
-    display: block;
-}
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        .page-wrapper.slide-in-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        .page-wrapper.slide-in-left.active {
+            transform: translateX(0);
+            opacity: 1;
+        }
 
-/* ===== HERO ===== */
-.hero {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 14px;
-    position: relative;
-    overflow: hidden;
-}
-.hero::before {
-    content: '';
-    position: absolute;
-    top: -60px;
-    right: -60px;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    background: var(--gradient-glow);
-    filter: blur(60px);
-    opacity: 0.5;
-}
-.hero::after {
-    content: '';
-    position: absolute;
-    bottom: -40px;
-    left: -40px;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(108, 60, 225, 0.2), transparent);
-    filter: blur(40px);
-}
-.hero-tag {
-    display: inline-block;
-    background: var(--gradient-main);
-    color: #fff;
-    font-size: 0.5rem;
-    font-weight: 600;
-    padding: 3px 14px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    position: relative;
-    z-index: 1;
-}
-.hero-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 4px;
-    position: relative;
-    z-index: 1;
-}
-.hero-sub {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: 14px;
-    position: relative;
-    z-index: 1;
-}
-.hero-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--gradient-main);
-    color: #fff;
-    border: none;
-    padding: 10px 24px;
-    border-radius: var(--radius-sm);
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-    z-index: 1;
-}
-.hero-btn:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 8px 30px rgba(108, 60, 225, 0.4);
-}
-.hero-btn:active {
-    transform: scale(0.97);
-}
+        .page-wrapper.slide-out-right {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        .page-wrapper.slide-out-right.inactive {
+            transform: translateX(30%);
+            opacity: 0;
+        }
 
-/* ===== COUNTDOWN ===== */
-.countdown-box {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 14px;
-    text-align: center;
-}
-.countdown-box .cd-label {
-    font-size: 0.55rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 6px;
-}
-.countdown-box .cd-timer {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    font-size: 1.8rem;
-    font-weight: 700;
-    font-family: monospace;
-    letter-spacing: 2px;
-}
-.countdown-box .cd-timer span {
-    min-width: 40px;
-}
-.countdown-box .cd-timer .cd-sep {
-    color: var(--text-muted);
-}
-.countdown-box .cd-timer .cd-label-sm {
-    font-size: 0.45rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: block;
-    margin-top: 2px;
-}
+        /* ===== FADE ===== */
+        .page-wrapper.fade {
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        .page-wrapper.fade.active {
+            opacity: 1;
+        }
 
-/* ===== TICKER ===== */
-.ticker {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 8px 14px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.62rem;
-    color: var(--text-secondary);
-    overflow: hidden;
-}
-.tdot-live {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--color-purple-light);
-    flex-shrink: 0;
-    animation: blink 1.5s infinite;
-}
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.2; }
-}
+        /* ============================================================
+           TOPBAR
+           ============================================================ */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(var(--bg), 0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            padding: 12px 16px 10px;
+            border-bottom: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .topbar-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 0.5px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition-spring);
+        }
+        .topbar-icon:active {
+            transform: scale(0.92);
+        }
+        .topbar-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .topbar-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .topbar-sub {
+            font-size: 0.4rem;
+            color: var(--text3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .theme-toggle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-spring);
+        }
+        .theme-toggle:active {
+            transform: scale(0.88);
+        }
 
-/* ===== ADMIN STATUS ===== */
-.admin-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.5rem;
-    color: var(--text-secondary);
-    margin-bottom: 10px;
-}
-.admin-status .dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-}
-.admin-status .dot.online {
-    background: #34D399;
-}
-.admin-status .dot.offline {
-    background: var(--text-muted);
-}
+        /* ===== BACK BUTTON ===== */
+        .back-btn {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--blue);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+        .back-btn:active {
+            background: var(--blue-light);
+            transform: scale(0.96);
+        }
+        .back-btn.show {
+            display: flex;
+        }
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+        }
 
-/* ===== STATS ===== */
-.stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
-}
-.stat {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 14px 8px;
-    text-align: center;
-    transition: all 0.3s;
-}
-.stat:hover {
-    border-color: var(--color-purple-light);
-    transform: translateY(-2px);
-}
-.stat-n {
-    font-size: 1.2rem;
-    font-weight: 700;
-}
-.stat-l {
-    font-size: 0.48rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-}
-.stat-t {
-    font-size: 0.48rem;
-    color: var(--text-muted);
-    margin-top: 1px;
-}
+        /* ============================================================
+           BOTTOM NAV - iOS STYLE
+           ============================================================ */
+        .bnav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(var(--bg-card), 0.92);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-top: 0.5px solid var(--border);
+            display: flex;
+            z-index: 999;
+            padding-bottom: env(safe-area-inset-bottom, 8px);
+            padding-top: 4px;
+        }
+        .bnav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 0 4px;
+            gap: 2px;
+            cursor: pointer;
+            color: var(--text3);
+            font-size: 0.45rem;
+            font-weight: 500;
+            transition: var(--transition-spring);
+            position: relative;
+            background: none;
+            border: none;
+            font-family: var(--font);
+            letter-spacing: 0.3px;
+        }
+        .bnav-item:active {
+            transform: scale(0.92);
+        }
+        .bnav-item.active {
+            color: var(--blue);
+        }
+        .bnav-item .bicon {
+            font-size: 1.2rem;
+            line-height: 1;
+            transition: var(--transition-spring);
+        }
+        .bnav-item.active .bicon {
+            transform: scale(1.05);
+        }
+        .bnav-item .badge {
+            position: absolute;
+            top: 2px;
+            right: 50%;
+            transform: translateX(calc(50% + 22px));
+            background: var(--red);
+            color: #fff;
+            font-size: 0.35rem;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+            min-width: 16px;
+            text-align: center;
+        }
 
-/* ===== FEATS ===== */
-.feats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 7px;
-    margin-bottom: 14px;
-}
-.feat {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.68rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    transition: all 0.3s;
-}
-.feat:hover {
-    border-color: var(--color-purple-light);
-    transform: translateX(4px);
-}
-.feat-ic {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: var(--gradient-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.5rem;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.2px;
-    flex-shrink: 0;
-}
+        /* ============================================================
+           CONTENT STYLES
+           ============================================================ */
+        .page-content {
+            padding: 14px 16px 20px;
+        }
 
-/* ===== CARD ===== */
-.card {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    transition: all 0.3s;
-}
-.card:hover {
-    border-color: var(--color-purple-light);
-}
+        /* HERO */
+        .hero {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: var(--blue-light);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .hero-tag {
+            display: inline-block;
+            background: var(--blue);
+            color: #fff;
+            font-size: 0.5rem;
+            font-weight: 600;
+            padding: 3px 14px;
+            border-radius: var(--radius-full);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-sub {
+            font-size: 0.7rem;
+            color: var(--text2);
+            line-height: 1.6;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-spring);
+            font-family: var(--font);
+            position: relative;
+            z-index: 1;
+        }
+        .hero-btn:active {
+            transform: scale(0.95);
+        }
 
-/* ===== PAYMENT ===== */
-.pay-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-.pay-tag {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    padding: 4px 14px;
-    border-radius: 16px;
-    font-size: 0.55rem;
-    color: var(--text-secondary);
-}
+        /* COUNTDOWN */
+        .countdown-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 14px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .countdown-box .cd-label {
+            font-size: 0.55rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+        }
+        .countdown-box .cd-timer {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            font-family: monospace;
+        }
+        .countdown-box .cd-timer span {
+            min-width: 40px;
+        }
+        .countdown-box .cd-timer .cd-sep {
+            color: var(--text3);
+        }
+        .countdown-box .cd-timer .cd-label-sm {
+            font-size: 0.4rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-top: 2px;
+        }
 
-/* ===== SEC TITLE ===== */
-.sec-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-.sec-sub {
-    font-size: 0.62rem;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-}
+        /* TICKER */
+        .ticker {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.62rem;
+            color: var(--text2);
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .tdot-live {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            flex-shrink: 0;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
 
-/* ===== STOCK ===== */
-.stock-status {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-bottom: 12px;
-}
-.stock-item {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 8px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.6rem;
-}
-.stock-item .s-label {
-    color: var(--text-secondary);
-}
-.stock-item .s-count {
-    font-weight: 600;
-}
-.stock-item .s-count.low {
-    color: #F59E0B;
-}
-.stock-item .s-count.empty {
-    color: #EF4444;
-}
+        /* ADMIN STATUS */
+        .admin-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 3px 12px;
+            font-size: 0.5rem;
+            color: var(--text2);
+            margin-bottom: 10px;
+        }
+        .admin-status .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+        .admin-status .dot.online {
+            background: var(--green);
+        }
+        .admin-status .dot.offline {
+            background: var(--text3);
+        }
 
-/* ===== PKG ===== */
-.pkg-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.pkg {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
-}
-.pkg:hover {
-    border-color: var(--color-purple-light);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-}
-.pkg:active {
-    transform: scale(0.98);
-}
-.pkg.hot {
-    border-color: var(--color-purple-light);
-    background: var(--bg-card-hover);
-}
-.pkg-name {
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-.pkg-desc {
-    font-size: 0.5rem;
-    color: var(--text-muted);
-    margin-top: 2px;
-}
-.pkg-price {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-align: right;
-}
-.pkg-price .glow-text {
-    font-size: 0.9rem;
-}
-.pkg-usd {
-    font-size: 0.48rem;
-    color: var(--text-muted);
-    margin-top: 1px;
-}
-.hot-tag {
-    position: absolute;
-    top: -1px;
-    right: 14px;
-    background: var(--gradient-main);
-    color: #fff;
-    font-size: 0.38rem;
-    font-weight: 700;
-    padding: 2px 12px;
-    border-radius: 0 0 8px 8px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-.stock-badge {
-    display: inline-block;
-    font-size: 0.42rem;
-    padding: 2px 8px;
-    border-radius: 6px;
-    margin-left: 6px;
-}
-.stock-badge.available {
-    background: rgba(52, 211, 153, 0.15);
-    color: #34D399;
-    border: 1px solid rgba(52, 211, 153, 0.2);
-}
-.stock-badge.low {
-    background: rgba(245, 158, 11, 0.15);
-    color: #F59E0B;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-}
-.stock-badge.empty {
-    background: rgba(239, 68, 68, 0.15);
-    color: #EF4444;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-}
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .stat {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 14px 8px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+            transition: var(--transition-spring);
+        }
+        .stat:active {
+            transform: scale(0.96);
+        }
+        .stat-n {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .stat-l {
+            font-size: 0.48rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        .stat-t {
+            font-size: 0.48rem;
+            color: var(--text3);
+            margin-top: 1px;
+        }
 
-/* ===== SEARCH ===== */
-.search-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-.search-in {
-    flex: 1;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 11px 14px;
-    color: var(--text-primary);
-    font-size: 0.75rem;
-    font-family: inherit;
-    transition: all 0.3s;
-}
-.search-in:focus {
-    outline: none;
-    border-color: var(--color-purple-light);
-    box-shadow: 0 0 0 3px rgba(108, 60, 225, 0.2);
-}
-.search-in::placeholder {
-    color: var(--text-muted);
-}
-.search-btn {
-    background: var(--gradient-main);
-    color: #fff;
-    border: none;
-    padding: 11px 18px;
-    border-radius: var(--radius-sm);
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-    transition: all 0.3s;
-}
-.search-btn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 20px rgba(108, 60, 225, 0.3);
-}
-.search-btn:active {
-    transform: scale(0.97);
-}
+        /* FEATS */
+        .feats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+            margin-bottom: 14px;
+        }
+        .feat {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.68rem;
+            font-weight: 500;
+            color: var(--text2);
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+            transition: var(--transition-spring);
+        }
+        .feat:active {
+            transform: scale(0.96);
+        }
+        .feat-ic {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--blue-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
 
-/* ===== RESULT ===== */
-.result-active {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 16px;
-}
-.result-label {
-    font-size: 0.5rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-}
-.key-display {
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    word-break: break-all;
-    font-family: monospace;
-}
-.result-404 {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 18px;
-    text-align: center;
-}
+        /* CARD */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+            transition: var(--transition-spring);
+        }
+        .card:active {
+            transform: scale(0.99);
+        }
 
-/* ===== VIDEO ===== */
-.video-wrap {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%;
-    background: #000;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-color);
-}
-.video-wrap iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-}
+        /* SEC TITLE */
+        .sec-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .sec-sub {
+            font-size: 0.62rem;
+            color: var(--text3);
+            margin-bottom: 12px;
+        }
 
-/* ===== KONTAK ===== */
-.kontak-item {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-    margin-bottom: 8px;
-    transition: all 0.3s;
-}
-.kontak-item:hover {
-    border-color: var(--color-purple-light);
-    transform: translateX(4px);
-}
-.kontak-item:active {
-    transform: scale(0.98);
-}
-.kontak-ic {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    background: var(--gradient-main);
-    font-size: 1rem;
-    color: #fff;
-}
-.kontak-name {
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-.kontak-sub {
-    font-size: 0.52rem;
-    color: var(--text-muted);
-    margin-top: 1px;
-}
+        /* STOCK STATUS */
+        .stock-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .stock-item {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.6rem;
+            border: 0.5px solid var(--border);
+        }
+        .stock-item .s-label { color: var(--text2); }
+        .stock-item .s-count { font-weight: 600; }
+        .stock-item .s-count.low { color: var(--orange); }
+        .stock-item .s-count.empty { color: var(--red); }
 
-/* ===== FAQ ===== */
-.faq-item {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    margin-bottom: 8px;
-    overflow: hidden;
-    transition: all 0.3s;
-}
-.faq-item:hover {
-    border-color: var(--color-purple-light);
-}
-.faq-q {
-    padding: 12px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    gap: 12px;
-}
-.faq-q-text {
-    font-size: 0.72rem;
-    font-weight: 600;
-    flex: 1;
-}
-.faq-arrow {
-    color: var(--text-muted);
-    font-size: 0.7rem;
-    transition: transform 0.4s;
-    flex-shrink: 0;
-}
-.faq-item.open .faq-arrow {
-    transform: rotate(180deg);
-}
-.faq-a {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease, padding 0.4s;
-}
-.faq-item.open .faq-a {
-    max-height: 300px;
-    padding: 0 14px 14px;
-}
-.faq-a-text {
-    font-size: 0.68rem;
-    color: var(--text-secondary);
-    line-height: 1.7;
-}
+        /* PKG LIST */
+        .pkg-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .pkg {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+            transition: var(--transition-spring);
+            position: relative;
+        }
+        .pkg:active {
+            transform: scale(0.97);
+        }
+        .pkg.hot {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+        .pkg-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .pkg-desc {
+            font-size: 0.5rem;
+            color: var(--text3);
+            margin-top: 2px;
+        }
+        .pkg-price {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: right;
+        }
+        .pkg-usd {
+            font-size: 0.48rem;
+            color: var(--text3);
+            margin-top: 1px;
+        }
+        .hot-tag {
+            position: absolute;
+            top: -1px;
+            right: 14px;
+            background: var(--blue);
+            color: #fff;
+            font-size: 0.38rem;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 0 0 8px 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .stock-badge {
+            display: inline-block;
+            font-size: 0.42rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-left: 6px;
+        }
+        .stock-badge.available {
+            background: rgba(52, 199, 89, 0.15);
+            color: var(--green);
+        }
+        .stock-badge.low {
+            background: rgba(255, 149, 0, 0.15);
+            color: var(--orange);
+        }
+        .stock-badge.empty {
+            background: rgba(255, 59, 48, 0.15);
+            color: var(--red);
+        }
 
-/* ===== REVIEW ===== */
-.rv-form input,
-.rv-form textarea {
-    width: 100%;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    color: var(--text-primary);
-    font-size: 0.75rem;
-    font-family: inherit;
-    margin-bottom: 8px;
-    transition: all 0.3s;
-}
-.rv-form input:focus,
-.rv-form textarea:focus {
-    outline: none;
-    border-color: var(--color-purple-light);
-    box-shadow: 0 0 0 3px rgba(108, 60, 225, 0.2);
-}
-.rv-form input::placeholder,
-.rv-form textarea::placeholder {
-    color: var(--text-muted);
-}
-.rv-form textarea {
-    resize: none;
-    height: 70px;
-}
-.stars-wrap {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 10px;
-}
-.star-b {
-    font-size: 1.3rem;
-    cursor: pointer;
-    opacity: 0.2;
-    transition: all 0.3s;
-    color: #F59E0B;
-}
-.star-b.on {
-    opacity: 1;
-}
-.rv-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
-}
-.rv-card {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 14px;
-    transition: all 0.3s;
-}
-.rv-card:hover {
-    border-color: var(--color-purple-light);
-}
-.rv-top {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
-}
-.rv-av {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: var(--gradient-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-}
-.rv-name {
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-.rv-time {
-    font-size: 0.48rem;
-    color: var(--text-muted);
-    margin-top: 1px;
-}
-.rv-stars {
-    font-size: 0.7rem;
-    margin-bottom: 4px;
-    color: #F59E0B;
-}
-.rv-text {
-    font-size: 0.68rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-.rv-verified {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    background: var(--bg-secondary);
-    color: var(--text-muted);
-    font-size: 0.45rem;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 6px;
-    vertical-align: middle;
-}
+        /* PAYMENT TAGS */
+        .pay-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .pay-tag {
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            padding: 4px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.55rem;
+            color: var(--text2);
+        }
 
-.rv-filter {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-}
-.rv-filter .fbtn {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 0.55rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.3s;
-}
-.rv-filter .fbtn:hover {
-    border-color: var(--color-purple-light);
-}
-.rv-filter .fbtn.active {
-    background: var(--gradient-main);
-    color: #fff;
-    border-color: transparent;
-}
+        /* SEARCH */
+        .search-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .search-in {
+            flex: 1;
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            color: var(--text);
+            font-size: 0.75rem;
+            font-family: var(--font);
+            transition: var(--transition);
+            outline: none;
+        }
+        .search-in:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+        .search-in::placeholder { color: var(--text3); }
+        .search-btn {
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: var(--transition-spring);
+        }
+        .search-btn:active {
+            transform: scale(0.95);
+        }
 
-/* ===== CHAT ===== */
-.chat-wrap {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 170px);
-}
-.chat-hdr {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius) var(--radius) 0 0;
-    padding: 11px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-}
-.chat-av {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 1.5px solid var(--border-color);
-}
-.chat-av img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.chat-hdr-name {
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-.chat-status {
-    font-size: 0.5rem;
-    color: var(--text-muted);
-    margin-top: 1px;
-}
-.chat-msgs {
-    flex: 1;
-    overflow-y: auto;
-    background: var(--bg-secondary);
-    border-left: 1px solid var(--border-color);
-    border-right: 1px solid var(--border-color);
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.msg-row {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-}
-.msg-row.me {
-    flex-direction: row-reverse;
-}
-.msg-av-sm {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.55rem;
-    flex-shrink: 0;
-    overflow: hidden;
-    background: var(--bg-card);
-}
-.msg-av-sm img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.bubble {
-    padding: 8px 14px;
-    border-radius: 16px;
-    font-size: 0.7rem;
-    line-height: 1.5;
-    max-width: 75%;
-    word-break: break-word;
-}
-.me .bubble {
-    background: var(--gradient-main);
-    color: #fff;
-    border-radius: 16px 16px 4px 16px;
-}
-.them .bubble {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border-radius: 16px 16px 16px 4px;
-    border: 1px solid var(--border-color);
-}
-.msg-time {
-    font-size: 0.45rem;
-    color: var(--text-muted);
-    margin-top: 3px;
-}
-.me .msg-time {
-    text-align: right;
-}
-.chat-footer {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: 0 0 var(--radius) var(--radius);
-    padding: 10px 12px;
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-}
-.chat-in {
-    flex: 1;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 8px 14px;
-    color: var(--text-primary);
-    font-size: 0.72rem;
-    font-family: inherit;
-    transition: all 0.3s;
-}
-.chat-in:focus {
-    outline: none;
-    border-color: var(--color-purple-light);
-}
-.chat-in::placeholder {
-    color: var(--text-muted);
-}
-.chat-send {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--gradient-main);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 0.9rem;
-    transition: all 0.3s;
-}
-.chat-send:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 20px rgba(108, 60, 225, 0.3);
-}
-.chat-send:active {
-    transform: scale(0.9);
-}
-.chat-name-box {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 10px;
-}
-.resp-time-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.5rem;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
+        /* RESULT */
+        .result-active {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .result-label {
+            font-size: 0.5rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .key-display {
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            word-break: break-all;
+            font-family: monospace;
+        }
+        .result-404 {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
 
-/* ===== MODAL ===== */
-.modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    z-index: 9000;
-    align-items: flex-end;
-    justify-content: center;
-}
-.modal.show {
-    display: flex;
-}
-.mbox {
-    background: var(--bg-primary);
-    border-radius: 24px 24px 0 0;
-    border-top: 1px solid var(--border-color);
-    width: 100%;
-    max-width: 480px;
-    max-height: 92vh;
-    overflow-y: auto;
-    padding: 18px 18px 32px;
-    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-}
-.mhandle {
-    width: 40px;
-    height: 4px;
-    background: var(--border-color);
-    border-radius: 4px;
-    margin: 0 auto 16px;
-}
-.mbars {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 16px;
-}
-.mbar {
-    flex: 1;
-    height: 3px;
-    border-radius: 3px;
-    background: var(--border-color);
-    transition: all 0.4s;
-}
-.mbar.done {
-    background: var(--color-purple-light);
-}
-.mbar.active {
-    background: var(--gradient-main);
-}
-.mpane {
-    display: none;
-}
-.mpane.active {
-    display: block;
-}
-.mtitle {
-    font-size: 0.85rem;
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-.msub {
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    margin-bottom: 14px;
-}
-.metode-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 12px;
-}
-.metode-btn {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.58rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.3s;
-}
-.metode-btn.active {
-    background: var(--gradient-main);
-    color: #fff;
-    border-color: transparent;
-}
-.metode-btn:hover {
-    border-color: var(--color-purple-light);
-}
-.paybox {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-    margin-bottom: 12px;
-    text-align: center;
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-}
-.qris-wrap {
-    background: #fff;
-    border-radius: var(--radius-sm);
-    padding: 8px;
-    display: inline-block;
-    margin: 5px auto;
-}
-.qris-wrap img {
-    width: 160px;
-    height: 160px;
-    object-fit: contain;
-    display: block;
-}
-.qris-nominal {
-    font-size: 0.52rem;
-    color: var(--text-secondary);
-    font-weight: 600;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 6px 10px;
-    margin-top: 6px;
-    line-height: 1.5;
-}
-.field {
-    margin-bottom: 10px;
-}
-.field label {
-    display: block;
-    font-size: 0.55rem;
-    color: var(--text-muted);
-    margin-bottom: 3px;
-    font-weight: 600;
-}
-.field input {
-    width: 100%;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    color: var(--text-primary);
-    font-size: 0.75rem;
-    font-family: inherit;
-    transition: all 0.3s;
-}
-.field input:focus {
-    outline: none;
-    border-color: var(--color-purple-light);
-    box-shadow: 0 0 0 3px rgba(108, 60, 225, 0.2);
-}
-.field input::placeholder {
-    color: var(--text-muted);
-}
-.upload-area {
-    border: 2px dashed var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    text-align: center;
-    cursor: pointer;
-    background: var(--bg-secondary);
-    margin-bottom: 5px;
-    transition: all 0.3s;
-}
-.upload-area:hover {
-    border-color: var(--color-purple-light);
-}
-.upload-area:active {
-    border-color: var(--color-purple-light);
-}
-.upload-area img {
-    max-width: 100%;
-    max-height: 80px;
-    border-radius: 6px;
-    margin-top: 6px;
-    display: none;
-}
-.btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    border-radius: var(--radius-sm);
-    font-size: 0.72rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    border: none;
-    text-align: center;
-    transition: all 0.3s;
-}
-.btn:active {
-    transform: scale(0.97);
-}
-.btn-p {
-    background: var(--gradient-main);
-    color: #fff;
-}
-.btn-p:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(108, 60, 225, 0.3);
-}
-.btn-p:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-.btn-o {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-}
-.btn-o:hover {
-    border-color: var(--color-purple-light);
-    color: var(--text-primary);
-}
-.btn-g {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-}
-.btn-g:hover {
-    border-color: var(--color-purple-light);
-}
-.s-ring {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--bg-secondary);
-    border: 2px solid var(--color-purple-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    margin: 0 auto 12px;
-    animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    color: #34D399;
-}
-@keyframes pop {
-    from { transform: scale(0); }
-    to { transform: scale(1); }
-}
-.order-table {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 10px;
-    margin: 12px 0;
-}
-.orow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 0;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.65rem;
-}
-.orow:last-child {
-    border-bottom: none;
-}
-.olabel {
-    color: var(--text-muted);
-}
-.oval {
-    font-weight: 600;
-}
-.order-id {
-    background: var(--bg-secondary);
-    border: 1px dashed var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 10px;
-    font-family: monospace;
-    font-size: 0.7rem;
-    letter-spacing: 1px;
-    word-break: break-all;
-    text-align: center;
-}
+        /* VIDEO */
+        .video-wrap {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            background: #000;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 0.5px solid var(--border);
+        }
+        .video-wrap iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
-/* ===== FREE KEY ===== */
-.free-hero {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 12px;
-}
-.share-step {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.share-step .step-num {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: var(--gradient-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.58rem;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-}
-.share-step .step-text {
-    font-size: 0.65rem;
-    color: var(--text-secondary);
-}
-.share-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--gradient-main);
-    color: #fff;
-    border: none;
-    padding: 10px 18px;
-    border-radius: var(--radius-sm);
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    width: 100%;
-    justify-content: center;
-    transition: all 0.3s;
-}
-.share-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(108, 60, 225, 0.3);
-}
-.share-btn:active {
-    transform: scale(0.97);
-}
-.free-status-box {
-    background: var(--bg-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-top: 10px;
-    text-align: center;
-}
-.free-status-box .status-icon {
-    font-size: 1.6rem;
-    margin-bottom: 4px;
-}
-.free-status-box .status-text {
-    font-size: 0.68rem;
-    font-weight: 600;
-}
-.free-status-box .status-sub {
-    font-size: 0.58rem;
-    color: var(--text-muted);
-    margin-top: 3px;
-}
+        /* KONTAK */
+        .kontak-item {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+            transition: var(--transition-spring);
+        }
+        .kontak-item:active {
+            transform: scale(0.97);
+        }
+        .kontak-ic {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--blue-light);
+            font-size: 1rem;
+        }
+        .kontak-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .kontak-sub {
+            font-size: 0.52rem;
+            color: var(--text3);
+            margin-top: 1px;
+        }
 
-/* ===== TERMS ===== */
-.terms-text {
-    font-size: 0.68rem;
-    color: var(--text-secondary);
-    line-height: 1.8;
-}
-.terms-text ul {
-    list-style: none;
-    padding: 0;
-}
-.terms-text ul li {
-    padding: 4px 0;
-    border-bottom: 1px solid var(--border-color);
-}
-.terms-text ul li:last-child {
-    border-bottom: none;
-}
-.terms-text ul li::before {
-    content: '◆ ';
-    color: var(--color-purple-light);
-    font-size: 0.4rem;
-}
+        /* FAQ */
+        .faq-item {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+            transition: var(--transition);
+        }
+        .faq-q {
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            gap: 12px;
+            transition: var(--transition);
+        }
+        .faq-q:active {
+            background: var(--bg-input);
+        }
+        .faq-q-text {
+            font-size: 0.72rem;
+            font-weight: 600;
+            flex: 1;
+        }
+        .faq-arrow {
+            color: var(--text3);
+            font-size: 0.7rem;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            flex-shrink: 0;
+        }
+        .faq-item.open .faq-arrow {
+            transform: rotate(180deg);
+        }
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .faq-item.open .faq-a {
+            max-height: 300px;
+            padding: 0 14px 14px;
+        }
+        .faq-a-text {
+            font-size: 0.68rem;
+            color: var(--text2);
+            line-height: 1.7;
+        }
 
-/* ===== TOASTS ===== */
-.toasts {
-    position: fixed;
-    bottom: 76px;
-    left: 14px;
-    right: 14px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    pointer-events: none;
-}
-.toast {
-    background: var(--bg-card);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 10px 16px;
-    font-size: 0.62rem;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: fadeUp 0.3s ease;
-    box-shadow: var(--shadow-glow);
-}
-.tdot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-.secure-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-size: 0.5rem;
-    color: var(--text-muted);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    padding: 6px;
-    margin-top: 8px;
-}
+        /* FREE KEY */
+        .free-hero {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .share-step {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .share-step .step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--blue);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.58rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .share-step .step-text {
+            font-size: 0.65rem;
+            color: var(--text2);
+        }
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 12px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            width: 100%;
+            justify-content: center;
+            font-family: var(--font);
+            transition: var(--transition-spring);
+        }
+        .share-btn:active {
+            transform: scale(0.97);
+        }
+        .free-status-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-top: 10px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
 
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-}
-.empty-ic {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    opacity: 0.3;
-}
-.empty-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    margin-bottom: 4px;
-}
-.empty-sub {
-    font-size: 0.6rem;
-    color: var(--text-muted);
-}
+        /* UPLOAD AREA */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--bg-input);
+            margin-bottom: 5px;
+            transition: var(--transition);
+        }
+        .upload-area:active {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+        .upload-area img {
+            max-width: 100%;
+            max-height: 80px;
+            border-radius: 6px;
+            margin-top: 6px;
+            display: none;
+        }
 
-@media(max-width:400px) {
-    .hero-title { font-size: 1.05rem; }
-    .stat-n { font-size: 1rem; }
-    .pkg-name { font-size: 0.72rem; }
-    .pkg-price { font-size: 0.72rem; }
-    .countdown-box .cd-timer { font-size: 1.4rem; gap: 8px; }
-    .stock-status { grid-template-columns: 1fr; }
-}
-</style>
+        /* BTN */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            border: none;
+            text-align: center;
+            transition: var(--transition-spring);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-p {
+            background: var(--blue);
+            color: #fff;
+        }
+        .btn-p:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-o {
+            background: transparent;
+            border: 0.5px solid var(--border);
+            color: var(--text2);
+        }
+        .btn-g {
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            color: var(--text2);
+        }
+
+        /* TERMS */
+        .terms-text {
+            font-size: 0.68rem;
+            color: var(--text2);
+            line-height: 1.8;
+        }
+        .terms-text ul {
+            list-style: none;
+            padding: 0;
+        }
+        .terms-text ul li {
+            padding: 4px 0;
+            border-bottom: 0.5px solid var(--border);
+        }
+        .terms-text ul li:last-child {
+            border-bottom: none;
+        }
+        .terms-text ul li::before {
+            content: '• ';
+            color: var(--blue);
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 9000;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+            animation: modalIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .mbox {
+            background: var(--bg-card);
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-width: 480px;
+            max-height: 92vh;
+            overflow-y: auto;
+            padding: 18px 18px 32px;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .mhandle {
+            width: 36px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 0 auto 16px;
+        }
+        .mbars {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .mbar {
+            flex: 1;
+            height: 3px;
+            border-radius: 3px;
+            background: var(--border);
+            transition: var(--transition);
+        }
+        .mbar.done { background: var(--blue); }
+        .mbar.active { background: var(--blue); }
+        .mpane { display: none; }
+        .mpane.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .mtitle {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .msub {
+            font-size: 0.6rem;
+            color: var(--text3);
+            margin-bottom: 14px;
+        }
+        .metode-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 12px;
+        }
+        .metode-btn {
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.58rem;
+            color: var(--text2);
+            cursor: pointer;
+            font-family: var(--font);
+            transition: var(--transition);
+        }
+        .metode-btn.active {
+            background: var(--blue);
+            color: #fff;
+            border-color: var(--blue);
+        }
+        .paybox {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text2);
+        }
+        .qris-wrap {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            display: inline-block;
+            margin: 5px auto;
+        }
+        .qris-wrap img {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            display: block;
+        }
+        .qris-nominal {
+            font-size: 0.52rem;
+            color: var(--text2);
+            font-weight: 600;
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin-top: 6px;
+        }
+        .field {
+            margin-bottom: 10px;
+        }
+        .field label {
+            display: block;
+            font-size: 0.55rem;
+            color: var(--text3);
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+        .field input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            color: var(--text);
+            font-size: 0.75rem;
+            font-family: var(--font);
+            transition: var(--transition);
+            outline: none;
+        }
+        .field input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+        .field input::placeholder { color: var(--text3); }
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.5rem;
+            color: var(--text3);
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 6px;
+            margin-top: 8px;
+        }
+
+        /* ORDER TABLE */
+        .order-table {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            margin: 12px 0;
+            border: 0.5px solid var(--border);
+        }
+        .orow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 0.5px solid var(--border);
+            font-size: 0.65rem;
+        }
+        .orow:last-child { border-bottom: none; }
+        .olabel { color: var(--text3); }
+        .oval { font-weight: 600; }
+        .order-id {
+            background: var(--bg-input);
+            border: 0.5px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            word-break: break-all;
+            text-align: center;
+        }
+
+        /* TOASTS */
+        .toasts {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            pointer-events: none;
+        }
+        .toast {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            font-size: 0.62rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: var(--shadow-lg);
+        }
+        @keyframes toastIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .tdot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* EMPTY */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .empty-ic { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.3; }
+        .empty-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text3);
+            margin-bottom: 4px;
+        }
+        .empty-sub {
+            font-size: 0.6rem;
+            color: var(--text3);
+        }
+
+        /* REVIEW */
+        .rv-form input, .rv-form textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            color: var(--text);
+            font-size: 0.75rem;
+            font-family: var(--font);
+            margin-bottom: 8px;
+            transition: var(--transition);
+            outline: none;
+        }
+        .rv-form input:focus, .rv-form textarea:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+        .rv-form input::placeholder, .rv-form textarea::placeholder { color: var(--text3); }
+        .rv-form textarea { resize: none; height: 70px; }
+        .stars-wrap {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .star-b {
+            font-size: 1.3rem;
+            cursor: pointer;
+            opacity: 0.2;
+            transition: var(--transition-spring);
+            color: var(--orange);
+        }
+        .star-b:active { transform: scale(1.2); }
+        .star-b.on { opacity: 1; }
+        .rv-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .rv-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 14px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .rv-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .rv-av {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--blue-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--blue);
+            flex-shrink: 0;
+        }
+        .rv-name { font-size: 0.72rem; font-weight: 600; }
+        .rv-time { font-size: 0.48rem; color: var(--text3); margin-top: 1px; }
+        .rv-stars { font-size: 0.7rem; margin-bottom: 4px; color: var(--orange); }
+        .rv-text { font-size: 0.68rem; color: var(--text2); line-height: 1.6; }
+        .rv-verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: var(--bg-input);
+            color: var(--text3);
+            font-size: 0.45rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+        .rv-filter {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .rv-filter .fbtn {
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.55rem;
+            color: var(--text3);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: var(--font);
+        }
+        .rv-filter .fbtn:active { transform: scale(0.95); }
+        .rv-filter .fbtn.active {
+            background: var(--blue);
+            color: #fff;
+            border-color: var(--blue);
+        }
+
+        /* CHAT */
+        .chat-wrap {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 180px);
+        }
+        .chat-hdr {
+            background: var(--bg-card);
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 11px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            border: 0.5px solid var(--border);
+            border-bottom: none;
+        }
+        .chat-av {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 0.5px solid var(--border);
+        }
+        .chat-av img { width: 100%; height: 100%; object-fit: cover; }
+        .chat-hdr-name { font-size: 0.75rem; font-weight: 600; }
+        .chat-status { font-size: 0.5rem; color: var(--text3); margin-top: 1px; }
+        .chat-msgs {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--bg);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-left: 0.5px solid var(--border);
+            border-right: 0.5px solid var(--border);
+        }
+        .msg-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .msg-row.me { flex-direction: row-reverse; }
+        .msg-av-sm {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: var(--bg-input);
+        }
+        .msg-av-sm img { width: 100%; height: 100%; object-fit: cover; }
+        .bubble {
+            padding: 8px 14px;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            line-height: 1.5;
+            max-width: 75%;
+            word-break: break-word;
+        }
+        .me .bubble {
+            background: var(--blue);
+            color: #fff;
+            border-radius: 16px 16px 4px 16px;
+        }
+        .them .bubble {
+            background: var(--bg-card);
+            color: var(--text);
+            border-radius: 16px 16px 16px 4px;
+            border: 0.5px solid var(--border);
+        }
+        .msg-time {
+            font-size: 0.45rem;
+            color: var(--text3);
+            margin-top: 3px;
+        }
+        .me .msg-time { text-align: right; }
+        .chat-footer {
+            background: var(--bg-card);
+            border-radius: 0 0 var(--radius) var(--radius);
+            padding: 10px 12px;
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+            border: 0.5px solid var(--border);
+            border-top: none;
+        }
+        .chat-in {
+            flex: 1;
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 10px 14px;
+            color: var(--text);
+            font-size: 0.72rem;
+            font-family: var(--font);
+            transition: var(--transition);
+            outline: none;
+        }
+        .chat-in:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+        .chat-in::placeholder { color: var(--text3); }
+        .chat-send {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+            transition: var(--transition-spring);
+        }
+        .chat-send:active { transform: scale(0.88); }
+        .chat-name-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+            border: 0.5px solid var(--border);
+        }
+        .resp-time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--bg-input);
+            border-radius: var(--radius-full);
+            padding: 3px 12px;
+            font-size: 0.5rem;
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width: 420px) {
+            .hero-title { font-size: 1.05rem; }
+            .stat-n { font-size: 1rem; }
+            .pkg-name { font-size: 0.72rem; }
+            .pkg-price { font-size: 0.72rem; }
+            .countdown-box .cd-timer { font-size: 1.4rem; gap: 8px; }
+            .stock-status { grid-template-columns: 1fr; }
+            .feats { grid-template-columns: 1fr; }
+        }
+
+        /* ===== UTILITY ===== */
+        .mt-1 { margin-top: 6px; }
+        .mt-2 { margin-top: 12px; }
+        .mt-3 { margin-top: 18px; }
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text3); }
+        .text-blue { color: var(--blue); }
+        .fw-bold { font-weight: 700; }
+        .flex { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .gap-1 { gap: 6px; }
+        .gap-2 { gap: 12px; }
+        .w-full { width: 100%; }
+    </style>
 </head>
 <body>
 
-<!-- LOADING -->
+<!-- ============================================================
+     LOADER
+     ============================================================ -->
 <div id="loader">
     <div class="spinner"></div>
-    <div class="load-text">Shorekeeper Elite</div>
-    <div class="load-bar"></div>
+    <p>Shorekeeper Elite</p>
 </div>
 
-<!-- TOASTS -->
+<!-- ============================================================
+     TOASTS
+     ============================================================ -->
 <div class="toasts" id="toasts"></div>
 
-<!-- FLOATING CHAT -->
-<div class="floating-chat">
-    <a href="https://t.me/Keyskidbot" target="_blank" title="Chat Admin">
-        <svg width="22" height="18" viewBox="0 0 20 18" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M19.925.785L16.9 16.643c-.225 1.037-.81 1.295-1.643.805l-4.536-3.34-2.188 2.104c-.242.242-.445.445-.912.445l.325-4.622 8.4-7.588c.366-.325-.08-.505-.567-.18L4.99 11.183.49 9.78c-1.02-.32-1.04-1.02.213-1.51L18.622.24c.85-.31 1.593.19 1.303 1.545z" fill="currentColor"/>
-        </svg>
-        <span class="badge" id="adminBadge">●</span>
-    </a>
-</div>
-
-<!-- TOPBAR -->
-<div class="topbar">
-    <div class="topbar-left">
-        <div class="topbar-icon" onclick="goPage('home')">
-            <img src="icon.jpg" alt="Logo" id="siteIcon">
-        </div>
-        <div>
-            <div class="top-logo">SHOREKEEPER <span>ELITE</span></div>
-            <div class="top-logo-sub">Blood Strike Tool</div>
-        </div>
-    </div>
-    <div class="topbar-right">
-        <div class="theme-toggle" id="themeBtn" onclick="toggleTheme()">◐</div>
-    </div>
-</div>
-
 <!-- ============================================================
-     PAGE: HOME
+     APP CONTAINER
      ============================================================ -->
-<div id="page-home" class="page active">
-    <div class="countdown-box">
-        <div class="cd-label">🔥 Promo Berakhir Dalam</div>
-        <div class="cd-timer">
-            <span><span id="cdH">12</span><span class="cd-label-sm">Jam</span></span>
-            <span class="cd-sep">:</span>
-            <span><span id="cdM">34</span><span class="cd-label-sm">Menit</span></span>
-            <span class="cd-sep">:</span>
-            <span><span id="cdS">56</span><span class="cd-label-sm">Detik</span></span>
+<div class="app-container" id="appContainer">
+
+    <!-- ============================================================
+         TOPBAR
+         ============================================================ -->
+    <div class="topbar" id="topbar">
+        <div class="topbar-left">
+            <button class="back-btn" id="backBtn" onclick="goBack()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Kembali
+            </button>
+            <div class="topbar-icon" onclick="goHome()">
+                <img src="icon.jpg" alt="Logo" id="siteIcon">
+            </div>
+            <div>
+                <div class="topbar-title">Shorekeeper</div>
+                <div class="topbar-sub">Blood Strike Tool</div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">☀️</button>
         </div>
     </div>
 
-    <div class="ticker">
-        <div class="tdot-live"></div>
-        <span id="tickerTxt">ANDI DARI JAKARTA BARU BELI LIFETIME</span>
-    </div>
+    <!-- ============================================================
+         PAGE WRAPPER - HOME
+         ============================================================ -->
+    <div class="page-wrapper active" id="page-home" data-page="home">
+        <div class="page-content">
 
-    <div class="admin-status" id="adminStatusHome">
-        <span class="dot online" id="adminDotHome"></span>
-        <span id="adminTextHome">ADMIN ONLINE</span>
-        <span style="color:var(--text-muted);">• Respon 5 Menit</span>
-    </div>
-
-    <div class="hero">
-        <div class="hero-tag">⚡ Blood Strike • No Root</div>
-        <div class="hero-title">Tool Blood Strike <span class="glow-text">#1 Indonesia</span></div>
-        <div class="hero-sub">Aim Assist, ESP, No Recoil. Undetected. Key aktif setelah admin verifikasi.</div>
-        <button class="hero-btn" onclick="goPage('paket')">✨ Lihat Harga</button>
-    </div>
-
-    <div class="stats">
-        <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">Online</div><div class="stat-t">Live</div></div>
-        <div class="stat"><div class="stat-n" id="ratingCnt">4.8</div><div class="stat-l">Rating</div><div class="stat-t">★★★★★</div></div>
-        <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">Terjual</div><div class="stat-t">Minggu Ini</div></div>
-    </div>
-
-    <div style="margin-bottom:12px;">
-        <div class="sec-title">📦 Stok Terbaru</div>
-        <div class="sec-sub">Update stok key setiap hari</div>
-        <div class="stock-status" id="stockStatusHome"></div>
-    </div>
-
-    <div class="feats">
-        <div class="feat"><div class="feat-ic">🎯</div>Aim Assist</div>
-        <div class="feat"><div class="feat-ic">👁️</div>ESP Wallhack</div>
-        <div class="feat"><div class="feat-ic">🔫</div>No Recoil</div>
-        <div class="feat"><div class="feat-ic">🛡️</div>Undetected</div>
-        <div class="feat"><div class="feat-ic">📱</div>No Root</div>
-        <div class="feat"><div class="feat-ic">♾️</div>Lifetime</div>
-    </div>
-
-    <div style="margin-bottom:14px;">
-        <div class="sec-title">📹 Video Tutorial</div>
-        <div class="sec-sub">Cara install & aktifkan key</div>
-        <div class="video-wrap">
-            <iframe src="https://www.youtube.com/embed/e8YfaXtIqEU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <div class="card">
-        <div style="font-size:0.52rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">💳 Metode Pembayaran</div>
-        <div class="pay-row">
-            <span class="pay-tag">QRIS</span>
-            <span class="pay-tag">DANA/OVO</span>
-            <span class="pay-tag">BINANCE</span>
-            <span class="pay-tag">GIFT CARD</span>
-        </div>
-    </div>
-
-    <div class="free-hero">
-        <div class="hero-tag">🎁 Gratis</div>
-        <div class="hero-title">Dapatkan Key Gratis 1 Hari</div>
-        <div class="hero-sub">Share ke 3 grup Telegram + upload bukti. Key langsung aktif!</div>
-        <button class="hero-btn" onclick="goPage('freekey')">🎁 Ambil Sekarang</button>
-    </div>
-
-    <!-- FAQ -->
-    <div style="margin-bottom:12px;">
-        <div class="sec-title">❓ Pertanyaan Umum</div>
-        <div class="sec-sub">Yang sering ditanyakan</div>
-        
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">🔒 Apakah aman dari ban?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">Tool kami bypass anti-cheat Blood Strike dengan metode injeksi terbaru. Update setiap minggu sesuai patch game. Ribuan user pakai tanpa kena ban.</div></div>
-        </div>
-        
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">📱 Perlu root HP?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">Tidak perlu root. Cukup install APK, masukkan key, langsung jalan. Compatible Android 8.0+</div></div>
-        </div>
-        
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">⏳ Key aktif berapa lama?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">Key diaktifkan manual admin dalam 5-15 menit setelah bukti bayar diterima. Jam aktif admin 08.00-24.00 WIB.</div></div>
-        </div>
-        
-        <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">💰 Ada refund?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">Garansi 7 hari. Jika tool tidak bisa jalan setelah dicoba dengan bantuan admin, kami refund atau extend.</div></div>
-        </div>
-    </div>
-
-    <div class="card" style="margin-bottom:12px;">
-        <div class="sec-title" style="font-size:0.8rem;">📋 Syarat & Ketentuan</div>
-        <div class="terms-text">
-            <ul>
-                <li>Key tidak bisa direfund setelah diaktifkan</li>
-                <li>Garansi 7 hari untuk masalah teknis</li>
-                <li>1 key untuk 1 device</li>
-                <li>Dilarang share key ke orang lain</li>
-                <li>Admin berhak membatalkan order jika terindikasi penipuan</li>
-            </ul>
-        </div>
-    </div>
-
-    <div style="margin-bottom:12px;">
-        <div class="sec-title" style="margin-bottom:10px;">📞 Hubungi Kami</div>
-        
-        <a href="https://t.me/Keyskidbot" target="_blank" class="kontak-item">
-            <div class="kontak-ic">📨</div>
-            <div><div class="kontak-name">Telegram Bot</div><div class="kontak-sub">@Keyskidbot • Respon cepat</div></div>
-            <span style="margin-left:auto;color:var(--text-muted);">→</span>
-        </a>
-        
-        <a href="https://t.me/ShorekeeperID" target="_blank" class="kontak-item">
-            <div class="kontak-ic">📢</div>
-            <div><div class="kontak-name">Saluran Channel</div><div class="kontak-sub">@ShorekeeperID • Update & promo</div></div>
-            <span style="margin-left:auto;color:var(--text-muted);">→</span>
-        </a>
-        
-        <a href="https://www.youtube.com/@ZelewinGaming" target="_blank" class="kontak-item">
-            <div class="kontak-ic">▶️</div>
-            <div><div class="kontak-name">YouTube</div><div class="kontak-sub">Tutorial & review tool</div></div>
-            <span style="margin-left:auto;color:var(--text-muted);">→</span>
-        </a>
-    </div>
-
-    <div class="card" style="text-align:center;">
-        <div style="font-size:0.55rem;color:var(--text-muted);">Garansi 7 Hari • Key via Web • No Root</div>
-    </div>
-</div>
-
-<!-- ============================================================
-     PAGE: PAKET
-     ============================================================ -->
-<div id="page-paket" class="page">
-    <div class="sec-title">📦 Pilih Paket</div>
-    <div class="sec-sub">Tap paket untuk mulai order</div>
-    <div id="pkgStockInfo" style="font-size:0.55rem;color:var(--text-muted);margin-bottom:8px;"></div>
-    <div class="pkg-list" id="pkgList"></div>
-    <div style="margin-top:12px;text-align:center;font-size:0.58rem;color:var(--text-muted);">
-        <span>Mau gratis? <a href="#" onclick="goPage('freekey');return false;" style="color:var(--color-purple-light);">Dapatkan Key Gratis 1 Hari</a></span>
-    </div>
-</div>
-
-<!-- ============================================================
-     PAGE: CEK KEY
-     ============================================================ -->
-<div id="page-cekkey" class="page">
-    <div class="sec-title">🔍 Cek Key</div>
-    <div class="sec-sub">Masukkan Order ID atau User ID</div>
-    <div class="search-row">
-        <input class="search-in" id="oidInput" placeholder="ORD1234567ABC atau FREE123ABC">
-        <button class="search-btn" onclick="doCheck()">Cek</button>
-    </div>
-    <div id="checkRes"></div>
-    <div class="card" style="text-align:center;margin-top:8px;">
-        <div style="font-size:0.55rem;color:var(--text-muted);">Order ID dikirim setelah order / request gratis</div>
-    </div>
-</div>
-
-<!-- ============================================================
-     PAGE: FREE KEY
-     ============================================================ -->
-<div id="page-freekey" class="page">
-    <div class="sec-title">🎁 Dapatkan Key Gratis</div>
-    <div class="sec-sub">Share ke 3 grup Telegram + upload bukti</div>
-
-    <div class="free-hero">
-        <div class="hero-tag">🎁 Gratis 1 Hari</div>
-        <div class="hero-title">Key Gratis 1 Hari</div>
-        <div class="hero-sub">Cukup share ke 3 grup Telegram, upload screenshot bukti, key langsung aktif!</div>
-        <div style="font-size:0.55rem;color:var(--text-muted);margin-top:6px;">Stok: <span id="freeStockDisplay">0</span> key tersisa</div>
-    </div>
-
-    <div class="share-step">
-        <div class="step-num">1</div>
-        <div class="step-text">Share link ini ke <b>3 grup Telegram</b> yang berbeda</div>
-    </div>
-    <div class="share-step">
-        <div class="step-num">2</div>
-        <div class="step-text">Screenshot bukti share (3 grup dalam 1 foto atau 3 foto)</div>
-    </div>
-    <div class="share-step">
-        <div class="step-num">3</div>
-        <div class="step-text">Upload screenshot dan key langsung aktif!</div>
-    </div>
-
-    <a href="https://t.me/share/url?url=https://shorekeeper-production.up.railway.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="share-btn" style="margin-bottom:12px;">
-        📤 Share ke Telegram
-    </a>
-
-    <div class="card">
-        <div style="font-size:0.6rem;font-weight:600;margin-bottom:8px;">📤 Upload Bukti Share</div>
-        <div class="upload-area" onclick="document.getElementById('freeFileIn').click()" style="padding:14px;">
-            <div style="font-size:0.55rem;color:var(--text-muted);">Tap untuk upload screenshot</div>
-            <input type="file" id="freeFileIn" accept="image/*" style="display:none;" onchange="handleFreeUpload(event)">
-            <img id="freePrevImg">
-        </div>
-        <div style="font-size:0.5rem;color:var(--text-muted);min-height:13px;" id="freeUploadMsg"></div>
-    </div>
-
-    <button class="btn btn-p" id="btnFreeRequest" disabled onclick="submitFreeRequest()">Upload Bukti Dulu</button>
-
-    <div id="freeStatusBox" class="free-status-box" style="margin-top:10px;display:none;">
-        <div class="status-icon">✅</div>
-        <div class="status-text" id="freeStatusText">Key Aktif!</div>
-        <div class="status-sub" id="freeStatusSub">Cek di halaman Cek Key</div>
-    </div>
-
-    <div style="margin-top:12px;text-align:center;font-size:0.55rem;color:var(--text-muted);">
-        <span>Key aktif 1 hari • 1x per user • Stok terbatas</span>
-    </div>
-</div>
-
-<!-- ============================================================
-     PAGE: REVIEW
-     ============================================================ -->
-<div id="page-review" class="page">
-    <div class="sec-title">⭐ Review Pembeli</div>
-    <div class="sec-sub">Review asli dari customer</div>
-
-    <div class="rv-filter" id="rvFilter">
-        <button class="fbtn active" data-filter="all">Semua</button>
-        <button class="fbtn" data-filter="5">5 ★</button>
-        <button class="fbtn" data-filter="4">4 ★</button>
-        <button class="fbtn" data-filter="3">3 ★</button>
-    </div>
-
-    <div class="card rv-form">
-        <div style="font-size:0.62rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;">✍️ Tulis Review Kamu:</div>
-        <input id="rvName" placeholder="Nama kamu" maxlength="30">
-        <input id="rvCity" placeholder="Kota (opsional)" maxlength="20">
-        <div class="stars-wrap" id="starsWrap">
-            <span class="star-b" data-s="1">★</span>
-            <span class="star-b" data-s="2">★</span>
-            <span class="star-b" data-s="3">★</span>
-            <span class="star-b" data-s="4">★</span>
-            <span class="star-b" data-s="5">★</span>
-        </div>
-        <textarea id="rvText" placeholder="Ceritain pengalaman pakai Shorekeeper..." maxlength="200"></textarea>
-        <button class="btn btn-p" onclick="submitReview()">Kirim Review</button>
-    </div>
-    <div class="rv-list" id="rvList"></div>
-</div>
-
-<!-- ============================================================
-     PAGE: CHAT
-     ============================================================ -->
-<div id="page-chat" class="page" style="padding-bottom:0;padding-top:8px;">
-    <div id="chatNameBox" class="chat-name-box">
-        <div style="font-size:0.85rem;font-weight:700;margin-bottom:3px;">💬 Chat dengan Admin</div>
-        <div style="font-size:0.62rem;color:var(--text-muted);margin-bottom:10px;">Tanya apapun, admin siap balas</div>
-        <div class="resp-time-badge">⚡ Rata-rata respon: 3 menit</div>
-        <div class="admin-status" id="adminStatusChat">
-            <span class="dot online" id="adminDotChat"></span>
-            <span id="adminTextChat">Admin Online</span>
-        </div>
-        <input id="chatNameIn" class="search-in" placeholder="Nama kamu..." style="width:100%;margin-bottom:8px;margin-top:6px;">
-        <button class="btn btn-p" onclick="startChat()">Mulai Chat</button>
-    </div>
-    <div id="chatMain" style="display:none;">
-        <div class="chat-wrap">
-            <div class="chat-hdr">
-                <div class="chat-av"><img src="icon.jpg" alt="SK"></div>
-                <div>
-                    <div class="chat-hdr-name">Admin Shorekeeper</div>
-                    <div class="chat-status" id="chatOnlineStatus">Online</div>
+            <!-- COUNTDOWN -->
+            <div class="countdown-box">
+                <div class="cd-label">🔥 Promo Berakhir Dalam</div>
+                <div class="cd-timer">
+                    <span><span id="cdH">12</span><span class="cd-label-sm">Jam</span></span>
+                    <span class="cd-sep">:</span>
+                    <span><span id="cdM">34</span><span class="cd-label-sm">Menit</span></span>
+                    <span class="cd-sep">:</span>
+                    <span><span id="cdS">56</span><span class="cd-label-sm">Detik</span></span>
                 </div>
-                <div style="margin-left:auto;font-size:0.5rem;color:var(--text-muted);" id="chatUserName">User</div>
             </div>
-            <div class="chat-msgs" id="chatMsgs"></div>
-            <div class="chat-footer">
-                <input class="chat-in" id="chatIn" placeholder="Ketik pesan..." onkeyup="if(event.key==='Enter'&&!event.repeat)sendMsg()">
-                <button class="chat-send" onclick="sendMsg()">➤</button>
+
+            <!-- TICKER -->
+            <div class="ticker">
+                <div class="tdot-live"></div>
+                <span id="tickerTxt">Andi dari Jakarta baru beli Lifetime</span>
+            </div>
+
+            <!-- ADMIN STATUS -->
+            <div class="admin-status" id="adminStatusHome">
+                <span class="dot online" id="adminDotHome"></span>
+                <span id="adminTextHome">Admin Online</span>
+                <span style="color:var(--text3);">• Respon 5 Menit</span>
+            </div>
+
+            <!-- HERO -->
+            <div class="hero">
+                <div class="hero-tag">⚡ Blood Strike • No Root</div>
+                <div class="hero-title">Tool <span style="color:var(--blue)">#1 Indonesia</span></div>
+                <div class="hero-sub">Aim Assist, ESP, No Recoil. Undetected. Key aktif setelah admin verifikasi.</div>
+                <button class="hero-btn" onclick="navigateTo('paket')">✨ Lihat Harga</button>
+            </div>
+
+            <!-- STATS -->
+            <div class="stats">
+                <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">Online</div><div class="stat-t">Live</div></div>
+                <div class="stat"><div class="stat-n" id="ratingCnt">4.8</div><div class="stat-l">Rating</div><div class="stat-t">★★★★★</div></div>
+                <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">Terjual</div><div class="stat-t">Minggu Ini</div></div>
+            </div>
+
+            <!-- STOK -->
+            <div style="margin-bottom:12px;">
+                <div class="sec-title">📦 Stok Terbaru</div>
+                <div class="sec-sub">Update stok key setiap hari</div>
+                <div class="stock-status" id="stockStatusHome"></div>
+            </div>
+
+            <!-- FEATS -->
+            <div class="feats">
+                <div class="feat"><div class="feat-ic">🎯</div>Aim Assist</div>
+                <div class="feat"><div class="feat-ic">👁️</div>ESP Wallhack</div>
+                <div class="feat"><div class="feat-ic">🔫</div>No Recoil</div>
+                <div class="feat"><div class="feat-ic">🛡️</div>Undetected</div>
+                <div class="feat"><div class="feat-ic">📱</div>No Root</div>
+                <div class="feat"><div class="feat-ic">♾️</div>Lifetime</div>
+            </div>
+
+            <!-- VIDEO -->
+            <div style="margin-bottom:14px;">
+                <div class="sec-title">📹 Video Tutorial</div>
+                <div class="sec-sub">Cara install & aktifkan key</div>
+                <div class="video-wrap">
+                    <iframe src="https://www.youtube.com/embed/e8YfaXtIqEU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <!-- PAYMENT -->
+            <div class="card">
+                <div style="font-size:0.52rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">💳 Metode Pembayaran</div>
+                <div class="pay-row">
+                    <span class="pay-tag">QRIS</span>
+                    <span class="pay-tag">DANA/OVO</span>
+                    <span class="pay-tag">BINANCE</span>
+                    <span class="pay-tag">GIFT CARD</span>
+                </div>
+            </div>
+
+            <!-- FREE KEY -->
+            <div class="free-hero">
+                <div class="hero-tag">🎁 Gratis</div>
+                <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">Dapatkan Key Gratis 1 Hari</div>
+                <div style="font-size:0.7rem;color:var(--text2);line-height:1.6;margin-bottom:12px;">Share ke 3 grup Telegram + upload bukti. Key langsung aktif!</div>
+                <button class="hero-btn" onclick="navigateTo('freekey')">🎁 Ambil Sekarang</button>
+            </div>
+
+            <!-- FAQ -->
+            <div style="margin-bottom:12px;">
+                <div class="sec-title">❓ Pertanyaan Umum</div>
+                <div class="sec-sub">Yang sering ditanyakan</div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q"><span class="faq-q-text">🔒 Apakah aman dari ban?</span><span class="faq-arrow">▼</span></div>
+                    <div class="faq-a"><div class="faq-a-text">Tool kami bypass anti-cheat dengan metode injeksi terbaru. Update setiap minggu sesuai patch game. Ribuan user pakai tanpa kena ban.</div></div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q"><span class="faq-q-text">📱 Perlu root HP?</span><span class="faq-arrow">▼</span></div>
+                    <div class="faq-a"><div class="faq-a-text">Tidak perlu root. Cukup install APK, masukkan key, langsung jalan. Compatible Android 8.0+</div></div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q"><span class="faq-q-text">⏳ Key aktif berapa lama?</span><span class="faq-arrow">▼</span></div>
+                    <div class="faq-a"><div class="faq-a-text">Key diaktifkan manual admin dalam 5-15 menit setelah bukti bayar diterima. Jam aktif admin 08.00-24.00 WIB.</div></div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-q"><span class="faq-q-text">💰 Ada refund?</span><span class="faq-arrow">▼</span></div>
+                    <div class="faq-a"><div class="faq-a-text">Garansi 7 hari. Jika tool tidak bisa jalan setelah dicoba dengan bantuan admin, kami refund atau extend.</div></div>
+                </div>
+            </div>
+
+            <!-- TERMS -->
+            <div class="card" style="margin-bottom:12px;">
+                <div class="sec-title" style="font-size:0.8rem;">📋 Syarat & Ketentuan</div>
+                <div class="terms-text">
+                    <ul>
+                        <li>Key tidak bisa direfund setelah diaktifkan</li>
+                        <li>Garansi 7 hari untuk masalah teknis</li>
+                        <li>1 key untuk 1 device</li>
+                        <li>Dilarang share key ke orang lain</li>
+                        <li>Admin berhak membatalkan order jika terindikasi penipuan</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- KONTAK -->
+            <div style="margin-bottom:12px;">
+                <div class="sec-title" style="margin-bottom:10px;">📞 Hubungi Kami</div>
+
+                <a href="https://t.me/Keyskidbot" target="_blank" class="kontak-item">
+                    <div class="kontak-ic">📨</div>
+                    <div><div class="kontak-name">Telegram Bot</div><div class="kontak-sub">@Keyskidbot • Respon cepat</div></div>
+                    <span style="margin-left:auto;color:var(--text3);">→</span>
+                </a>
+
+                <a href="https://t.me/ShorekeeperID" target="_blank" class="kontak-item">
+                    <div class="kontak-ic">📢</div>
+                    <div><div class="kontak-name">Saluran Channel</div><div class="kontak-sub">@ShorekeeperID • Update & promo</div></div>
+                    <span style="margin-left:auto;color:var(--text3);">→</span>
+                </a>
+
+                <a href="https://www.youtube.com/@ZelewinGaming" target="_blank" class="kontak-item">
+                    <div class="kontak-ic">▶️</div>
+                    <div><div class="kontak-name">YouTube</div><div class="kontak-sub">Tutorial & review tool</div></div>
+                    <span style="margin-left:auto;color:var(--text3);">→</span>
+                </a>
+            </div>
+
+            <div class="card" style="text-align:center;">
+                <div style="font-size:0.55rem;color:var(--text3);">Garansi 7 Hari • Key via Web • No Root</div>
             </div>
         </div>
     </div>
+
+    <!-- ============================================================
+         PAGE WRAPPER - PAKET
+         ============================================================ -->
+    <div class="page-wrapper" id="page-paket" data-page="paket">
+        <div class="page-content">
+            <div class="sec-title">📦 Pilih Paket</div>
+            <div class="sec-sub">Tap paket untuk mulai order</div>
+            <div id="pkgStockInfo" style="font-size:0.55rem;color:var(--text3);margin-bottom:8px;"></div>
+            <div class="pkg-list" id="pkgList"></div>
+            <div style="margin-top:12px;text-align:center;font-size:0.58rem;color:var(--text3);">
+                <span>Mau gratis? <a href="#" onclick="navigateTo('freekey');return false;" style="color:var(--blue);">Dapatkan Key Gratis 1 Hari</a></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         PAGE WRAPPER - CEK KEY
+         ============================================================ -->
+    <div class="page-wrapper" id="page-cekkey" data-page="cekkey">
+        <div class="page-content">
+            <div class="sec-title">🔍 Cek Key</div>
+            <div class="sec-sub">Masukkan Order ID atau User ID</div>
+            <div class="search-row">
+                <input class="search-in" id="oidInput" placeholder="ORD1234567ABC atau FREE123ABC">
+                <button class="search-btn" onclick="doCheck()">Cek</button>
+            </div>
+            <div id="checkRes"></div>
+            <div class="card" style="text-align:center;margin-top:8px;">
+                <div style="font-size:0.55rem;color:var(--text3);">Order ID dikirim setelah order / request gratis</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         PAGE WRAPPER - FREE KEY
+         ============================================================ -->
+    <div class="page-wrapper" id="page-freekey" data-page="freekey">
+        <div class="page-content">
+            <div class="sec-title">🎁 Dapatkan Key Gratis</div>
+            <div class="sec-sub">Share ke 3 grup Telegram + upload bukti</div>
+
+            <div class="free-hero">
+                <div class="hero-tag">🎁 Gratis 1 Hari</div>
+                <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">Key Gratis 1 Hari</div>
+                <div style="font-size:0.7rem;color:var(--text2);line-height:1.6;margin-bottom:6px;">Cukup share ke 3 grup Telegram, upload screenshot bukti, key langsung aktif!</div>
+                <div style="font-size:0.55rem;color:var(--text3);">Stok: <span id="freeStockDisplay">0</span> key tersisa</div>
+            </div>
+
+            <div class="share-step">
+                <div class="step-num">1</div>
+                <div class="step-text">Share link ini ke <b>3 grup Telegram</b> yang berbeda</div>
+            </div>
+            <div class="share-step">
+                <div class="step-num">2</div>
+                <div class="step-text">Screenshot bukti share (3 grup dalam 1 foto atau 3 foto)</div>
+            </div>
+            <div class="share-step">
+                <div class="step-num">3</div>
+                <div class="step-text">Upload screenshot dan key langsung aktif!</div>
+            </div>
+
+            <a href="https://t.me/share/url?url=https://shorekeeper-production.up.railway.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="share-btn" style="margin-bottom:12px;">
+                📤 Share ke Telegram
+            </a>
+
+            <div class="card">
+                <div style="font-size:0.6rem;font-weight:600;margin-bottom:8px;">📤 Upload Bukti Share</div>
+                <div class="upload-area" onclick="document.getElementById('freeFileIn').click()" style="padding:14px;">
+                    <div style="font-size:0.55rem;color:var(--text3);">Tap untuk upload screenshot</div>
+                    <input type="file" id="freeFileIn" accept="image/*" style="display:none;" onchange="handleFreeUpload(event)">
+                    <img id="freePrevImg">
+                </div>
+                <div style="font-size:0.5rem;color:var(--text3);min-height:13px;" id="freeUploadMsg"></div>
+            </div>
+
+            <button class="btn btn-p" id="btnFreeRequest" disabled onclick="submitFreeRequest()">Upload Bukti Dulu</button>
+
+            <div id="freeStatusBox" class="free-status-box" style="margin-top:10px;display:none;">
+                <div style="font-size:1.4rem;margin-bottom:4px;">✅</div>
+                <div style="font-size:0.68rem;font-weight:600;" id="freeStatusText">Key Aktif!</div>
+                <div style="font-size:0.58rem;color:var(--text3);margin-top:3px;" id="freeStatusSub">Cek di halaman Cek Key</div>
+            </div>
+
+            <div style="margin-top:12px;text-align:center;font-size:0.55rem;color:var(--text3);">
+                <span>Key aktif 1 hari • 1x per user • Stok terbatas</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         PAGE WRAPPER - REVIEW
+         ============================================================ -->
+    <div class="page-wrapper" id="page-review" data-page="review">
+        <div class="page-content">
+            <div class="sec-title">⭐ Review Pembeli</div>
+            <div class="sec-sub">Review asli dari customer</div>
+
+            <div class="rv-filter" id="rvFilter">
+                <button class="fbtn active" data-filter="all">Semua</button>
+                <button class="fbtn" data-filter="5">5 ★</button>
+                <button class="fbtn" data-filter="4">4 ★</button>
+                <button class="fbtn" data-filter="3">3 ★</button>
+            </div>
+
+            <div class="card rv-form">
+                <div style="font-size:0.62rem;color:var(--text3);margin-bottom:8px;font-weight:600;">✍️ Tulis Review Kamu:</div>
+                <input id="rvName" placeholder="Nama kamu" maxlength="30">
+                <input id="rvCity" placeholder="Kota (opsional)" maxlength="20">
+                <div class="stars-wrap" id="starsWrap">
+                    <span class="star-b" data-s="1">★</span>
+                    <span class="star-b" data-s="2">★</span>
+                    <span class="star-b" data-s="3">★</span>
+                    <span class="star-b" data-s="4">★</span>
+                    <span class="star-b" data-s="5">★</span>
+                </div>
+                <textarea id="rvText" placeholder="Ceritain pengalaman pakai Shorekeeper..." maxlength="200"></textarea>
+                <button class="btn btn-p" onclick="submitReview()">Kirim Review</button>
+            </div>
+            <div class="rv-list" id="rvList"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         PAGE WRAPPER - CHAT
+         ============================================================ -->
+    <div class="page-wrapper" id="page-chat" data-page="chat">
+        <div class="page-content" style="padding-bottom:0;padding-top:8px;">
+            <div id="chatNameBox" class="chat-name-box">
+                <div style="font-size:0.85rem;font-weight:700;margin-bottom:3px;">💬 Chat dengan Admin</div>
+                <div style="font-size:0.62rem;color:var(--text3);margin-bottom:10px;">Tanya apapun, admin siap balas</div>
+                <div class="resp-time-badge">⚡ Rata-rata respon: 3 menit</div>
+                <div class="admin-status" id="adminStatusChat">
+                    <span class="dot online" id="adminDotChat"></span>
+                    <span id="adminTextChat">Admin Online</span>
+                </div>
+                <input id="chatNameIn" class="search-in" placeholder="Nama kamu..." style="width:100%;margin-bottom:8px;margin-top:6px;">
+                <button class="btn btn-p" onclick="startChat()">Mulai Chat</button>
+            </div>
+            <div id="chatMain" style="display:none;">
+                <div class="chat-wrap">
+                    <div class="chat-hdr">
+                        <div class="chat-av"><img src="icon.jpg" alt="SK"></div>
+                        <div>
+                            <div class="chat-hdr-name">Admin Shorekeeper</div>
+                            <div class="chat-status" id="chatOnlineStatus">Online</div>
+                        </div>
+                        <div style="margin-left:auto;font-size:0.5rem;color:var(--text3);" id="chatUserName">User</div>
+                    </div>
+                    <div class="chat-msgs" id="chatMsgs"></div>
+                    <div class="chat-footer">
+                        <input class="chat-in" id="chatIn" placeholder="Ketik pesan..." onkeyup="if(event.key==='Enter'&&!event.repeat)sendMsg()">
+                        <button class="chat-send" onclick="sendMsg()">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <!-- ============================================================
      BOTTOM NAV
      ============================================================ -->
-<nav class="bnav">
-    <div class="bnav-item active" data-page="home"><span class="bicon">⌂</span>Home</div>
-    <div class="bnav-item" data-page="paket"><span class="bicon">📦</span>Paket</div>
-    <div class="bnav-item" data-page="freekey"><span class="bicon">🎁</span>Gratis</div>
-    <div class="bnav-item" data-page="cekkey"><span class="bicon">🔍</span>Key</div>
-    <div class="bnav-item" data-page="chat"><span class="bicon">💬</span>Chat</div>
+<nav class="bnav" id="bottomNav">
+    <button class="bnav-item active" data-page="home" onclick="navigateTo('home')">
+        <span class="bicon">🏠</span>Home
+    </button>
+    <button class="bnav-item" data-page="paket" onclick="navigateTo('paket')">
+        <span class="bicon">📦</span>Paket
+    </button>
+    <button class="bnav-item" data-page="freekey" onclick="navigateTo('freekey')">
+        <span class="bicon">🎁</span>Gratis
+    </button>
+    <button class="bnav-item" data-page="cekkey" onclick="navigateTo('cekkey')">
+        <span class="bicon">🔍</span>Key
+    </button>
+    <button class="bnav-item" data-page="chat" onclick="navigateTo('chat')">
+        <span class="bicon">💬</span>Chat
+    </button>
 </nav>
 
 <!-- ============================================================
@@ -2113,7 +1967,7 @@ body.light {
             <div class="mbar" id="mb2"></div>
             <div class="mbar" id="mb3"></div>
         </div>
-        
+
         <!-- PANEL 1 -->
         <div class="mpane active" id="mp1">
             <div class="mtitle" id="mp1title">-</div>
@@ -2129,29 +1983,29 @@ body.light {
                     <div style="font-size:0.52rem;margin-bottom:6px;">Scan QRIS ini:</div>
                     <div class="qris-wrap"><img id="qrisImg" src="qris-1jam.jpg" alt="QRIS"></div>
                     <div class="qris-nominal" id="qrisNominal">Nominal sudah fix kirim sesuai jumlah ini ya</div>
-                    <div style="font-size:0.48rem;color:var(--text-muted);margin-top:5px;">BCA • OVO • DANA • GOPAY • SHOPEE</div>
+                    <div style="font-size:0.48rem;color:var(--text3);margin-top:5px;">BCA • OVO • DANA • GOPAY • SHOPEE</div>
                 </div>
                 <div id="pi-dana" style="display:none;line-height:2;">
                     <div style="font-weight:700;font-size:0.75rem;">DANA / OVO</div>
-                    <div style="font-size:0.68rem;color:var(--text-secondary);">0895401347006</div>
-                    <div style="font-size:0.5rem;color:var(--text-muted);">A/N SHOREKEEPER</div>
+                    <div style="font-size:0.68rem;color:var(--text2);">0895401347006</div>
+                    <div style="font-size:0.5rem;color:var(--text3);">A/N SHOREKEEPER</div>
                 </div>
                 <div id="pi-binance" style="display:none;line-height:2;">
                     <div style="font-weight:700;font-size:0.75rem;">BINANCE</div>
-                    <div style="font-size:0.68rem;color:var(--text-secondary);">BINANCE ID: 1232544379</div>
-                    <div style="font-size:0.5rem;color:var(--text-muted);">A/N SHOREKEEPER</div>
+                    <div style="font-size:0.68rem;color:var(--text2);">BINANCE ID: 1232544379</div>
+                    <div style="font-size:0.5rem;color:var(--text3);">A/N SHOREKEEPER</div>
                 </div>
                 <div id="pi-giftcard" style="display:none;line-height:2;">
                     <div style="font-weight:700;font-size:0.75rem;">GIFT CARD</div>
-                    <div style="font-size:0.68rem;color:var(--text-secondary);">Kirim ke @Keyskidbot</div>
-                    <div style="font-size:0.5rem;color:var(--text-muted);">Google Play • App Store • Steam</div>
+                    <div style="font-size:0.68rem;color:var(--text2);">Kirim ke @Keyskidbot</div>
+                    <div style="font-size:0.5rem;color:var(--text3);">Google Play • App Store • Steam</div>
                 </div>
             </div>
             <button class="btn btn-p" onclick="goMP(2)">Lanjut</button>
             <button class="btn btn-o" onclick="closeM()" style="margin-top:7px;">Batal</button>
             <div class="secure-badge">🔒 Transaksi aman & terenkripsi</div>
         </div>
-        
+
         <!-- PANEL 2 -->
         <div class="mpane" id="mp2">
             <div class="mtitle">Data & Bukti Bayar</div>
@@ -2161,32 +2015,32 @@ body.light {
             <div class="field">
                 <label>📸 Upload Bukti Transfer</label>
                 <div class="upload-area" onclick="document.getElementById('fileIn').click()">
-                    <div style="font-size:0.6rem;color:var(--text-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Upload</div>
-                    <div style="font-size:0.6rem;color:var(--text-muted);margin-top:5px;">Tap untuk upload screenshot</div>
+                    <div style="font-size:0.6rem;color:var(--text3);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Upload</div>
+                    <div style="font-size:0.6rem;color:var(--text3);margin-top:5px;">Tap untuk upload screenshot</div>
                     <input type="file" id="fileIn" accept="image/*" style="display:none;" onchange="handleUpload(event)">
                     <img id="prevImg">
                 </div>
-                <div style="font-size:0.52rem;color:var(--text-muted);margin-top:3px;min-height:13px;" id="uploadMsg"></div>
+                <div style="font-size:0.52rem;color:var(--text3);margin-top:3px;min-height:13px;" id="uploadMsg"></div>
             </div>
             <div style="display:flex;gap:7px;">
                 <button class="btn btn-o" onclick="goMP(1)" style="flex:0 0 44px;padding:12px 0;">←</button>
                 <button class="btn btn-p" id="btnSend" disabled onclick="submitOrder()">Upload Bukti Dulu</button>
             </div>
         </div>
-        
+
         <!-- PANEL 3 -->
         <div class="mpane" id="mp3">
             <div style="text-align:center;padding:6px 0;">
-                <div class="s-ring">✓</div>
+                <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-input);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 12px;color:var(--green);">✓</div>
                 <div class="mtitle" style="font-size:0.95rem;margin-bottom:3px;">Order Masuk!</div>
-                <div style="font-size:0.62rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">Pembayaran sedang dicek admin.<br>Key aktif di <b style="color:var(--color-purple-light);">Cek Key</b> setelah diverifikasi.</div>
+                <div style="font-size:0.62rem;color:var(--text2);line-height:1.6;margin-bottom:12px;">Pembayaran sedang dicek admin.<br>Key aktif di <b style="color:var(--blue);">Cek Key</b> setelah diverifikasi.</div>
                 <div class="order-table">
                     <div class="orow"><span class="olabel">Paket</span><span class="oval" id="s3pkg">-</span></div>
                     <div class="orow"><span class="olabel">Harga</span><span class="oval" id="s3price">-</span></div>
                     <div class="orow"><span class="olabel">Email</span><span class="oval" id="s3email" style="font-size:0.58rem;">-</span></div>
-                    <div class="orow"><span class="olabel">Status</span><span style="color:#F59E0B;font-weight:600;font-size:0.65rem;">⏳ Menunggu Verifikasi</span></div>
+                    <div class="orow"><span class="olabel">Status</span><span style="color:var(--orange);font-weight:600;font-size:0.65rem;">⏳ Menunggu Verifikasi</span></div>
                 </div>
-                <div style="font-size:0.52rem;color:var(--text-muted);margin-bottom:5px;">Simpan Order ID:</div>
+                <div style="font-size:0.52rem;color:var(--text3);margin-bottom:5px;">Simpan Order ID:</div>
                 <div class="order-id" id="s3oid">-</div>
                 <div style="display:flex;gap:7px;margin-top:10px;">
                     <button class="btn btn-o" onclick="cpOid()" style="flex:1;padding:10px;">📋 Salin ID</button>
@@ -2204,6 +2058,99 @@ body.light {
 const API_URL = window.location.origin || '';
 
 // ============================================================
+// NAVIGASI - SMOOTH TRANSISI
+// ============================================================
+let currentPage = 'home';
+let pageHistory = ['home'];
+
+function navigateTo(page, direction = 'right') {
+    if (page === currentPage) return;
+
+    const currentEl = document.getElementById('page-' + currentPage);
+    const nextEl = document.getElementById('page-' + page);
+
+    if (!nextEl) return;
+
+    // Haptic feedback (vibrasi)
+    if (navigator.vibrate) navigator.vibrate(10);
+
+    // Reset semua class
+    document.querySelectorAll('.page-wrapper').forEach(el => {
+        el.classList.remove('active', 'slide-in-right', 'slide-in-left', 'slide-out-left', 'slide-out-right');
+        el.style.display = 'none';
+    });
+
+    // Sembunyikan current dengan animasi keluar
+    if (currentEl) {
+        currentEl.style.display = 'block';
+        if (direction === 'right') {
+            currentEl.classList.add('slide-out-left');
+        } else {
+            currentEl.classList.add('slide-out-right');
+        }
+    }
+
+    // Tampilkan next dengan animasi masuk
+    nextEl.style.display = 'block';
+    if (direction === 'right') {
+        nextEl.classList.add('slide-in-right');
+    } else {
+        nextEl.classList.add('slide-in-left');
+    }
+
+    // Trigger reflow
+    void nextEl.offsetWidth;
+
+    if (direction === 'right') {
+        nextEl.classList.remove('slide-in-right');
+        if (currentEl) currentEl.classList.remove('slide-out-left');
+    } else {
+        nextEl.classList.remove('slide-in-left');
+        if (currentEl) currentEl.classList.remove('slide-out-right');
+    }
+
+    nextEl.classList.add('active');
+
+    // Update UI
+    currentPage = page;
+    pageHistory.push(page);
+    updateNav(page);
+    updateBackButton();
+
+    // Scroll ke atas
+    nextEl.scrollTop = 0;
+
+    // Trigger render functions
+    if (page === 'paket') renderPackages();
+    if (page === 'review') renderReviews();
+    if (page === 'chat') initChat();
+    if (page === 'freekey') renderFreeStatus();
+}
+
+function goBack() {
+    if (pageHistory.length > 1) {
+        pageHistory.pop();
+        const prev = pageHistory[pageHistory.length - 1];
+        navigateTo(prev, 'left');
+    }
+}
+
+function goHome() {
+    navigateTo('home');
+}
+
+function updateNav(page) {
+    document.querySelectorAll('.bnav-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.page === page);
+    });
+}
+
+function updateBackButton() {
+    const btn = document.getElementById('backBtn');
+    btn.classList.toggle('show', pageHistory.length > 1);
+}
+
+// ============================================================
 // LOADING
 // ============================================================
 function hideLoader() {
@@ -2213,13 +2160,13 @@ function hideLoader() {
         setTimeout(() => loader.style.display = 'none', 500);
     }
 }
-setTimeout(hideLoader, 1500);
+setTimeout(hideLoader, 1200);
 
 // ============================================================
 // STOK
 // ============================================================
 function getStock() {
-    try { return JSON.parse(localStorage.getItem('sk_stock')) || {}; } 
+    try { return JSON.parse(localStorage.getItem('sk_stock')) || {}; }
     catch(e) { return {}; }
 }
 
@@ -2324,7 +2271,7 @@ function renderPackages() {
                 <div class="pkg-desc">${p.id === 'LIFE' ? 'Bayar sekali, selamanya' : 'Akses penuh ' + p.name}</div>
             </div>
             <div>
-                <div class="pkg-price"><span class="glow-text">${p.idr}</span></div>
+                <div class="pkg-price">${p.idr}</div>
                 <div class="pkg-usd">${p.usd}</div>
             </div>
         </div>`;
@@ -2352,27 +2299,6 @@ function renderStockStatus() {
 }
 
 // ============================================================
-// NAVIGASI
-// ============================================================
-document.querySelectorAll('.bnav-item').forEach(b => {
-    b.onclick = () => goPage(b.dataset.page);
-});
-
-function goPage(p) {
-    document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-    const el = document.getElementById('page-' + p);
-    if (el) el.classList.add('active');
-    document.querySelectorAll('.bnav-item').forEach(x => {
-        x.classList.toggle('active', x.dataset.page === p);
-    });
-    if (p === 'paket') renderPackages();
-    if (p === 'review') renderReviews();
-    if (p === 'chat') initChat();
-    if (p === 'freekey') renderFreeStatus();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ============================================================
 // MODAL ORDER
 // ============================================================
 let curPkg = null, selM = 'qris', upImg = null, lastOid = null;
@@ -2381,7 +2307,7 @@ function openOrder(pkgId) {
     const p = pkgs.find(x => x.id === pkgId);
     if (!p) return;
     if (getStockCount(p.label) === 0) {
-        toast('Stok ' + p.name + ' habis!', '#EF4444');
+        toast('Stok ' + p.name + ' habis!', '#ff3b30');
         return;
     }
     curPkg = p;
@@ -2405,10 +2331,12 @@ function openOrder(pkgId) {
     showPI('qris');
     goMP(1);
     document.getElementById('modalOrder').classList.add('show');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeM() {
     document.getElementById('modalOrder').classList.remove('show');
+    document.body.style.overflow = '';
 }
 document.getElementById('modalOrder').onclick = e => {
     if (e.target === document.getElementById('modalOrder')) closeM();
@@ -2461,22 +2389,22 @@ function handleUpload(e) {
 async function submitOrder() {
     const email = document.getElementById('inEmail').value.trim();
     const phone = document.getElementById('inPhone').value.trim();
-    if (!upImg) { toast('Upload bukti dulu!', '#EF4444'); return; }
-    if (!email) { toast('Isi email dulu!', '#EF4444'); return; }
-    if (!phone) { toast('Isi nomor WA dulu!', '#EF4444'); return; }
-    
+    if (!upImg) { toast('Upload bukti dulu!', '#ff3b30'); return; }
+    if (!email) { toast('Isi email dulu!', '#ff3b30'); return; }
+    if (!phone) { toast('Isi nomor WA dulu!', '#ff3b30'); return; }
+
     const btn = document.getElementById('btnSend');
     btn.disabled = true;
     btn.innerHTML = '⏳ Mengirim...';
-    
+
     const key = useStock(curPkg.label);
     if (!key) {
-        toast('Stok habis!', '#EF4444');
+        toast('Stok habis!', '#ff3b30');
         btn.disabled = false;
         btn.innerText = 'Kirim Order';
         return;
     }
-    
+
     try {
         const res = await fetch(`${API_URL}/api/order/create`, {
             method: 'POST',
@@ -2498,16 +2426,16 @@ async function submitOrder() {
             document.getElementById('s3oid').innerText = result.orderId;
             lastOid = result.orderId;
             goMP(3);
-            toast('Order masuk! Tunggu verifikasi admin.', '#F59E0B');
+            toast('Order masuk! Tunggu verifikasi admin.', '#ff9500');
             renderPackages();
         } else {
-            toast('Gagal: ' + (result.message || 'Coba lagi'), '#EF4444');
+            toast('Gagal: ' + (result.message || 'Coba lagi'), '#ff3b30');
             addStock(curPkg.label, key);
             btn.disabled = false;
             btn.innerText = 'Kirim Order';
         }
     } catch(e) {
-        toast('Gagal koneksi ke server!', '#EF4444');
+        toast('Gagal koneksi ke server!', '#ff3b30');
         addStock(curPkg.label, key);
         btn.disabled = false;
         btn.innerText = 'Kirim Order';
@@ -2517,14 +2445,14 @@ async function submitOrder() {
 function cpOid() {
     const txt = document.getElementById('s3oid').innerText;
     navigator.clipboard.writeText(txt).then(() => {
-        toast('Order ID disalin!', '#34D399');
+        toast('Order ID disalin!', '#34c759');
     });
 }
 
 function goToKey() {
     closeM();
     document.getElementById('oidInput').value = lastOid || '';
-    goPage('cekkey');
+    navigateTo('cekkey');
     if (lastOid) doCheck();
 }
 
@@ -2533,20 +2461,20 @@ function goToKey() {
 // ============================================================
 async function doCheck() {
     const id = document.getElementById('oidInput').value.trim();
-    if (!id) { toast('Masukkan Order ID atau User ID!', '#EF4444'); return; }
+    if (!id) { toast('Masukkan Order ID atau User ID!', '#ff3b30'); return; }
     const res = document.getElementById('checkRes');
-    
+
     try {
         const response = await fetch(`${API_URL}/api/order/${id}`);
         const data = await response.json();
         if (data.success && data.order) {
             const order = data.order;
             const status = order.status === 'pending' ? '⏳ Menunggu Verifikasi' : '✅ Aktif';
-            const statusColor = order.status === 'pending' ? '#F59E0B' : '#34D399';
+            const statusColor = order.status === 'pending' ? '#ff9500' : '#34c759';
             res.innerHTML = `<div class="result-active">
                 <div class="result-label">Status: <span style="color:${statusColor}">${status}</span></div>
                 <div class="key-display">${order.key || 'Belum ada key'}</div>
-                <div style="font-size:0.5rem;color:var(--text-muted);margin-top:5px;">${order.package} • ${order.createdAt || ''}</div>
+                <div style="font-size:0.5rem;color:var(--text3);margin-top:5px;">${order.package} • ${order.createdAt || ''}</div>
                 <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
                     <a href="https://t.me/AutofeedbackSK" target="_blank" class="btn btn-p" style="flex:1;text-decoration:none;text-align:center;padding:10px;font-size:0.7rem;">⬇️ Unduh APK</a>
                     ${order.key ? `<button class="btn btn-g" onclick="cpKey('${order.key}')" style="flex:1;padding:10px;font-size:0.7rem;">📋 Salin Key</button>` : ''}
@@ -2555,22 +2483,22 @@ async function doCheck() {
         } else {
             res.innerHTML = `<div class="result-404">
                 <div style="font-size:2rem;margin-bottom:10px;">🔍</div>
-                <div style="font-size:0.72rem;color:var(--text-muted);">Tidak ditemukan</div>
-                <div style="font-size:0.55rem;color:var(--text-muted);margin-top:3px;">Pastikan Order ID / User ID benar</div>
+                <div style="font-size:0.72rem;color:var(--text3);">Tidak ditemukan</div>
+                <div style="font-size:0.55rem;color:var(--text3);margin-top:3px;">Pastikan Order ID / User ID benar</div>
             </div>`;
         }
     } catch(e) {
         res.innerHTML = `<div class="result-404">
             <div style="font-size:2rem;margin-bottom:10px;">⚠️</div>
-            <div style="font-size:0.72rem;color:var(--text-muted);">Error</div>
-            <div style="font-size:0.55rem;color:var(--text-muted);margin-top:3px;">${e.message}</div>
+            <div style="font-size:0.72rem;color:var(--text3);">Error</div>
+            <div style="font-size:0.55rem;color:var(--text3);margin-top:3px;">${e.message}</div>
         </div>`;
     }
 }
 
 function cpKey(k) {
     navigator.clipboard.writeText(k).then(() => {
-        toast('Key disalin!', '#34D399');
+        toast('Key disalin!', '#34c759');
     });
 }
 
@@ -2614,7 +2542,7 @@ function renderFreeStatus() {
     document.getElementById('freeStockDisplay').innerText = stock;
     if (req && req.key) {
         box.style.display = 'block';
-        document.getElementById('freeStatusText').innerHTML = '✅ Key Aktif! Cek di halaman <a href="#" onclick="goPage(\'cekkey\');document.getElementById(\'oidInput\').value=\'' + req.userId + '\';doCheck();return false;" style="color:var(--color-purple-light);">Cek Key</a>';
+        document.getElementById('freeStatusText').innerHTML = '✅ Key Aktif! Cek di halaman <a href="#" onclick="navigateTo(\'cekkey\');document.getElementById(\'oidInput\').value=\'' + req.userId + '\';doCheck();return false;" style="color:var(--blue);">Cek Key</a>';
         document.getElementById('freeStatusSub').innerText = 'Key: ' + req.key;
     } else {
         box.style.display = 'none';
@@ -2622,12 +2550,12 @@ function renderFreeStatus() {
 }
 
 async function submitFreeRequest() {
-    if (!freeUpImg) { toast('Upload bukti share dulu!', '#EF4444'); return; }
-    if (getStockCount('Free1Day') === 0) { toast('Maaf, stok key gratis habis!', '#EF4444'); return; }
+    if (!freeUpImg) { toast('Upload bukti share dulu!', '#ff3b30'); return; }
+    if (getStockCount('Free1Day') === 0) { toast('Maaf, stok key gratis habis!', '#ff3b30'); return; }
     const userId = getFreeUserId();
     const reqs = getFreeRequests();
     if (reqs.find(r => r.userId === userId && r.key)) {
-        toast('Kamu sudah pernah ambil key gratis!', '#F59E0B');
+        toast('Kamu sudah pernah ambil key gratis!', '#ff9500');
         return;
     }
     const btn = document.getElementById('btnFreeRequest');
@@ -2635,7 +2563,7 @@ async function submitFreeRequest() {
     btn.innerHTML = '⏳ Memproses...';
     const key = useStock('Free1Day');
     if (!key) {
-        toast('Stok habis!', '#EF4444');
+        toast('Stok habis!', '#ff3b30');
         btn.disabled = false;
         btn.innerText = '🎁 Ambil Key Gratis';
         return;
@@ -2657,7 +2585,7 @@ async function submitFreeRequest() {
     renderFreeStatus();
     renderPackages();
     renderStockStatus();
-    toast('Key gratis berhasil! Cek di halaman Cek Key', '#34D399');
+    toast('Key gratis berhasil! Cek di halaman Cek Key', '#34c759');
 }
 
 // ============================================================
@@ -2672,6 +2600,7 @@ document.querySelectorAll('.star-b').forEach(s => {
         document.querySelectorAll('.star-b').forEach(x => {
             x.classList.toggle('on', parseInt(x.dataset.s) <= selStar);
         });
+        if (navigator.vibrate) navigator.vibrate(5);
     };
 });
 document.querySelectorAll('.star-b').forEach(x => x.classList.add('on'));
@@ -2682,6 +2611,7 @@ document.querySelectorAll('.rv-filter .fbtn').forEach(b => {
         b.classList.add('active');
         reviewFilter = b.dataset.filter;
         renderReviews();
+        if (navigator.vibrate) navigator.vibrate(5);
     };
 });
 
@@ -2709,7 +2639,7 @@ function renderReviews() {
     if (reviewFilter !== 'all') {
         filtered = rvs.filter(r => r.rating >= parseInt(reviewFilter));
     }
-    const colors = ['#6C3CE1', '#4FACFE', '#EC4899', '#34D399'];
+    const colors = ['#007aff', '#34c759', '#ff9500', '#af52de'];
     const list = document.getElementById('rvList');
     if (filtered.length === 0) {
         list.innerHTML = '<div class="empty-state"><div class="empty-ic">⭐</div><div class="empty-title">Belum ada review</div><div class="empty-sub">Jadi yang pertama kasih review!</div></div>';
@@ -2719,7 +2649,7 @@ function renderReviews() {
         const color = colors[Math.abs(r.name.charCodeAt(0)) % colors.length];
         return `<div class="rv-card">
             <div class="rv-top">
-                <div class="rv-av" style="background:${color};">${r.name[0]}</div>
+                <div class="rv-av" style="background:${color}20;color:${color};">${r.name[0]}</div>
                 <div>
                     <div class="rv-name">${r.name}${r.city ? ', ' + r.city : ''}</div>
                     <div class="rv-time">${r.time}</div>
@@ -2735,8 +2665,8 @@ function submitReview() {
     const name = document.getElementById('rvName').value.trim().toUpperCase();
     const city = document.getElementById('rvCity').value.trim().toUpperCase();
     const text = document.getElementById('rvText').value.trim();
-    if (!name) { toast('Isi nama dulu!', '#EF4444'); return; }
-    if (!text) { toast('Isi review dulu!', '#EF4444'); return; }
+    if (!name) { toast('Isi nama dulu!', '#ff3b30'); return; }
+    if (!text) { toast('Isi review dulu!', '#ff3b30'); return; }
     const rvs = getReviews();
     rvs.push({ name, city, rating: selStar, text, time: 'Baru saja' });
     saveReviews(rvs);
@@ -2746,7 +2676,7 @@ function submitReview() {
     selStar = 5;
     document.querySelectorAll('.star-b').forEach(x => x.classList.add('on'));
     renderReviews();
-    toast('Review terkirim, makasih!', '#34D399');
+    toast('Review terkirim, makasih!', '#34c759');
 }
 
 // ============================================================
@@ -2756,6 +2686,7 @@ function toggleFaq(el) {
     const isOpen = el.classList.contains('open');
     document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
     if (!isOpen) el.classList.add('open');
+    if (navigator.vibrate) navigator.vibrate(5);
 }
 
 // ============================================================
@@ -2774,8 +2705,6 @@ function updateAdminStatus() {
         if (dot) dot.className = 'dot ' + (online ? 'online' : 'offline');
         if (text) text.innerText = online ? 'Admin Online' : 'Admin Offline';
     });
-    const badge = document.getElementById('adminBadge');
-    if (badge) badge.style.background = online ? '#34D399' : '#6B7280';
 }
 setInterval(updateAdminStatus, 30000);
 updateAdminStatus();
@@ -2815,7 +2744,7 @@ function initChat() {
 
 function startChat() {
     const name = document.getElementById('chatNameIn').value.trim();
-    if (!name) { toast('Isi nama dulu!', '#EF4444'); return; }
+    if (!name) { toast('Isi nama dulu!', '#ff3b30'); return; }
     activeChatId = 'CHAT' + Date.now();
     localStorage.setItem('sk_chat_id', activeChatId);
     localStorage.setItem('sk_chat_name', name);
@@ -2825,6 +2754,7 @@ function startChat() {
     document.getElementById('chatUserName').innerText = name.toUpperCase();
     renderMsgs();
     startChatPolling();
+    if (navigator.vibrate) navigator.vibrate(10);
 }
 
 function renderMsgs() {
@@ -2836,7 +2766,7 @@ function renderMsgs() {
         if (m.from === 'admin') {
             html += `<div class="msg-row them"><div class="msg-av-sm"><img src="icon.jpg" alt="SK"></div><div><div class="bubble">${m.text}</div><div class="msg-time">Admin • ${m.time}</div></div></div>`;
         } else {
-            html += `<div class="msg-row me"><div class="msg-av-sm" style="background:var(--gradient-main);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;">${name[0].toUpperCase()}</div><div><div class="bubble">${m.text}</div><div class="msg-time">${m.time}</div></div></div>`;
+            html += `<div class="msg-row me"><div class="msg-av-sm" style="background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;">${name[0].toUpperCase()}</div><div><div class="bubble">${m.text}</div><div class="msg-time">${m.time}</div></div></div>`;
         }
     });
     c.innerHTML = html;
@@ -2866,6 +2796,7 @@ async function pollChatMsgs() {
                 }));
                 saveChatMsgs(activeChatId, formatted);
                 renderMsgs();
+                if (navigator.vibrate) navigator.vibrate(10);
             }
         }
     } catch (e) {}
@@ -2913,12 +2844,13 @@ async function sendMsg() {
 // ============================================================
 // TOAST
 // ============================================================
-function toast(msg, color = '#8B5CF6') {
+function toast(msg, color = '#007aff') {
     const c = document.getElementById('toasts');
     const t = document.createElement('div');
     t.className = 'toast';
     t.innerHTML = '<div class="tdot" style="background:' + color + '"></div>' + msg;
     c.appendChild(t);
+    if (navigator.vibrate) navigator.vibrate(10);
     setTimeout(() => {
         t.style.opacity = '0';
         t.style.transition = 'opacity 0.3s';
@@ -2936,8 +2868,8 @@ const packs = ['LIFETIME', '30 HARI', '7 HARI', '3 HARI', '1 JAM'];
 function rotateTicker() {
     const el = document.getElementById('tickerTxt');
     if (el) {
-        el.innerText = names[Math.floor(Math.random() * names.length)] + ' dari ' + 
-            cities[Math.floor(Math.random() * cities.length)] + ' beli ' + 
+        el.innerText = names[Math.floor(Math.random() * names.length)] + ' dari ' +
+            cities[Math.floor(Math.random() * cities.length)] + ' beli ' +
             packs[Math.floor(Math.random() * packs.length)];
     }
 }
@@ -2968,19 +2900,32 @@ setInterval(() => {
 // ============================================================
 // THEME
 // ============================================================
-let isDark = true;
+let isDark = false;
 function toggleTheme() {
     isDark = !isDark;
-    document.body.classList.toggle('light', !isDark);
-    document.getElementById('themeBtn').innerText = isDark ? '◐' : '◑';
+    document.documentElement.style.setProperty('--bg', isDark ? '#000000' : '#f2f2f7');
+    document.documentElement.style.setProperty('--bg-card', isDark ? '#1c1c1e' : '#ffffff');
+    document.documentElement.style.setProperty('--bg-input', isDark ? '#2c2c2e' : '#f2f2f7');
+    document.documentElement.style.setProperty('--text', isDark ? '#ffffff' : '#1c1c1e');
+    document.documentElement.style.setProperty('--text2', isDark ? '#ebebf5' : '#3a3a3c');
+    document.documentElement.style.setProperty('--text3', isDark ? '#8e8e93' : '#8e8e93');
+    document.documentElement.style.setProperty('--border', isDark ? '#38383a' : '#e5e5ea');
+    document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
     localStorage.setItem('sk_theme', isDark ? 'dark' : 'light');
+    if (navigator.vibrate) navigator.vibrate(5);
 }
 (function() {
     const saved = localStorage.getItem('sk_theme');
-    if (saved === 'light') {
-        isDark = false;
-        document.body.classList.add('light');
-        document.getElementById('themeBtn').innerText = '◑';
+    if (saved === 'dark') {
+        isDark = true;
+        document.documentElement.style.setProperty('--bg', '#000000');
+        document.documentElement.style.setProperty('--bg-card', '#1c1c1e');
+        document.documentElement.style.setProperty('--bg-input', '#2c2c2e');
+        document.documentElement.style.setProperty('--text', '#ffffff');
+        document.documentElement.style.setProperty('--text2', '#ebebf5');
+        document.documentElement.style.setProperty('--text3', '#8e8e93');
+        document.documentElement.style.setProperty('--border', '#38383a');
+        document.getElementById('themeBtn').innerText = '☀️';
     }
 })();
 
@@ -2990,6 +2935,7 @@ function toggleTheme() {
 renderPackages();
 renderFreeStatus();
 renderReviews();
+updateBackButton();
 console.log('🚀 Shorekeeper Elite Ready!');
 </script>
 </body>
