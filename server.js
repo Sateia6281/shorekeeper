@@ -782,278 +782,345 @@ try {
         );
     });
 
+    // ============================================================
+    // CALLBACK QUERY - DIPERBAIKI!
+    // ============================================================
     bot.on('callback_query', async (callback) => {
-        const chatId = callback.message.chat.id;
-        const data_cb = callback.data;
-        const isAdmin = String(chatId) === String(ADMIN_ID);
+        try {
+            const chatId = callback.message.chat.id;
+            const data_cb = callback.data;
+            const isAdmin = String(chatId) === String(ADMIN_ID);
 
-        bot.answerCallbackQuery(callback.id);
+            await bot.answerCallbackQuery(callback.id);
 
-        if (data_cb.startsWith('gen_')) {
-            if (!isAdmin) {
-                bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
-                return;
-            }
-            const label = data_cb.replace('gen_', '');
-            if (label === 'cancel') {
-                bot.sendMessage(chatId, '❌ Generate key dibatalkan.');
-                return;
-            }
+            console.log('📩 Callback received:', data_cb);
+            console.log('👤 Chat ID:', chatId);
+            console.log('👑 Is Admin:', isAdmin);
 
-            const key = generateRandomKey();
-            if (addKey(label, key)) {
-                const pkg = PKG_LIST.find(p => p.id === label);
-                const pkgName = pkg ? pkg.name : label;
-                bot.sendMessage(chatId,
-                    `✅ **KEY BERHASIL DIGENERATE!**\n━━━━━━━━━━━━━━━\n\n🔑 \`${key}\`\n📦 ${pkgName}\n📊 Stok ${label}: ${getStockCount(label)} key\n\n📋 Klik tombol di bawah untuk salin:`,
-                    {
-                        parse_mode: 'Markdown',
-                        reply_markup: {
-                            inline_keyboard: [
-                                [{ text: '📋 Salin Key', callback_data: `copy_${key}` }],
-                                [{ text: '🔄 Generate Lagi', callback_data: 'genkey_again' }],
-                            ]
+            // ============================================================
+            // GENERATE KEY
+            // ============================================================
+            if (data_cb.startsWith('gen_')) {
+                console.log('🔑 Generate key triggered for:', data_cb);
+                
+                if (!isAdmin) {
+                    await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                    return;
+                }
+                
+                const label = data_cb.replace('gen_', '');
+                if (label === 'cancel') {
+                    await bot.sendMessage(chatId, '❌ Generate key dibatalkan.');
+                    return;
+                }
+
+                const key = generateRandomKey();
+                console.log('🔑 Generated key:', key, 'for label:', label);
+                
+                if (addKey(label, key)) {
+                    const pkg = PKG_LIST.find(p => p.id === label);
+                    const pkgName = pkg ? pkg.name : label;
+                    await bot.sendMessage(chatId,
+                        `✅ **KEY BERHASIL DIGENERATE!**\n━━━━━━━━━━━━━━━\n\n🔑 \`${key}\`\n📦 ${pkgName}\n📊 Stok ${label}: ${getStockCount(label)} key\n\n📋 Klik tombol di bawah untuk salin:`,
+                        {
+                            parse_mode: 'Markdown',
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [{ text: '📋 Salin Key', callback_data: `copy_${key}` }],
+                                    [{ text: '🔄 Generate Lagi', callback_data: 'genkey_again' }],
+                                ]
+                            }
                         }
+                    );
+                    console.log('✅ Key sent to admin:', key);
+                } else {
+                    await bot.sendMessage(chatId, `❌ Gagal generate key untuk ${label}`);
+                    console.log('❌ Failed to generate key for:', label);
+                }
+                return;
+            }
+
+            // ============================================================
+            // GENKEY AGAIN
+            // ============================================================
+            if (data_cb === 'genkey_again') {
+                console.log('🔄 Genkey again triggered');
+                
+                if (!isAdmin) {
+                    await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                    return;
+                }
+                
+                const keyboard = {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '1 JAM', callback_data: 'gen_1JAM' }],
+                            [{ text: '5 JAM', callback_data: 'gen_5JAM' }],
+                            [{ text: '1 HARI', callback_data: 'gen_1DAY' }],
+                            [{ text: '3 HARI', callback_data: 'gen_3DAY' }],
+                            [{ text: '⭐ 7 HARI', callback_data: 'gen_7DAY' }],
+                            [{ text: '15 HARI', callback_data: 'gen_15DAY' }],
+                            [{ text: '30 HARI', callback_data: 'gen_30DAY' }],
+                            [{ text: '👑 LIFETIME', callback_data: 'gen_Lifetime' }],
+                            [{ text: '🎁 FREE 1 HARI', callback_data: 'gen_Free1Day' }],
+                            [{ text: '❌ BATAL', callback_data: 'gen_cancel' }],
+                        ]
                     }
-                );
-            } else {
-                bot.sendMessage(chatId, `❌ Gagal generate key untuk ${label}`);
-            }
-            return;
-        }
+                };
 
-        if (data_cb === 'genkey_again') {
-            if (!isAdmin) {
-                bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                await bot.sendMessage(chatId, '🔑 Pilih paket lagi:', keyboard);
                 return;
             }
-            bot.sendMessage(chatId, '🔑 Pilih paket lagi:', {
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '1 JAM', callback_data: 'gen_1JAM' }],
-                        [{ text: '5 JAM', callback_data: 'gen_5JAM' }],
-                        [{ text: '1 HARI', callback_data: 'gen_1DAY' }],
-                        [{ text: '3 HARI', callback_data: 'gen_3DAY' }],
-                        [{ text: '⭐ 7 HARI', callback_data: 'gen_7DAY' }],
-                        [{ text: '15 HARI', callback_data: 'gen_15DAY' }],
-                        [{ text: '30 HARI', callback_data: 'gen_30DAY' }],
-                        [{ text: '👑 LIFETIME', callback_data: 'gen_Lifetime' }],
-                        [{ text: '🎁 FREE 1 HARI', callback_data: 'gen_Free1Day' }],
-                        [{ text: '❌ BATAL', callback_data: 'gen_cancel' }],
-                    ]
+
+            // ============================================================
+            // COPY KEY
+            // ============================================================
+            if (data_cb.startsWith('copy_')) {
+                const key = data_cb.replace('copy_', '');
+                await bot.sendMessage(chatId, `📋 Key: \`${key}\``, { parse_mode: 'Markdown' });
+                return;
+            }
+
+            // ============================================================
+            // RESET STOCK
+            // ============================================================
+            if (data_cb === 'resetstock_confirm') {
+                if (!isAdmin) {
+                    await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                    return;
                 }
-            });
-            return;
-        }
-
-        if (data_cb.startsWith('copy_')) {
-            const key = data_cb.replace('copy_', '');
-            bot.sendMessage(chatId, `📋 Key: \`${key}\``, { parse_mode: 'Markdown' });
-            return;
-        }
-
-        if (data_cb === 'resetstock_confirm') {
-            if (!isAdmin) {
-                bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
-                return;
-            }
-            const totalBefore = getTotalStock();
-            for (const label in data.stock) {
-                data.stock[label] = [];
-            }
-            saveData(data);
-            bot.sendMessage(chatId, `✅ SEMUA STOK DIRESET!\n━━━━━━━━━━━━━━━\n🗑️ ${totalBefore} key dihapus dari semua paket.\n📊 Total stok sekarang: 0 key`);
-            return;
-        }
-
-        if (data_cb === 'resetstock_cancel') {
-            bot.sendMessage(chatId, '❌ Reset stok dibatalkan.');
-            return;
-        }
-
-        if (data_cb.startsWith('buy_')) {
-            const pkgId = data_cb.replace('buy_', '');
-            const pkg = PKG_LIST.find(p => p.id === pkgId);
-            
-            if (!pkg) {
-                bot.sendMessage(chatId, '❌ Paket tidak ditemukan!');
-                return;
-            }
-            
-            if (getStockCount(pkgId) === 0) {
-                bot.sendMessage(chatId, 
-                    `❌ Stok **${pkg.name}** habis! Silahkan pilih paket lain.`,
-                    { parse_mode: 'Markdown' }
-                );
-                return;
-            }
-            
-            const orderId = generateOrderId();
-            userTransactions.set(chatId, {
-                step: 'waiting_payment',
-                packageId: pkgId,
-                packageName: pkg.name,
-                price: pkg.price,
-                orderId: orderId,
-                userChatId: chatId
-            });
-            
-            const qrisFile = `qris-${pkgId.toLowerCase()}.jpg`;
-            
-            const caption = 
-                `💳 **INSTRUKSI PEMBAYARAN**\n━━━━━━━━━━━━━━━\n\n` +
-                `📦 Paket: ${pkg.name}\n` +
-                `💰 Harga: Rp ${pkg.price.toLocaleString()}\n\n` +
-                `📌 **CARA BAYAR:**\n` +
-                `━━━━━━━━━━━━━━━\n` +
-                `1️⃣ SCAN QRIS di bawah ini\n` +
-                `   (QRIS khusus untuk paket ${pkg.name})\n\n` +
-                `2️⃣ Transfer sesuai nominal: Rp ${pkg.price.toLocaleString()}\n\n` +
-                `3️⃣ Kirim **FOTO BUKTI TRANSFER**\n` +
-                `   (langsung kirim gambarnya ya!)\n\n` +
-                `🆔 Order ID: \`${orderId}\`\n\n` +
-                `⏳ Admin akan verifikasi dalam 5-15 menit`;
-            
-            bot.sendPhoto(chatId, qrisFile, {
-                caption: caption,
-                parse_mode: 'Markdown'
-            }).catch((err) => {
-                console.error('QRIS file not found:', qrisFile);
-                bot.sendMessage(chatId,
-                    `❌ Maaf, QRIS untuk paket ini sedang tidak tersedia.\n` +
-                    `Silahkan transfer ke:\n` +
-                    `📱 DANA/OVO: 0895401347006\n\n` +
-                    `🆔 Order ID: \`${orderId}\``,
-                    { parse_mode: 'Markdown' }
-                );
-            });
-            
-            const keyboard = {
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '❌ Batal', callback_data: 'cancel_buy' }]
-                    ]
+                const totalBefore = getTotalStock();
+                for (const label in data.stock) {
+                    data.stock[label] = [];
                 }
-            };
-            
-            bot.sendMessage(chatId, '📸 Setelah bayar, kirim foto buktinya ya!', keyboard);
-            return;
-        }
-
-        if (data_cb === 'cancel_buy') {
-            userTransactions.delete(chatId);
-            bot.sendMessage(chatId, '❌ Transaksi dibatalkan.');
-            return;
-        }
-
-        if (data_cb.startsWith('approve_')) {
-            if (!isAdmin) {
-                bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                saveData(data);
+                await bot.sendMessage(chatId, `✅ SEMUA STOK DIRESET!\n━━━━━━━━━━━━━━━\n🗑️ ${totalBefore} key dihapus dari semua paket.\n📊 Total stok sekarang: 0 key`);
                 return;
             }
-            const orderId = data_cb.replace('approve_', '');
-            
-            let userChatId = null;
-            let trans = null;
-            for (const [chat, t] of userTransactions) {
-                if (t.orderId === orderId) {
-                    userChatId = chat;
-                    trans = t;
-                    break;
+
+            if (data_cb === 'resetstock_cancel') {
+                await bot.sendMessage(chatId, '❌ Reset stok dibatalkan.');
+                return;
+            }
+
+            // ============================================================
+            // BELI KEY
+            // ============================================================
+            if (data_cb.startsWith('buy_')) {
+                console.log('🛒 Buy key triggered:', data_cb);
+                
+                const pkgId = data_cb.replace('buy_', '');
+                const pkg = PKG_LIST.find(p => p.id === pkgId);
+                
+                if (!pkg) {
+                    await bot.sendMessage(chatId, '❌ Paket tidak ditemukan!');
+                    return;
                 }
-            }
-            
-            if (!trans) {
-                bot.sendMessage(chatId, '❌ Transaksi tidak ditemukan!');
+                
+                if (getStockCount(pkgId) === 0) {
+                    await bot.sendMessage(chatId, 
+                        `❌ Stok **${pkg.name}** habis! Silahkan pilih paket lain.`,
+                        { parse_mode: 'Markdown' }
+                    );
+                    return;
+                }
+                
+                const orderId = generateOrderId();
+                userTransactions.set(chatId, {
+                    step: 'waiting_payment',
+                    packageId: pkgId,
+                    packageName: pkg.name,
+                    price: pkg.price,
+                    orderId: orderId,
+                    userChatId: chatId
+                });
+                
+                const qrisFile = `qris-${pkgId.toLowerCase()}.jpg`;
+                
+                const caption = 
+                    `💳 **INSTRUKSI PEMBAYARAN**\n━━━━━━━━━━━━━━━\n\n` +
+                    `📦 Paket: ${pkg.name}\n` +
+                    `💰 Harga: Rp ${pkg.price.toLocaleString()}\n\n` +
+                    `📌 **CARA BAYAR:**\n` +
+                    `━━━━━━━━━━━━━━━\n` +
+                    `1️⃣ SCAN QRIS di bawah ini\n` +
+                    `   (QRIS khusus untuk paket ${pkg.name})\n\n` +
+                    `2️⃣ Transfer sesuai nominal: Rp ${pkg.price.toLocaleString()}\n\n` +
+                    `3️⃣ Kirim **FOTO BUKTI TRANSFER**\n` +
+                    `   (langsung kirim gambarnya ya!)\n\n` +
+                    `🆔 Order ID: \`${orderId}\`\n\n` +
+                    `⏳ Admin akan verifikasi dalam 5-15 menit`;
+                
+                try {
+                    await bot.sendPhoto(chatId, qrisFile, {
+                        caption: caption,
+                        parse_mode: 'Markdown'
+                    });
+                } catch (err) {
+                    console.error('QRIS file not found:', qrisFile);
+                    await bot.sendMessage(chatId,
+                        `❌ Maaf, QRIS untuk paket ini sedang tidak tersedia.\n` +
+                        `Silahkan transfer ke:\n` +
+                        `📱 DANA/OVO: 0895401347006\n\n` +
+                        `🆔 Order ID: \`${orderId}\``,
+                        { parse_mode: 'Markdown' }
+                    );
+                }
+                
+                const keyboard = {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '❌ Batal', callback_data: 'cancel_buy' }]
+                        ]
+                    }
+                };
+                
+                await bot.sendMessage(chatId, '📸 Setelah bayar, kirim foto buktinya ya!', keyboard);
                 return;
             }
-            
-            const key = reserveKey(trans.packageId);
-            
-            if (!key) {
-                bot.sendMessage(chatId, '❌ Stok habis!');
+
+            // ============================================================
+            // BATAL BELI
+            // ============================================================
+            if (data_cb === 'cancel_buy') {
+                userTransactions.delete(chatId);
+                await bot.sendMessage(chatId, '❌ Transaksi dibatalkan.');
+                return;
+            }
+
+            // ============================================================
+            // APPROVE ORDER
+            // ============================================================
+            if (data_cb.startsWith('approve_')) {
+                console.log('✅ Approve triggered:', data_cb);
+                
+                if (!isAdmin) {
+                    await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                    return;
+                }
+                
+                const orderId = data_cb.replace('approve_', '');
+                
+                let userChatId = null;
+                let trans = null;
+                for (const [chat, t] of userTransactions) {
+                    if (t.orderId === orderId) {
+                        userChatId = chat;
+                        trans = t;
+                        break;
+                    }
+                }
+                
+                if (!trans) {
+                    await bot.sendMessage(chatId, '❌ Transaksi tidak ditemukan!');
+                    return;
+                }
+                
+                const key = reserveKey(trans.packageId);
+                
+                if (!key) {
+                    await bot.sendMessage(chatId, '❌ Stok habis!');
+                    if (userChatId) {
+                        await bot.sendMessage(userChatId, '❌ Maaf, stok sedang habis. Admin akan refund.');
+                    }
+                    return;
+                }
+                
+                const order = {
+                    orderId: orderId,
+                    package: trans.packageName,
+                    packageId: trans.packageId,
+                    price: 'Rp ' + trans.price.toLocaleString(),
+                    key: key,
+                    email: '-',
+                    phone: '-',
+                    status: 'approved',
+                    createdAt: new Date().toISOString(),
+                    type: 'bot',
+                    userChatId: userChatId
+                };
+                data.orders.push(order);
+                data.totalSold = (data.totalSold || 0) + 1;
+                data.totalRevenue = (data.totalRevenue || 0) + trans.price;
+                saveData(data);
+                
                 if (userChatId) {
-                    bot.sendMessage(userChatId, '❌ Maaf, stok sedang habis. Admin akan refund.');
+                    await bot.sendMessage(userChatId,
+                        `🎉 **PEMBAYARAN DISETUJUI!**\n━━━━━━━━━━━━━━━\n\n` +
+                        `🔑 **KEY ANDA:**\n\`${key}\`\n\n` +
+                        `📦 Paket: ${trans.packageName}\n` +
+                        `🆔 Order: ${orderId}\n\n` +
+                        `📌 Cara pakai:\n` +
+                        `1️⃣ Download APK di website\n` +
+                        `2️⃣ Install & buka aplikasi\n` +
+                        `3️⃣ Masukkan key di atas\n` +
+                        `4️⃣ FITUR LANGSUNG AKTIF! 🚀\n\n` +
+                        `🌐 https://shorekeeper-skcheat.up.railway.app`,
+                        { parse_mode: 'Markdown' }
+                    );
                 }
+                
+                userTransactions.delete(userChatId);
+                
+                await bot.sendMessage(chatId, 
+                    `✅ **KEY TERKIRIM!**\n━━━━━━━━━━━━━━━\n\n🔑 ${key}\n📦 ${trans.packageName}\n👤 User: ${userChatId || 'Unknown'}`
+                );
                 return;
             }
-            
-            const order = {
-                orderId: orderId,
-                package: trans.packageName,
-                packageId: trans.packageId,
-                price: 'Rp ' + trans.price.toLocaleString(),
-                key: key,
-                email: '-',
-                phone: '-',
-                status: 'approved',
-                createdAt: new Date().toISOString(),
-                type: 'bot',
-                userChatId: userChatId
-            };
-            data.orders.push(order);
-            data.totalSold = (data.totalSold || 0) + 1;
-            data.totalRevenue = (data.totalRevenue || 0) + trans.price;
-            saveData(data);
-            
-            if (userChatId) {
-                bot.sendMessage(userChatId,
-                    `🎉 **PEMBAYARAN DISETUJUI!**\n━━━━━━━━━━━━━━━\n\n` +
-                    `🔑 **KEY ANDA:**\n\`${key}\`\n\n` +
-                    `📦 Paket: ${trans.packageName}\n` +
-                    `🆔 Order: ${orderId}\n\n` +
-                    `📌 Cara pakai:\n` +
-                    `1️⃣ Download APK di website\n` +
-                    `2️⃣ Install & buka aplikasi\n` +
-                    `3️⃣ Masukkan key di atas\n` +
-                    `4️⃣ FITUR LANGSUNG AKTIF! 🚀\n\n` +
-                    `🌐 https://shorekeeper-skcheat.up.railway.app`,
-                    { parse_mode: 'Markdown' }
-                );
-            }
-            
-            userTransactions.delete(userChatId);
-            
-            bot.sendMessage(chatId, 
-                `✅ **KEY TERKIRIM!**\n━━━━━━━━━━━━━━━\n\n🔑 ${key}\n📦 ${trans.packageName}\n👤 User: ${userChatId || 'Unknown'}`
-            );
-            return;
-        }
 
-        if (data_cb.startsWith('reject_')) {
-            if (!isAdmin) {
-                bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
-                return;
-            }
-            const orderId = data_cb.replace('reject_', '');
-            
-            let userChatId = null;
-            let trans = null;
-            for (const [chat, t] of userTransactions) {
-                if (t.orderId === orderId) {
-                    userChatId = chat;
-                    trans = t;
-                    break;
+            // ============================================================
+            // REJECT ORDER
+            // ============================================================
+            if (data_cb.startsWith('reject_')) {
+                console.log('❌ Reject triggered:', data_cb);
+                
+                if (!isAdmin) {
+                    await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
+                    return;
                 }
-            }
-            
-            if (!trans) {
-                bot.sendMessage(chatId, '❌ Transaksi tidak ditemukan!');
+                
+                const orderId = data_cb.replace('reject_', '');
+                
+                let userChatId = null;
+                let trans = null;
+                for (const [chat, t] of userTransactions) {
+                    if (t.orderId === orderId) {
+                        userChatId = chat;
+                        trans = t;
+                        break;
+                    }
+                }
+                
+                if (!trans) {
+                    await bot.sendMessage(chatId, '❌ Transaksi tidak ditemukan!');
+                    return;
+                }
+                
+                if (userChatId) {
+                    await bot.sendMessage(userChatId,
+                        `❌ **PEMBAYARAN DITOLAK**\n━━━━━━━━━━━━━━━\n\n🆔 ${orderId}\n📌 Bukti transfer tidak valid / tidak jelas.\n🔄 Silahkan kirim ulang bukti yang jelas.`
+                    );
+                }
+                
+                userTransactions.delete(userChatId);
+                await bot.sendMessage(chatId, `✅ Order ${orderId} ditolak. User sudah diberitahu.`);
                 return;
             }
-            
-            if (userChatId) {
-                bot.sendMessage(userChatId,
-                    `❌ **PEMBAYARAN DITOLAK**\n━━━━━━━━━━━━━━━\n\n🆔 ${orderId}\n📌 Bukti transfer tidak valid / tidak jelas.\n🔄 Silahkan kirim ulang bukti yang jelas.`
-                );
-            }
-            
-            userTransactions.delete(userChatId);
-            bot.sendMessage(chatId, `✅ Order ${orderId} ditolak. User sudah diberitahu.`);
-            return;
+
+            console.log('⚠️ Unknown callback:', data_cb);
+            await bot.answerCallbackQuery(callback.id, { text: '⚠️ Perintah tidak dikenal!' });
+
+        } catch (error) {
+            console.error('❌ Callback error:', error);
+            try {
+                await bot.sendMessage(chatId, '❌ Terjadi error! Coba lagi nanti.');
+            } catch (e) {}
         }
     });
 
+    // ============================================================
+    // HANDLE PHOTO (BUKTI TRANSFER)
+    // ============================================================
     bot.on('photo', async (msg) => {
         const chatId = msg.chat.id;
         const trans = userTransactions.get(chatId);
@@ -1105,6 +1172,9 @@ try {
         userTransactions.set(chatId, trans);
     });
 
+    // ============================================================
+    // BATCH IMPORT - MESSAGE HANDLER
+    // ============================================================
     bot.on('message', (msg) => {
         const chatId = msg.chat.id;
         const text = msg.text || '';
@@ -1338,7 +1408,7 @@ app.get('/api/stats', (req, res) => {
 });
 
 // ============================================================
-// ENDPOINT 1: JNI LAMA (krunchpoint) - TETAP JALAN!
+// ENDPOINT 1: JNI LAMA (krunchpoint)
 // ============================================================
 app.post('/krunchpoint/connect', (req, res) => {
     const { user_key, serial, challenge } = req.body;
@@ -1398,7 +1468,7 @@ app.post('/krunchpoint/connect', (req, res) => {
 });
 
 // ============================================================
-// ENDPOINT 2: JNI BARU (skcheat) - PAKAI INI JUGA!
+// ENDPOINT 2: JNI BARU (skcheat)
 // ============================================================
 app.post('/connect', (req, res) => {
     const { user_key, serial, challenge } = req.body;
