@@ -2226,7 +2226,6 @@ function useStock(label) {
     if (!s[label] || s[label].length === 0) return null;
     const key = s[label].shift();
     saveStock(s);
-    // Sync ke server
     syncToServer(s);
     return key;
 }
@@ -2280,7 +2279,6 @@ async function syncFromServer() {
             renderPackages();
             renderStockStatus();
             
-            // Update total sold
             const soldEl = document.getElementById('terjualCnt');
             if (soldEl && data.totalSold !== undefined) {
                 const val = data.totalSold || 0;
@@ -2294,7 +2292,6 @@ async function syncFromServer() {
     }
 }
 
-// Sync setiap 30 detik
 setInterval(syncFromServer, 30000);
 setTimeout(syncFromServer, 2000);
 
@@ -2522,7 +2519,6 @@ async function submitOrder() {
     btn.disabled = true;
     btn.innerHTML = '<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;"></span>MENGIRIM...';
     
-    // Ambil key dari stok
     const key = useStock(curPkg.label);
     if (!key) {
         toast('STOK HABIS!', '#ff3b3b');
@@ -2560,7 +2556,6 @@ async function submitOrder() {
             renderPackages();
         } else {
             toast('GAGAL: ' + (result.message || 'Coba lagi'), '#ff3b3b');
-            // Kembalikan key
             addStock(curPkg.label, key);
             btn.disabled = false;
             btn.innerText = 'KIRIM ORDER';
@@ -2600,7 +2595,6 @@ async function doCheck() {
                 </div>
             </div>`;
         } else {
-            // Cek di localStorage sebagai fallback
             const orders = getOrders();
             const order = orders.find(o => o.orderId === id || o.userId === id);
             if (order && order.key) {
@@ -2617,7 +2611,6 @@ async function doCheck() {
             }
         }
     } catch(e) {
-        // Fallback ke localStorage
         const orders = getOrders();
         const order = orders.find(o => o.orderId === id || o.userId === id);
         if (order && order.key) {
@@ -2747,7 +2740,6 @@ async function submitFreeRequest() {
     const oid = 'FREE' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
     const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
     
-    // Kirim ke server
     try {
         await fetch(`${API_URL}/api/free/request`, {
             method: 'POST',
@@ -2766,7 +2758,6 @@ async function submitFreeRequest() {
     btn.innerHTML = 'KEY DIDAPATKAN!';
     btn.className = 'btn btn-g';
     
-    // Kirim notifikasi ke Telegram (lewat backend, gak expose token)
     try {
         await fetch(`${API_URL}/api/notify`, {
             method: 'POST',
@@ -2817,7 +2808,6 @@ function saveReviews(r) {
     localStorage.setItem('sk_reviews', JSON.stringify(r));
 }
 
-// Data awal
 (function() {
     if (getReviews().length === 0) {
         saveReviews([
@@ -2878,7 +2868,6 @@ function submitReview() {
     renderReviews();
     toast('REVIEW TERKIRIM, MAKASIH!', '#888');
     
-    // Kirim ke Telegram (lewat backend, gak expose token)
     fetch(`${API_URL}/api/notify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
