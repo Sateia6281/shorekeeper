@@ -122,30 +122,50 @@
             color: var(--blue);
         }
         .splash-sub {
-            font-size: 0.75rem;
-            color: var(--text3);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-        .splash-loader {
-            margin-top: 30px;
-            width: 40px;
-            height: 4px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .splash-loader .bar {
-            height: 100%;
-            width: 0%;
-            background: var(--blue);
-            border-radius: 4px;
-            animation: loadBar 1.5s ease forwards;
-        }
-        @keyframes loadBar {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
+    font-size: 0.75rem;
+    color: var(--text3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.splash-loader {
+    margin-top: 30px;
+    width: 40px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.splash-loader .bar {
+    height: 100%;
+    width: 0%;
+    background: var(--blue);
+    border-radius: 4px;
+    animation: loadBar 1.5s ease forwards;
+}
+
+/* ===== SPLASH BUTTON ===== */
+.splash-btn {
+    margin-top: 24px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    padding: 12px 40px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: var(--transition-spring);
+    box-shadow: 0 8px 30px rgba(0, 122, 255, 0.3);
+}
+.splash-btn:active {
+    transform: scale(0.95);
+}
+
+@keyframes loadBar {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
         .splash-dear {
             font-size: 0.9rem;
             color: var(--text2);
@@ -1700,7 +1720,7 @@
     <div class="splash-title">Shorekeeper <span>Elite</span></div>
     <div class="splash-dear">Dear <b>Neastse</b> 🤍</div>
     <div class="splash-sub">Blood Strike Tool</div>
-    <div class="splash-loader"><div class="bar"></div></div>
+    <button onclick="closeSplash()" class="splash-btn">✨ Masuk</button>
 </div>
 
 <!-- ============================================================
@@ -2192,13 +2212,13 @@
 
 <script>
 // ============================================================
-// SPLASH SCREEN - Hilang setelah loading
+// SPLASH SCREEN - Tombol Masuk
 // ============================================================
-setTimeout(() => {
+function closeSplash() {
     const splash = document.getElementById('splashScreen');
     splash.classList.add('hide');
     setTimeout(() => splash.style.display = 'none', 800);
-}, 2000);
+}
 
 // ============================================================
 // KONFIGURASI
