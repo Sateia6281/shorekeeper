@@ -8,11 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ============================================================
-   CSS LENGKAP
-   ============================================================ */
-
-/* ===== RESET & SCROLL ===== */
 * {
     margin: 0;
     padding: 0;
@@ -33,83 +28,85 @@ html {
     -ms-overflow-style: none;
 }
 
-/* ===== VARIABEL THEME ===== */
 :root {
-    --bg: #0a0a0a;
-    --bg2: #111111;
-    --bg3: #1a1a1a;
-    --bg4: #222222;
-    --text: #eeeeee;
-    --text2: #888888;
-    --text3: #555555;
-    --border: #222222;
-    --primary: #ffffff;
-    --primary2: #cccccc;
-    --green: #aaaaaa;
-    --gold: #999999;
-    --red: #666666;
-    --alarm: #ff3b3b;
-    --alarm-dim: #7a1f1f;
-    --card: #111111;
-    --shadow: rgba(0,0,0,0.8);
+    --bg-primary: #0a0a1a;
+    --bg-secondary: #120a24;
+    --bg-card: rgba(20, 10, 40, 0.85);
+    --bg-card-hover: rgba(30, 15, 60, 0.9);
+    --text-primary: #ffffff;
+    --text-secondary: #b8b0d0;
+    --text-muted: #7a6a9a;
+    --border-color: rgba(108, 60, 225, 0.2);
+    --color-purple: #6C3CE1;
+    --color-purple-light: #8B5CF6;
+    --color-purple-dark: #4C1D95;
+    --color-blue: #4FACFE;
+    --color-blue-light: #7EC8FF;
+    --color-pink: #EC4899;
+    --gradient-main: linear-gradient(135deg, #6C3CE1, #4FACFE);
+    --gradient-glow: linear-gradient(135deg, rgba(108, 60, 225, 0.3), rgba(79, 172, 254, 0.3));
+    --shadow-glow: 0 0 40px rgba(108, 60, 225, 0.2);
     --radius: 16px;
     --radius-sm: 10px;
     --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-body.light {
-    --bg: #f5f5f5;
-    --bg2: #ffffff;
-    --bg3: #e8e8e8;
-    --bg4: #d5d5d5;
-    --text: #111111;
-    --text2: #666666;
-    --text3: #999999;
-    --border: #dddddd;
-    --primary: #111111;
-    --primary2: #444444;
-    --green: #666666;
-    --gold: #888888;
-    --red: #999999;
-    --alarm: #d62828;
-    --alarm-dim: #f0baba;
-    --card: #ffffff;
-    --shadow: rgba(0,0,0,0.06);
-}
-
-html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
+body {
+    background: var(--bg-primary);
+    background-image: 
+        radial-gradient(ellipse at 10% 20%, rgba(108, 60, 225, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(79, 172, 254, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.05) 0%, transparent 70%);
+    color: var(--text-primary);
     font-family: var(--font-display);
     overflow-x: hidden;
+    min-height: 100vh;
     transition: background 0.4s, color 0.4s;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+}
+
+body.light {
+    --bg-primary: #f0ecf9;
+    --bg-secondary: #e8e0f5;
+    --bg-card: rgba(255, 255, 255, 0.85);
+    --bg-card-hover: rgba(255, 255, 255, 0.95);
+    --text-primary: #1a102a;
+    --text-secondary: #4a3a6a;
+    --text-muted: #8a7aaa;
+    --border-color: rgba(108, 60, 225, 0.15);
+    background-image: 
+        radial-gradient(ellipse at 10% 20%, rgba(108, 60, 225, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, rgba(79, 172, 254, 0.06) 0%, transparent 50%);
 }
 
 .mono {
     font-family: var(--font-mono);
     font-feature-settings: "tnum";
 }
-.alarm-text {
-    color: var(--alarm) !important;
+
+/* ===== GLOW EFFECTS ===== */
+.glow-text {
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.glow-border {
+    border: 1px solid transparent;
+    background-image: var(--gradient-main);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+.glow-shadow {
+    box-shadow: var(--shadow-glow);
 }
 
-@keyframes alarmPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
-}
-.alarm-pulse {
-    animation: alarmPulse 1.4s ease-in-out infinite;
-}
-
-/* ===== LOADING SCREEN ===== */
+/* ===== LOADING ===== */
 #loader {
     position: fixed;
     inset: 0;
-    background: var(--bg);
+    background: var(--bg-primary);
     z-index: 99999;
     display: flex;
     flex-direction: column;
@@ -122,10 +119,10 @@ html, body {
     pointer-events: none;
 }
 #loader .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--text);
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(108, 60, 225, 0.2);
+    border-top-color: var(--color-purple-light);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -134,10 +131,31 @@ html, body {
 }
 #loader .load-text {
     font-size: 0.7rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-top: 14px;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     text-transform: uppercase;
+}
+#loader .load-bar {
+    width: 120px;
+    height: 3px;
+    background: rgba(108, 60, 225, 0.2);
+    border-radius: 4px;
+    margin-top: 16px;
+    overflow: hidden;
+}
+#loader .load-bar::after {
+    content: '';
+    display: block;
+    width: 40%;
+    height: 100%;
+    background: var(--gradient-main);
+    border-radius: 4px;
+    animation: loadSlide 1s ease-in-out infinite;
+}
+@keyframes loadSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
 }
 
 /* ===== FLOATING CHAT ===== */
@@ -151,26 +169,26 @@ html, body {
     gap: 10px;
 }
 .floating-chat a {
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
-    background: var(--bg2);
-    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
     text-decoration: none;
-    color: var(--text);
-    box-shadow: 0 4px 20px var(--shadow);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-glow);
     transition: all 0.3s;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     position: relative;
 }
 .floating-chat a:hover {
-    transform: scale(1.08);
-    border-color: var(--text);
+    transform: scale(1.1);
+    border-color: var(--color-purple-light);
 }
 .floating-chat a .badge {
     position: absolute;
@@ -179,13 +197,13 @@ html, body {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--green);
-    border: 2px solid var(--bg2);
+    background: var(--color-purple-light);
+    border: 2px solid var(--bg-primary);
     font-size: 0.4rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--bg);
+    color: #fff;
     font-weight: 700;
 }
 
@@ -195,13 +213,13 @@ html, body {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--bg2);
-    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-top: 1px solid var(--border-color);
     display: flex;
     z-index: 999;
     padding-bottom: env(safe-area-inset-bottom);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
 }
 .bnav-item {
     flex: 1;
@@ -211,23 +229,46 @@ html, body {
     padding: 10px 0 8px;
     gap: 2px;
     cursor: pointer;
-    color: var(--text3);
+    color: var(--text-muted);
     font-size: 0.48rem;
     font-weight: 600;
     transition: all 0.3s;
     text-transform: uppercase;
     letter-spacing: 0.8px;
+    position: relative;
 }
 .bnav-item.active {
-    color: var(--text);
+    color: var(--color-purple-light);
+}
+.bnav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--gradient-main);
+    border-radius: 0 0 4px 4px;
 }
 .bnav-item .bicon {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1;
     transition: transform 0.3s;
 }
 .bnav-item.active .bicon {
-    transform: scale(1.1);
+    transform: scale(1.15);
+}
+.bnav-item .bnav-badge {
+    position: absolute;
+    top: 4px;
+    right: 50%;
+    transform: translateX(calc(50% + 20px));
+    background: var(--color-pink);
+    color: #fff;
+    font-size: 0.4rem;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 700;
 }
 
 /* ===== TOPBAR ===== */
@@ -235,14 +276,14 @@ html, body {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: var(--bg);
+    background: var(--bg-card);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
     padding: 12px 16px 10px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
 }
 .topbar-left {
     display: flex;
@@ -250,13 +291,13 @@ html, body {
     gap: 10px;
 }
 .topbar-icon {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: var(--radius-sm);
     overflow: hidden;
     cursor: pointer;
     flex-shrink: 0;
-    border: 1.5px solid var(--border);
+    border: 1.5px solid var(--border-color);
 }
 .topbar-icon img {
     width: 100%;
@@ -264,18 +305,19 @@ html, body {
     object-fit: cover;
 }
 .top-logo {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.5px;
-    color: var(--text);
 }
 .top-logo span {
-    color: var(--text2);
+    background: var(--gradient-main);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 .top-logo-sub {
-    font-size: 0.42rem;
-    color: var(--text3);
-    letter-spacing: 1.5px;
+    font-size: 0.4rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
     text-transform: uppercase;
 }
 .topbar-right {
@@ -284,11 +326,11 @@ html, body {
     gap: 6px;
 }
 .theme-toggle {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -297,7 +339,7 @@ html, body {
     transition: all 0.3s;
 }
 .theme-toggle:hover {
-    background: var(--bg4);
+    border-color: var(--color-purple-light);
 }
 
 /* ===== PAGE ===== */
@@ -310,73 +352,94 @@ html, body {
     display: block;
 }
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== HERO ===== */
 .hero {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 20px;
+    padding: 24px;
     margin-bottom: 14px;
     position: relative;
     overflow: hidden;
 }
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: var(--gradient-glow);
+    filter: blur(60px);
+    opacity: 0.5;
+}
 .hero::after {
     content: '';
     position: absolute;
-    top: -40px;
-    right: -40px;
+    bottom: -40px;
+    left: -40px;
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: var(--bg3);
-    opacity: 0.3;
+    background: radial-gradient(circle, rgba(108, 60, 225, 0.2), transparent);
+    filter: blur(40px);
 }
 .hero-tag {
     display: inline-block;
-    background: var(--bg3);
-    color: var(--text2);
+    background: var(--gradient-main);
+    color: #fff;
     font-size: 0.5rem;
     font-weight: 600;
-    padding: 3px 12px;
+    padding: 3px 14px;
     border-radius: 20px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
     margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
 }
 .hero-title {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    color: var(--text);
     line-height: 1.3;
     margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
 }
 .hero-sub {
     font-size: 0.7rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     line-height: 1.6;
     margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
 }
 .hero-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: var(--text);
-    color: var(--bg);
+    background: var(--gradient-main);
+    color: #fff;
     border: none;
-    padding: 10px 22px;
+    padding: 10px 24px;
     border-radius: var(--radius-sm);
     font-size: 0.72rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
+    position: relative;
+    z-index: 1;
 }
 .hero-btn:hover {
-    background: var(--text2);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 30px rgba(108, 60, 225, 0.4);
 }
 .hero-btn:active {
     transform: scale(0.97);
@@ -384,8 +447,10 @@ html, body {
 
 /* ===== COUNTDOWN ===== */
 .countdown-box {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 16px;
     margin-bottom: 14px;
@@ -393,9 +458,9 @@ html, body {
 }
 .countdown-box .cd-label {
     font-size: 0.55rem;
-    color: var(--text3);
+    color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     margin-bottom: 6px;
 }
 .countdown-box .cd-timer {
@@ -404,7 +469,6 @@ html, body {
     gap: 12px;
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--text);
     font-family: monospace;
     letter-spacing: 2px;
 }
@@ -412,11 +476,11 @@ html, body {
     min-width: 40px;
 }
 .countdown-box .cd-timer .cd-sep {
-    color: var(--text3);
+    color: var(--text-muted);
 }
 .countdown-box .cd-timer .cd-label-sm {
     font-size: 0.45rem;
-    color: var(--text3);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     display: block;
@@ -425,8 +489,10 @@ html, body {
 
 /* ===== TICKER ===== */
 .ticker {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 8px 14px;
     margin-bottom: 14px;
@@ -434,16 +500,16 @@ html, body {
     align-items: center;
     gap: 10px;
     font-size: 0.62rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     overflow: hidden;
 }
 .tdot-live {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: var(--green);
+    background: var(--color-purple-light);
     flex-shrink: 0;
-    animation: blink 2s infinite;
+    animation: blink 1.5s infinite;
 }
 @keyframes blink {
     0%, 100% { opacity: 1; }
@@ -455,12 +521,12 @@ html, body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 20px;
     padding: 3px 12px;
     font-size: 0.5rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     margin-bottom: 10px;
 }
 .admin-status .dot {
@@ -469,10 +535,10 @@ html, body {
     border-radius: 50%;
 }
 .admin-status .dot.online {
-    background: var(--green);
+    background: #34D399;
 }
 .admin-status .dot.offline {
-    background: var(--red);
+    background: var(--text-muted);
 }
 
 /* ===== STATS ===== */
@@ -483,31 +549,33 @@ html, body {
     margin-bottom: 14px;
 }
 .stat {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    padding: 12px 8px;
+    padding: 14px 8px;
     text-align: center;
     transition: all 0.3s;
 }
 .stat:hover {
-    border-color: var(--text3);
+    border-color: var(--color-purple-light);
+    transform: translateY(-2px);
 }
 .stat-n {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--text);
 }
 .stat-l {
     font-size: 0.48rem;
-    color: var(--text3);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-top: 2px;
 }
 .stat-t {
     font-size: 0.48rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-top: 1px;
 }
 
@@ -519,8 +587,10 @@ html, body {
     margin-bottom: 14px;
 }
 .feat {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
     display: flex;
@@ -528,38 +598,41 @@ html, body {
     gap: 10px;
     font-size: 0.68rem;
     font-weight: 500;
-    color: var(--text2);
+    color: var(--text-secondary);
     transition: all 0.3s;
 }
 .feat:hover {
-    border-color: var(--text3);
+    border-color: var(--color-purple-light);
+    transform: translateX(4px);
 }
 .feat-ic {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    background: var(--bg3);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--gradient-main);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.48rem;
+    font-size: 0.5rem;
     font-weight: 700;
-    color: var(--text);
+    color: #fff;
     letter-spacing: 0.2px;
     flex-shrink: 0;
 }
 
 /* ===== CARD ===== */
 .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 14px 16px;
     margin-bottom: 12px;
     transition: all 0.3s;
 }
 .card:hover {
-    border-color: var(--text3);
+    border-color: var(--color-purple-light);
 }
 
 /* ===== PAYMENT ===== */
@@ -569,28 +642,27 @@ html, body {
     gap: 5px;
 }
 .pay-tag {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 4px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: 4px 14px;
     border-radius: 16px;
     font-size: 0.55rem;
-    color: var(--text2);
+    color: var(--text-secondary);
 }
 
 /* ===== SEC TITLE ===== */
 .sec-title {
     font-size: 0.95rem;
     font-weight: 700;
-    color: var(--text);
     margin-bottom: 2px;
 }
 .sec-sub {
     font-size: 0.62rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-bottom: 12px;
 }
 
-/* ===== STOCK STATUS ===== */
+/* ===== STOCK ===== */
 .stock-status {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -598,8 +670,8 @@ html, body {
     margin-bottom: 12px;
 }
 .stock-item {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 8px 12px;
     display: flex;
@@ -608,17 +680,16 @@ html, body {
     font-size: 0.6rem;
 }
 .stock-item .s-label {
-    color: var(--text2);
+    color: var(--text-secondary);
 }
 .stock-item .s-count {
     font-weight: 600;
-    color: var(--text);
 }
 .stock-item .s-count.low {
-    color: var(--gold);
+    color: #F59E0B;
 }
 .stock-item .s-count.empty {
-    color: var(--alarm);
+    color: #EF4444;
 }
 
 /* ===== PKG ===== */
@@ -628,8 +699,10 @@ html, body {
     gap: 8px;
 }
 .pkg {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 14px 16px;
     display: flex;
@@ -640,47 +713,48 @@ html, body {
     position: relative;
 }
 .pkg:hover {
-    border-color: var(--text);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 24px var(--shadow);
+    border-color: var(--color-purple-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
 }
 .pkg:active {
     transform: scale(0.98);
 }
 .pkg.hot {
-    background: var(--bg3);
-    border-color: var(--text3);
+    border-color: var(--color-purple-light);
+    background: var(--bg-card-hover);
 }
 .pkg-name {
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--text);
 }
 .pkg-desc {
     font-size: 0.5rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-top: 2px;
 }
 .pkg-price {
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--text);
     text-align: right;
+}
+.pkg-price .glow-text {
+    font-size: 0.9rem;
 }
 .pkg-usd {
     font-size: 0.48rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-top: 1px;
 }
 .hot-tag {
     position: absolute;
     top: -1px;
     right: 14px;
-    background: var(--text);
-    color: var(--bg);
+    background: var(--gradient-main);
+    color: #fff;
     font-size: 0.38rem;
     font-weight: 700;
-    padding: 2px 10px;
+    padding: 2px 12px;
     border-radius: 0 0 8px 8px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
@@ -693,19 +767,19 @@ html, body {
     margin-left: 6px;
 }
 .stock-badge.available {
-    background: var(--bg3);
-    color: var(--text2);
-    border: 1px solid var(--border);
+    background: rgba(52, 211, 153, 0.15);
+    color: #34D399;
+    border: 1px solid rgba(52, 211, 153, 0.2);
 }
 .stock-badge.low {
-    background: var(--bg3);
-    color: var(--gold);
-    border: 1px solid var(--border);
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.2);
 }
 .stock-badge.empty {
-    background: var(--bg3);
-    color: var(--alarm);
-    border: 1px solid var(--alarm-dim);
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* ===== SEARCH ===== */
@@ -716,26 +790,26 @@ html, body {
 }
 .search-in {
     flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 11px 14px;
-    color: var(--text);
+    color: var(--text-primary);
     font-size: 0.75rem;
     font-family: inherit;
     transition: all 0.3s;
 }
 .search-in:focus {
     outline: none;
-    border-color: var(--text);
-    box-shadow: 0 0 0 3px var(--bg3);
+    border-color: var(--color-purple-light);
+    box-shadow: 0 0 0 3px rgba(108, 60, 225, 0.2);
 }
 .search-in::placeholder {
-    color: var(--text3);
+    color: var(--text-muted);
 }
 .search-btn {
-    background: var(--text);
-    color: var(--bg);
+    background: var(--gradient-main);
+    color: #fff;
     border: none;
     padding: 11px 18px;
     border-radius: var(--radius-sm);
@@ -747,7 +821,8 @@ html, body {
     transition: all 0.3s;
 }
 .search-btn:hover {
-    background: var(--text2);
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(108, 60, 225, 0.3);
 }
 .search-btn:active {
     transform: scale(0.97);
@@ -755,14 +830,16 @@ html, body {
 
 /* ===== RESULT ===== */
 .result-active {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 16px;
 }
 .result-label {
     font-size: 0.5rem;
-    color: var(--text2);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 6px;
@@ -770,28 +847,15 @@ html, body {
 .key-display {
     font-size: 0.95rem;
     font-weight: 700;
-    color: var(--text);
     letter-spacing: 1.5px;
     word-break: break-all;
     font-family: monospace;
 }
-.result-pending {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    text-align: center;
-}
 .result-404 {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    text-align: center;
-}
-.result-free {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 18px;
     text-align: center;
@@ -806,7 +870,7 @@ html, body {
     border-radius: var(--radius-sm);
     overflow: hidden;
     margin-bottom: 10px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-color);
 }
 .video-wrap iframe {
     position: absolute;
@@ -819,8 +883,10 @@ html, body {
 
 /* ===== KONTAK ===== */
 .kontak-item {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 12px 14px;
     display: flex;
@@ -833,46 +899,47 @@ html, body {
     transition: all 0.3s;
 }
 .kontak-item:hover {
-    border-color: var(--text);
+    border-color: var(--color-purple-light);
     transform: translateX(4px);
 }
 .kontak-item:active {
     transform: scale(0.98);
 }
 .kontak-ic {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: var(--bg3);
+    background: var(--gradient-main);
     font-size: 1rem;
-    color: var(--text);
+    color: #fff;
 }
 .kontak-name {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text);
 }
 .kontak-sub {
     font-size: 0.52rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-top: 1px;
 }
 
-/* ===== FAQ ACCORDION ===== */
+/* ===== FAQ ===== */
 .faq-item {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
     overflow: hidden;
     transition: all 0.3s;
 }
 .faq-item:hover {
-    border-color: var(--text3);
+    border-color: var(--color-purple-light);
 }
 .faq-q {
     padding: 12px 14px;
@@ -885,11 +952,10 @@ html, body {
 .faq-q-text {
     font-size: 0.72rem;
     font-weight: 600;
-    color: var(--text);
     flex: 1;
 }
 .faq-arrow {
-    color: var(--text3);
+    color: var(--text-muted);
     font-size: 0.7rem;
     transition: transform 0.4s;
     flex-shrink: 0;
@@ -908,7 +974,7 @@ html, body {
 }
 .faq-a-text {
     font-size: 0.68rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     line-height: 1.7;
 }
 
@@ -916,11 +982,11 @@ html, body {
 .rv-form input,
 .rv-form textarea {
     width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
-    color: var(--text);
+    color: var(--text-primary);
     font-size: 0.75rem;
     font-family: inherit;
     margin-bottom: 8px;
@@ -929,12 +995,12 @@ html, body {
 .rv-form input:focus,
 .rv-form textarea:focus {
     outline: none;
-    border-color: var(--text);
-    box-shadow: 0 0 0 3px var(--bg3);
+    border-color: var(--color-purple-light);
+    box-shadow: 0 0 0 3px rgba(108, 60, 225, 0.2);
 }
 .rv-form input::placeholder,
 .rv-form textarea::placeholder {
-    color: var(--text3);
+    color: var(--text-muted);
 }
 .rv-form textarea {
     resize: none;
@@ -948,8 +1014,9 @@ html, body {
 .star-b {
     font-size: 1.3rem;
     cursor: pointer;
-    opacity: 0.15;
+    opacity: 0.2;
     transition: all 0.3s;
+    color: #F59E0B;
 }
 .star-b.on {
     opacity: 1;
@@ -961,14 +1028,16 @@ html, body {
     margin-top: 12px;
 }
 .rv-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 14px;
     transition: all 0.3s;
 }
 .rv-card:hover {
-    border-color: var(--text3);
+    border-color: var(--color-purple-light);
 }
 .rv-top {
     display: flex;
@@ -977,43 +1046,43 @@ html, body {
     margin-bottom: 6px;
 }
 .rv-av {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: var(--bg3);
+    background: var(--gradient-main);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--text);
+    color: #fff;
     flex-shrink: 0;
 }
 .rv-name {
     font-size: 0.72rem;
     font-weight: 600;
-    color: var(--text);
 }
 .rv-time {
     font-size: 0.48rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-top: 1px;
 }
 .rv-stars {
     font-size: 0.7rem;
     margin-bottom: 4px;
+    color: #F59E0B;
 }
 .rv-text {
     font-size: 0.68rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     line-height: 1.6;
 }
 .rv-verified {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    background: var(--bg3);
-    color: var(--text2);
+    background: var(--bg-secondary);
+    color: var(--text-muted);
     font-size: 0.45rem;
     font-weight: 600;
     padding: 2px 8px;
@@ -1022,7 +1091,6 @@ html, body {
     vertical-align: middle;
 }
 
-/* ===== REVIEW FILTER ===== */
 .rv-filter {
     display: flex;
     gap: 6px;
@@ -1030,22 +1098,22 @@ html, body {
     margin-bottom: 12px;
 }
 .rv-filter .fbtn {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     padding: 4px 12px;
     border-radius: 16px;
     font-size: 0.55rem;
-    color: var(--text3);
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.3s;
 }
 .rv-filter .fbtn:hover {
-    border-color: var(--text);
+    border-color: var(--color-purple-light);
 }
 .rv-filter .fbtn.active {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
+    background: var(--gradient-main);
+    color: #fff;
+    border-color: transparent;
 }
 
 /* ===== CHAT ===== */
@@ -1055,8 +1123,10 @@ html, body {
     height: calc(100vh - 170px);
 }
 .chat-hdr {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius) var(--radius) 0 0;
     padding: 11px 14px;
     display: flex;
@@ -1065,12 +1135,12 @@ html, body {
     flex-shrink: 0;
 }
 .chat-av {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
-    border: 1.5px solid var(--border);
+    border: 1.5px solid var(--border-color);
 }
 .chat-av img {
     width: 100%;
@@ -1080,19 +1150,18 @@ html, body {
 .chat-hdr-name {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text);
 }
 .chat-status {
     font-size: 0.5rem;
-    color: var(--text2);
+    color: var(--text-muted);
     margin-top: 1px;
 }
 .chat-msgs {
     flex: 1;
     overflow-y: auto;
-    background: var(--bg);
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
     padding: 14px;
     display: flex;
     flex-direction: column;
@@ -1107,8 +1176,8 @@ html, body {
     flex-direction: row-reverse;
 }
 .msg-av-sm {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1116,7 +1185,7 @@ html, body {
     font-size: 0.55rem;
     flex-shrink: 0;
     overflow: hidden;
-    background: var(--bg3);
+    background: var(--bg-card);
 }
 .msg-av-sm img {
     width: 100%;
@@ -1124,7 +1193,7 @@ html, body {
     object-fit: cover;
 }
 .bubble {
-    padding: 8px 12px;
+    padding: 8px 14px;
     border-radius: 16px;
     font-size: 0.7rem;
     line-height: 1.5;
@@ -1132,27 +1201,29 @@ html, body {
     word-break: break-word;
 }
 .me .bubble {
-    background: var(--text);
-    color: var(--bg);
+    background: var(--gradient-main);
+    color: #fff;
     border-radius: 16px 16px 4px 16px;
 }
 .them .bubble {
-    background: var(--bg2);
-    color: var(--text);
+    background: var(--bg-card);
+    color: var(--text-primary);
     border-radius: 16px 16px 16px 4px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-color);
 }
 .msg-time {
     font-size: 0.45rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-top: 3px;
 }
 .me .msg-time {
     text-align: right;
 }
 .chat-footer {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: 0 0 var(--radius) var(--radius);
     padding: 10px 12px;
     display: flex;
@@ -1161,28 +1232,28 @@ html, body {
 }
 .chat-in {
     flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 20px;
     padding: 8px 14px;
-    color: var(--text);
+    color: var(--text-primary);
     font-size: 0.72rem;
     font-family: inherit;
     transition: all 0.3s;
 }
 .chat-in:focus {
     outline: none;
-    border-color: var(--text);
+    border-color: var(--color-purple-light);
 }
 .chat-in::placeholder {
-    color: var(--text3);
+    color: var(--text-muted);
 }
 .chat-send {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: var(--text);
-    color: var(--bg);
+    background: var(--gradient-main);
+    color: #fff;
     border: none;
     cursor: pointer;
     display: flex;
@@ -1193,46 +1264,31 @@ html, body {
     transition: all 0.3s;
 }
 .chat-send:hover {
-    background: var(--text2);
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(108, 60, 225, 0.3);
 }
 .chat-send:active {
     transform: scale(0.9);
 }
 .chat-name-box {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
     padding: 18px;
     margin-bottom: 10px;
-}
-.chat-offline-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 0.5rem;
-    color: var(--text3);
-    margin-bottom: 8px;
-}
-.chat-offline-dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--text3);
 }
 .resp-time-badge {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: 20px;
     padding: 3px 12px;
     font-size: 0.5rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
@@ -1241,9 +1297,9 @@ html, body {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     z-index: 9000;
     align-items: flex-end;
     justify-content: center;
@@ -1252,8 +1308,9 @@ html, body {
     display: flex;
 }
 .mbox {
-    background: var(--bg2);
+    background: var(--bg-primary);
     border-radius: 24px 24px 0 0;
+    border-top: 1px solid var(--border-color);
     width: 100%;
     max-width: 480px;
     max-height: 92vh;
@@ -1266,9 +1323,9 @@ html, body {
     to { transform: translateY(0); }
 }
 .mhandle {
-    width: 36px;
+    width: 40px;
     height: 4px;
-    background: var(--border);
+    background: var(--border-color);
     border-radius: 4px;
     margin: 0 auto 16px;
 }
@@ -1281,14 +1338,14 @@ html, body {
     flex: 1;
     height: 3px;
     border-radius: 3px;
-    background: var(--border);
+    background: var(--border-color);
     transition: all 0.4s;
 }
 .mbar.done {
-    background: var(--text2);
+    background: var(--color-purple-light);
 }
 .mbar.active {
-    background: var(--text);
+    background: var(--gradient-main);
 }
 .mpane {
     display: none;
@@ -1299,12 +1356,11 @@ html, body {
 .mtitle {
     font-size: 0.85rem;
     font-weight: 700;
-    color: var(--text);
     margin-bottom: 2px;
 }
 .msub {
     font-size: 0.6rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-bottom: 14px;
 }
 .metode-grid {
@@ -1314,33 +1370,33 @@ html, body {
     margin-bottom: 12px;
 }
 .metode-btn {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 0.58rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     cursor: pointer;
     font-family: inherit;
     transition: all 0.3s;
 }
 .metode-btn.active {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
+    background: var(--gradient-main);
+    color: #fff;
+    border-color: transparent;
 }
 .metode-btn:hover {
-    border-color: var(--text);
+    border-color: var(--color-purple-light);
 }
 .paybox {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 14px;
     margin-bottom: 12px;
     text-align: center;
     font-size: 0.7rem;
-    color: var(--text2);
+    color: var(--text-secondary);
 }
 .qris-wrap {
     background: #fff;
@@ -1357,10 +1413,10 @@ html, body {
 }
 .qris-nominal {
     font-size: 0.52rem;
-    color: var(--text2);
+    color: var(--text-secondary);
     font-weight: 600;
-    background: var(--bg3);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 6px 10px;
     margin-top: 6px;
@@ -1372,44 +1428,44 @@ html, body {
 .field label {
     display: block;
     font-size: 0.55rem;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-bottom: 3px;
     font-weight: 600;
 }
 .field input {
     width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
-    color: var(--text);
+    color: var(--text-primary);
     font-size: 0.75rem;
     font-family: inherit;
     transition: all 0.3s;
 }
 .field input:focus {
     outline: none;
-    border-color: var(--text);
-    box-shadow: 0 0 0 3px var(--bg3);
+    border-color: var(--color-purple-light);
+    box-shadow: 0 0 0 3px rgba(108, 60, 225, 0.2);
 }
 .field input::placeholder {
-    color: var(--text3);
+    color: var(--text-muted);
 }
 .upload-area {
-    border: 2px dashed var(--border);
+    border: 2px dashed var(--border-color);
     border-radius: var(--radius-sm);
     padding: 16px;
     text-align: center;
     cursor: pointer;
-    background: var(--bg);
+    background: var(--bg-secondary);
     margin-bottom: 5px;
     transition: all 0.3s;
 }
 .upload-area:hover {
-    border-color: var(--text);
+    border-color: var(--color-purple-light);
 }
 .upload-area:active {
-    border-color: var(--text);
+    border-color: var(--color-purple-light);
 }
 .upload-area img {
     max-width: 100%;
@@ -1427,7 +1483,7 @@ html, body {
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    border: 1px solid transparent;
+    border: none;
     text-align: center;
     transition: all 0.3s;
 }
@@ -1435,54 +1491,55 @@ html, body {
     transform: scale(0.97);
 }
 .btn-p {
-    background: var(--text);
-    color: var(--bg);
-    border: none;
+    background: var(--gradient-main);
+    color: #fff;
 }
 .btn-p:hover {
-    background: var(--text2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(108, 60, 225, 0.3);
 }
 .btn-p:disabled {
-    opacity: 0.4;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 .btn-o {
     background: transparent;
-    border-color: var(--border);
-    color: var(--text2);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 }
 .btn-o:hover {
-    border-color: var(--text);
-    color: var(--text);
+    border-color: var(--color-purple-light);
+    color: var(--text-primary);
 }
 .btn-g {
-    background: var(--bg3);
-    border-color: var(--border);
-    color: var(--text2);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 }
 .btn-g:hover {
-    background: var(--bg4);
+    border-color: var(--color-purple-light);
 }
 .s-ring {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    background: var(--bg3);
-    border: 2px solid var(--border);
+    background: var(--bg-secondary);
+    border: 2px solid var(--color-purple-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     margin: 0 auto 12px;
     animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: #34D399;
 }
 @keyframes pop {
     from { transform: scale(0); }
     to { transform: scale(1); }
 }
 .order-table {
-    background: var(--bg);
-    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 10px;
     margin: 12px 0;
@@ -1492,37 +1549,138 @@ html, body {
     justify-content: space-between;
     align-items: center;
     padding: 5px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-color);
     font-size: 0.65rem;
 }
 .orow:last-child {
     border-bottom: none;
 }
 .olabel {
-    color: var(--text3);
+    color: var(--text-muted);
 }
 .oval {
-    color: var(--text);
     font-weight: 600;
 }
 .order-id {
-    background: var(--bg3);
-    border: 1px dashed var(--border);
+    background: var(--bg-secondary);
+    border: 1px dashed var(--border-color);
     border-radius: var(--radius-sm);
     padding: 10px;
     font-family: monospace;
     font-size: 0.7rem;
-    color: var(--text);
     letter-spacing: 1px;
     word-break: break-all;
     text-align: center;
 }
-.pulse {
-    animation: pulse 2s infinite;
+
+/* ===== FREE KEY ===== */
+.free-hero {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
 }
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+.share-step {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.share-step .step-num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--gradient-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+.share-step .step-text {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gradient-main);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.3s;
+}
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(108, 60, 225, 0.3);
+}
+.share-btn:active {
+    transform: scale(0.97);
+}
+.free-status-box {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-top: 10px;
+    text-align: center;
+}
+.free-status-box .status-icon {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+}
+.free-status-box .status-text {
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+.free-status-box .status-sub {
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+}
+
+/* ===== TERMS ===== */
+.terms-text {
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+.terms-text ul {
+    list-style: none;
+    padding: 0;
+}
+.terms-text ul li {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.terms-text ul li:last-child {
+    border-bottom: none;
+}
+.terms-text ul li::before {
+    content: '◆ ';
+    color: var(--color-purple-light);
+    font-size: 0.4rem;
 }
 
 /* ===== TOASTS ===== */
@@ -1538,21 +1696,23 @@ html, body {
     pointer-events: none;
 }
 .toast {
-    background: var(--bg2);
-    border: 1px solid var(--border);
+    background: var(--bg-card);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    padding: 8px 14px;
+    padding: 10px 16px;
     font-size: 0.62rem;
-    color: var(--text);
+    color: var(--text-primary);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     animation: fadeUp 0.3s ease;
-    box-shadow: 0 4px 24px var(--shadow);
+    box-shadow: var(--shadow-glow);
 }
 .tdot {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -1562,153 +1722,36 @@ html, body {
     justify-content: center;
     gap: 6px;
     font-size: 0.5rem;
-    color: var(--text2);
-    background: var(--bg3);
-    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     padding: 6px;
     margin-top: 8px;
 }
 
-/* ===== FREE KEY ===== */
-.free-hero {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 12px;
-}
-.free-hero .hero-tag {
-    background: var(--bg3);
-    color: var(--text2);
-}
-.share-step {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.share-step .step-num {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--bg3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.58rem;
-    font-weight: 700;
-    color: var(--text);
-    flex-shrink: 0;
-}
-.share-step .step-text {
-    font-size: 0.65rem;
-    color: var(--text2);
-}
-.share-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--text);
-    color: var(--bg);
-    border: none;
-    padding: 10px 18px;
-    border-radius: var(--radius-sm);
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    width: 100%;
-    justify-content: center;
-    transition: all 0.3s;
-}
-.share-btn:hover {
-    background: var(--text2);
-    transform: translateY(-1px);
-}
-.share-btn:active {
-    transform: scale(0.97);
-}
-.free-status-box {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-top: 10px;
-    text-align: center;
-}
-.free-status-box.pending {
-    border-color: var(--border);
-    background: var(--bg3);
-}
-.free-status-box.approved {
-    border-color: var(--border);
-    background: var(--bg3);
-}
-.free-status-box .status-icon {
-    font-size: 1.4rem;
-    margin-bottom: 4px;
-}
-.free-status-box .status-text {
-    font-size: 0.68rem;
-    font-weight: 600;
-}
-.free-status-box .status-sub {
-    font-size: 0.58rem;
-    color: var(--text3);
-    margin-top: 3px;
-}
-
-/* ===== SYARAT & KETENTUAN ===== */
-.terms-text {
-    font-size: 0.68rem;
-    color: var(--text2);
-    line-height: 1.8;
-}
-.terms-text ul {
-    list-style: none;
-    padding: 0;
-}
-.terms-text ul li {
-    padding: 4px 0;
-    border-bottom: 1px solid var(--border);
-}
-.terms-text ul li:last-child {
-    border-bottom: none;
-}
-.terms-text ul li::before {
-    content: '› ';
-    color: var(--text3);
-}
-
-/* ===== EMPTY ===== */
 .empty-state {
     text-align: center;
     padding: 40px 20px;
 }
 .empty-ic {
-    font-size: 2rem;
+    font-size: 2.5rem;
     margin-bottom: 10px;
-    opacity: 0.2;
+    opacity: 0.3;
 }
 .empty-title {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text3);
+    color: var(--text-muted);
     margin-bottom: 4px;
 }
 .empty-sub {
     font-size: 0.6rem;
-    color: var(--text3);
+    color: var(--text-muted);
 }
 
-/* ===== RESPONSIVE ===== */
 @media(max-width:400px) {
-    .hero-title { font-size: 1rem; }
+    .hero-title { font-size: 1.05rem; }
     .stat-n { font-size: 1rem; }
     .pkg-name { font-size: 0.72rem; }
     .pkg-price { font-size: 0.72rem; }
@@ -1719,34 +1762,27 @@ html, body {
 </head>
 <body>
 
-<!-- ============================================================
-     LOADING SCREEN
-     ============================================================ -->
+<!-- LOADING -->
 <div id="loader">
     <div class="spinner"></div>
-    <div class="load-text">Memuat</div>
+    <div class="load-text">Shorekeeper Elite</div>
+    <div class="load-bar"></div>
 </div>
 
-<!-- ============================================================
-     TOASTS
-     ============================================================ -->
+<!-- TOASTS -->
 <div class="toasts" id="toasts"></div>
 
-<!-- ============================================================
-     FLOATING CHAT
-     ============================================================ -->
+<!-- FLOATING CHAT -->
 <div class="floating-chat">
     <a href="https://t.me/Keyskidbot" target="_blank" title="Chat Admin">
-        <svg width="22" height="18" viewBox="0 0 20 18" fill="none" stroke="var(--text)" stroke-width="1.5">
-            <path d="M19.925.785L16.9 16.643c-.225 1.037-.81 1.295-1.643.805l-4.536-3.34-2.188 2.104c-.242.242-.445.445-.912.445l.325-4.622 8.4-7.588c.366-.325-.08-.505-.567-.18L4.99 11.183.49 9.78c-1.02-.32-1.04-1.02.213-1.51L18.622.24c.85-.31 1.593.19 1.303 1.545z" fill="var(--text)"/>
+        <svg width="22" height="18" viewBox="0 0 20 18" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M19.925.785L16.9 16.643c-.225 1.037-.81 1.295-1.643.805l-4.536-3.34-2.188 2.104c-.242.242-.445.445-.912.445l.325-4.622 8.4-7.588c.366-.325-.08-.505-.567-.18L4.99 11.183.49 9.78c-1.02-.32-1.04-1.02.213-1.51L18.622.24c.85-.31 1.593.19 1.303 1.545z" fill="currentColor"/>
         </svg>
         <span class="badge" id="adminBadge">●</span>
     </a>
 </div>
 
-<!-- ============================================================
-     TOPBAR
-     ============================================================ -->
+<!-- TOPBAR -->
 <div class="topbar">
     <div class="topbar-left">
         <div class="topbar-icon" onclick="goPage('home')">
@@ -1754,7 +1790,7 @@ html, body {
         </div>
         <div>
             <div class="top-logo">SHOREKEEPER <span>ELITE</span></div>
-            <div class="top-logo-sub">BLOOD STRIKE TOOL</div>
+            <div class="top-logo-sub">Blood Strike Tool</div>
         </div>
     </div>
     <div class="topbar-right">
@@ -1766,9 +1802,8 @@ html, body {
      PAGE: HOME
      ============================================================ -->
 <div id="page-home" class="page active">
-
     <div class="countdown-box">
-        <div class="cd-label">Promo Berakhir Dalam</div>
+        <div class="cd-label">🔥 Promo Berakhir Dalam</div>
         <div class="cd-timer">
             <span><span id="cdH">12</span><span class="cd-label-sm">Jam</span></span>
             <span class="cd-sep">:</span>
@@ -1786,47 +1821,47 @@ html, body {
     <div class="admin-status" id="adminStatusHome">
         <span class="dot online" id="adminDotHome"></span>
         <span id="adminTextHome">ADMIN ONLINE</span>
-        <span style="color:var(--text3);">• RESPON 5 MENIT</span>
+        <span style="color:var(--text-muted);">• Respon 5 Menit</span>
     </div>
 
     <div class="hero">
-        <div class="hero-tag">BLOOD STRIKE • NO ROOT</div>
-        <div class="hero-title">TOOL BLOOD STRIKE #1 INDONESIA</div>
-        <div class="hero-sub">AIM ASSIST, ESP, NO RECOIL UNDETECTED. KEY AKTIF SETELAH ADMIN VERIF.</div>
-        <button class="hero-btn" onclick="goPage('paket')">LIHAT HARGA</button>
+        <div class="hero-tag">⚡ Blood Strike • No Root</div>
+        <div class="hero-title">Tool Blood Strike <span class="glow-text">#1 Indonesia</span></div>
+        <div class="hero-sub">Aim Assist, ESP, No Recoil. Undetected. Key aktif setelah admin verifikasi.</div>
+        <button class="hero-btn" onclick="goPage('paket')">✨ Lihat Harga</button>
     </div>
 
     <div class="stats">
-        <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">ONLINE</div><div class="stat-t">LIVE</div></div>
-        <div class="stat"><div class="stat-n" id="ratingCnt">4.8</div><div class="stat-l">RATING</div><div class="stat-t">★★★★★</div></div>
-        <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">TERJUAL</div><div class="stat-t">MINGGU INI</div></div>
+        <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">Online</div><div class="stat-t">Live</div></div>
+        <div class="stat"><div class="stat-n" id="ratingCnt">4.8</div><div class="stat-l">Rating</div><div class="stat-t">★★★★★</div></div>
+        <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">Terjual</div><div class="stat-t">Minggu Ini</div></div>
     </div>
 
     <div style="margin-bottom:12px;">
-        <div class="sec-title">STOK TERBARU</div>
-        <div class="sec-sub">UPDATE STOK KEY SETIAP HARI</div>
+        <div class="sec-title">📦 Stok Terbaru</div>
+        <div class="sec-sub">Update stok key setiap hari</div>
         <div class="stock-status" id="stockStatusHome"></div>
     </div>
 
     <div class="feats">
-        <div class="feat"><div class="feat-ic">AIM</div>AIM ASSIST</div>
-        <div class="feat"><div class="feat-ic">ESP</div>ESP WALLHACK</div>
-        <div class="feat"><div class="feat-ic">NR</div>NO RECOIL</div>
-        <div class="feat"><div class="feat-ic">UD</div>UNDETECTED</div>
-        <div class="feat"><div class="feat-ic">RT</div>NO ROOT</div>
-        <div class="feat"><div class="feat-ic">∞</div>LIFETIME</div>
+        <div class="feat"><div class="feat-ic">🎯</div>Aim Assist</div>
+        <div class="feat"><div class="feat-ic">👁️</div>ESP Wallhack</div>
+        <div class="feat"><div class="feat-ic">🔫</div>No Recoil</div>
+        <div class="feat"><div class="feat-ic">🛡️</div>Undetected</div>
+        <div class="feat"><div class="feat-ic">📱</div>No Root</div>
+        <div class="feat"><div class="feat-ic">♾️</div>Lifetime</div>
     </div>
 
     <div style="margin-bottom:14px;">
-        <div class="sec-title">VIDEO TUTORIAL</div>
-        <div class="sec-sub">CARA INSTALL & AKTIFKAN KEY</div>
+        <div class="sec-title">📹 Video Tutorial</div>
+        <div class="sec-sub">Cara install & aktifkan key</div>
         <div class="video-wrap">
             <iframe src="https://www.youtube.com/embed/e8YfaXtIqEU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
 
     <div class="card">
-        <div style="font-size:0.52rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">METODE PEMBAYARAN</div>
+        <div style="font-size:0.52rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">💳 Metode Pembayaran</div>
         <div class="pay-row">
             <span class="pay-tag">QRIS</span>
             <span class="pay-tag">DANA/OVO</span>
@@ -1836,74 +1871,75 @@ html, body {
     </div>
 
     <div class="free-hero">
-        <div class="hero-tag">GRATIS</div>
-        <div class="hero-title">DAPATKAN KEY GRATIS 1 HARI</div>
-        <div class="hero-sub">SHARE KE 3 GRUP TELEGRAM + UPLOAD BUKTI. KEY LANGSUNG AKTIF!</div>
-        <button class="hero-btn" style="background:var(--text);color:var(--bg);" onclick="goPage('freekey')">AMBIL SEKARANG</button>
+        <div class="hero-tag">🎁 Gratis</div>
+        <div class="hero-title">Dapatkan Key Gratis 1 Hari</div>
+        <div class="hero-sub">Share ke 3 grup Telegram + upload bukti. Key langsung aktif!</div>
+        <button class="hero-btn" onclick="goPage('freekey')">🎁 Ambil Sekarang</button>
     </div>
 
+    <!-- FAQ -->
     <div style="margin-bottom:12px;">
-        <div class="sec-title">PERTANYAAN UMUM</div>
-        <div class="sec-sub">YANG SERING DITANYAKAN</div>
+        <div class="sec-title">❓ Pertanyaan Umum</div>
+        <div class="sec-sub">Yang sering ditanyakan</div>
         
         <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">APAKAH AMAN DARI BAN?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">TOOL KAMI BYPASS ANTI-CHEAT BLOOD STRIKE DENGAN METODE INJEKSI TERBARU. UPDATE SETIAP MINGGU SESUAI PATCH GAME. RIBUAN USER PAKAI TANPA KENA BAN.</div></div>
+            <div class="faq-q"><span class="faq-q-text">🔒 Apakah aman dari ban?</span><span class="faq-arrow">▼</span></div>
+            <div class="faq-a"><div class="faq-a-text">Tool kami bypass anti-cheat Blood Strike dengan metode injeksi terbaru. Update setiap minggu sesuai patch game. Ribuan user pakai tanpa kena ban.</div></div>
         </div>
         
         <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">PERLU ROOT HP?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">TIDAK PERLU ROOT. CUKUP INSTALL APK, MASUKKAN KEY, LANGSUNG JALAN. COMPATIBLE SEMUA ANDROID 8.0+</div></div>
+            <div class="faq-q"><span class="faq-q-text">📱 Perlu root HP?</span><span class="faq-arrow">▼</span></div>
+            <div class="faq-a"><div class="faq-a-text">Tidak perlu root. Cukup install APK, masukkan key, langsung jalan. Compatible Android 8.0+</div></div>
         </div>
         
         <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">KEY AKTIF BERAPA LAMA?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">KEY DIAKTIFKAN MANUAL ADMIN DALAM 5-15 MENIT SETELAH BUKTI BAYAR DITERIMA. JAM AKTIF ADMIN 08.00-24.00 WIB.</div></div>
+            <div class="faq-q"><span class="faq-q-text">⏳ Key aktif berapa lama?</span><span class="faq-arrow">▼</span></div>
+            <div class="faq-a"><div class="faq-a-text">Key diaktifkan manual admin dalam 5-15 menit setelah bukti bayar diterima. Jam aktif admin 08.00-24.00 WIB.</div></div>
         </div>
         
         <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-q"><span class="faq-q-text">ADA REFUND?</span><span class="faq-arrow">▼</span></div>
-            <div class="faq-a"><div class="faq-a-text">GARANSI 7 HARI. JIKA TOOL TIDAK BISA JALAN SETELAH DICOBA DENGAN BANTUAN ADMIN, KAMI REFUND ATAU EXTEND.</div></div>
+            <div class="faq-q"><span class="faq-q-text">💰 Ada refund?</span><span class="faq-arrow">▼</span></div>
+            <div class="faq-a"><div class="faq-a-text">Garansi 7 hari. Jika tool tidak bisa jalan setelah dicoba dengan bantuan admin, kami refund atau extend.</div></div>
         </div>
     </div>
 
     <div class="card" style="margin-bottom:12px;">
-        <div class="sec-title" style="font-size:0.8rem;">SYARAT & KETENTUAN</div>
+        <div class="sec-title" style="font-size:0.8rem;">📋 Syarat & Ketentuan</div>
         <div class="terms-text">
             <ul>
-                <li>KEY TIDAK BISA DIREFUND SETELAH DIAKTIFKAN</li>
-                <li>GARANSI 7 HARI UNTUK MASALAH TEKNIS</li>
-                <li>1 KEY UNTUK 1 DEVICE</li>
-                <li>DILARANG SHARE KEY KE ORANG LAIN</li>
-                <li>ADMIN BERHAK MEMBATALKAN ORDER JIKA TERINDIKASI PENIPUAN</li>
+                <li>Key tidak bisa direfund setelah diaktifkan</li>
+                <li>Garansi 7 hari untuk masalah teknis</li>
+                <li>1 key untuk 1 device</li>
+                <li>Dilarang share key ke orang lain</li>
+                <li>Admin berhak membatalkan order jika terindikasi penipuan</li>
             </ul>
         </div>
     </div>
 
     <div style="margin-bottom:12px;">
-        <div class="sec-title" style="margin-bottom:10px;">HUBUNGI KAMI</div>
+        <div class="sec-title" style="margin-bottom:10px;">📞 Hubungi Kami</div>
         
         <a href="https://t.me/Keyskidbot" target="_blank" class="kontak-item">
             <div class="kontak-ic">📨</div>
-            <div><div class="kontak-name">TELEGRAM BOT</div><div class="kontak-sub">@KEYSKIDBOT • RESPON CEPAT</div></div>
-            <span style="margin-left:auto;color:var(--text3);">›</span>
+            <div><div class="kontak-name">Telegram Bot</div><div class="kontak-sub">@Keyskidbot • Respon cepat</div></div>
+            <span style="margin-left:auto;color:var(--text-muted);">→</span>
         </a>
         
         <a href="https://t.me/ShorekeeperID" target="_blank" class="kontak-item">
             <div class="kontak-ic">📢</div>
-            <div><div class="kontak-name">SALURAN CHANNEL</div><div class="kontak-sub">@SHOREKEEPERID • UPDATE & PROMO</div></div>
-            <span style="margin-left:auto;color:var(--text3);">›</span>
+            <div><div class="kontak-name">Saluran Channel</div><div class="kontak-sub">@ShorekeeperID • Update & promo</div></div>
+            <span style="margin-left:auto;color:var(--text-muted);">→</span>
         </a>
         
         <a href="https://www.youtube.com/@ZelewinGaming" target="_blank" class="kontak-item">
-            <div class="kontak-ic">▶</div>
-            <div><div class="kontak-name">YOUTUBE</div><div class="kontak-sub">TUTORIAL & REVIEW TOOL</div></div>
-            <span style="margin-left:auto;color:var(--text3);">›</span>
+            <div class="kontak-ic">▶️</div>
+            <div><div class="kontak-name">YouTube</div><div class="kontak-sub">Tutorial & review tool</div></div>
+            <span style="margin-left:auto;color:var(--text-muted);">→</span>
         </a>
     </div>
 
     <div class="card" style="text-align:center;">
-        <div style="font-size:0.55rem;color:var(--text3);">GARANSI 7 HARI • KEY VIA WEB • NO ROOT</div>
+        <div style="font-size:0.55rem;color:var(--text-muted);">Garansi 7 Hari • Key via Web • No Root</div>
     </div>
 </div>
 
@@ -1911,12 +1947,12 @@ html, body {
      PAGE: PAKET
      ============================================================ -->
 <div id="page-paket" class="page">
-    <div class="sec-title">PILIH PAKET</div>
-    <div class="sec-sub">TAP PAKET UNTUK MULAI ORDER</div>
-    <div id="pkgStockInfo" style="font-size:0.55rem;color:var(--text3);margin-bottom:8px;"></div>
+    <div class="sec-title">📦 Pilih Paket</div>
+    <div class="sec-sub">Tap paket untuk mulai order</div>
+    <div id="pkgStockInfo" style="font-size:0.55rem;color:var(--text-muted);margin-bottom:8px;"></div>
     <div class="pkg-list" id="pkgList"></div>
-    <div style="margin-top:12px;text-align:center;font-size:0.58rem;color:var(--text3);">
-        <span>MAU GRATIS? <a href="#" onclick="goPage('freekey');return false;" style="color:var(--text);">DAPATKAN KEY GRATIS 1 HARI</a></span>
+    <div style="margin-top:12px;text-align:center;font-size:0.58rem;color:var(--text-muted);">
+        <span>Mau gratis? <a href="#" onclick="goPage('freekey');return false;" style="color:var(--color-purple-light);">Dapatkan Key Gratis 1 Hari</a></span>
     </div>
 </div>
 
@@ -1924,15 +1960,15 @@ html, body {
      PAGE: CEK KEY
      ============================================================ -->
 <div id="page-cekkey" class="page">
-    <div class="sec-title">CEK KEY</div>
-    <div class="sec-sub">MASUKKAN ORDER ID ATAU USER ID</div>
+    <div class="sec-title">🔍 Cek Key</div>
+    <div class="sec-sub">Masukkan Order ID atau User ID</div>
     <div class="search-row">
-        <input class="search-in" id="oidInput" placeholder="ORD1234567ABC ATAU FREE123ABC">
-        <button class="search-btn" onclick="doCheck()">CEK</button>
+        <input class="search-in" id="oidInput" placeholder="ORD1234567ABC atau FREE123ABC">
+        <button class="search-btn" onclick="doCheck()">Cek</button>
     </div>
     <div id="checkRes"></div>
     <div class="card" style="text-align:center;margin-top:8px;">
-        <div style="font-size:0.55rem;color:var(--text3);">ORDER ID DIKIRIM SETELAH ORDER / REQUEST GRATIS</div>
+        <div style="font-size:0.55rem;color:var(--text-muted);">Order ID dikirim setelah order / request gratis</div>
     </div>
 </div>
 
@@ -1940,53 +1976,53 @@ html, body {
      PAGE: FREE KEY
      ============================================================ -->
 <div id="page-freekey" class="page">
-    <div class="sec-title">DAPATKAN KEY GRATIS</div>
-    <div class="sec-sub">SHARE KE 3 GRUP TELEGRAM + UPLOAD BUKTI</div>
+    <div class="sec-title">🎁 Dapatkan Key Gratis</div>
+    <div class="sec-sub">Share ke 3 grup Telegram + upload bukti</div>
 
     <div class="free-hero">
-        <div class="hero-tag">GRATIS 1 HARI</div>
-        <div class="hero-title">KEY GRATIS 1 HARI</div>
-        <div class="hero-sub">CUKUP SHARE KE 3 GRUP TELEGRAM, UPLOAD SCREENSHOT BUKTI, KEY LANGSUNG AKTIF!</div>
-        <div style="font-size:0.55rem;color:var(--text3);margin-top:6px;">STOK: <span id="freeStockDisplay">0</span> KEY TERSISA</div>
+        <div class="hero-tag">🎁 Gratis 1 Hari</div>
+        <div class="hero-title">Key Gratis 1 Hari</div>
+        <div class="hero-sub">Cukup share ke 3 grup Telegram, upload screenshot bukti, key langsung aktif!</div>
+        <div style="font-size:0.55rem;color:var(--text-muted);margin-top:6px;">Stok: <span id="freeStockDisplay">0</span> key tersisa</div>
     </div>
 
     <div class="share-step">
         <div class="step-num">1</div>
-        <div class="step-text">SHARE LINK INI KE <b>3 GRUP TELEGRAM</b> YANG BERBEDA</div>
+        <div class="step-text">Share link ini ke <b>3 grup Telegram</b> yang berbeda</div>
     </div>
     <div class="share-step">
         <div class="step-num">2</div>
-        <div class="step-text">SCREENSHOT BUKTI SHARE (3 GRUP DALAM 1 FOTO ATAU 3 FOTO)</div>
+        <div class="step-text">Screenshot bukti share (3 grup dalam 1 foto atau 3 foto)</div>
     </div>
     <div class="share-step">
         <div class="step-num">3</div>
-        <div class="step-text">UPLOAD SCREENSHOT DAN KEY LANGSUNG AKTIF!</div>
+        <div class="step-text">Upload screenshot dan key langsung aktif!</div>
     </div>
 
-    <a href="https://t.me/share/url?url=https://shorekeeper.web.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="share-btn" style="margin-bottom:12px;">
-        SHARE KE TELEGRAM
+    <a href="https://t.me/share/url?url=https://shorekeeper-production.up.railway.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="share-btn" style="margin-bottom:12px;">
+        📤 Share ke Telegram
     </a>
 
     <div class="card">
-        <div style="font-size:0.6rem;font-weight:600;color:var(--text);margin-bottom:8px;">UPLOAD BUKTI SHARE</div>
+        <div style="font-size:0.6rem;font-weight:600;margin-bottom:8px;">📤 Upload Bukti Share</div>
         <div class="upload-area" onclick="document.getElementById('freeFileIn').click()" style="padding:14px;">
-            <div style="font-size:0.55rem;color:var(--text3);">TAP UNTUK UPLOAD SCREENSHOT</div>
+            <div style="font-size:0.55rem;color:var(--text-muted);">Tap untuk upload screenshot</div>
             <input type="file" id="freeFileIn" accept="image/*" style="display:none;" onchange="handleFreeUpload(event)">
             <img id="freePrevImg">
         </div>
-        <div style="font-size:0.5rem;color:var(--text2);min-height:13px;" id="freeUploadMsg"></div>
+        <div style="font-size:0.5rem;color:var(--text-muted);min-height:13px;" id="freeUploadMsg"></div>
     </div>
 
-    <button class="btn btn-p" id="btnFreeRequest" disabled onclick="submitFreeRequest()">UPLOAD BUKTI DULU</button>
+    <button class="btn btn-p" id="btnFreeRequest" disabled onclick="submitFreeRequest()">Upload Bukti Dulu</button>
 
-    <div id="freeStatusBox" class="free-status-box approved" style="margin-top:10px;display:none;">
-        <div class="status-icon">✓</div>
-        <div class="status-text" id="freeStatusText">KEY AKTIF!</div>
-        <div class="status-sub" id="freeStatusSub">CEK DI HALAMAN CEK KEY</div>
+    <div id="freeStatusBox" class="free-status-box" style="margin-top:10px;display:none;">
+        <div class="status-icon">✅</div>
+        <div class="status-text" id="freeStatusText">Key Aktif!</div>
+        <div class="status-sub" id="freeStatusSub">Cek di halaman Cek Key</div>
     </div>
 
-    <div style="margin-top:12px;text-align:center;font-size:0.55rem;color:var(--text3);">
-        <span>KEY AKTIF 1 HARI • 1X PER USER • STOK TERBATAS</span>
+    <div style="margin-top:12px;text-align:center;font-size:0.55rem;color:var(--text-muted);">
+        <span>Key aktif 1 hari • 1x per user • Stok terbatas</span>
     </div>
 </div>
 
@@ -1994,20 +2030,20 @@ html, body {
      PAGE: REVIEW
      ============================================================ -->
 <div id="page-review" class="page">
-    <div class="sec-title">REVIEW PEMBELI</div>
-    <div class="sec-sub">REVIEW ASLI DARI CUSTOMER</div>
+    <div class="sec-title">⭐ Review Pembeli</div>
+    <div class="sec-sub">Review asli dari customer</div>
 
     <div class="rv-filter" id="rvFilter">
-        <button class="fbtn active" data-filter="all">SEMUA</button>
+        <button class="fbtn active" data-filter="all">Semua</button>
         <button class="fbtn" data-filter="5">5 ★</button>
         <button class="fbtn" data-filter="4">4 ★</button>
         <button class="fbtn" data-filter="3">3 ★</button>
     </div>
 
     <div class="card rv-form">
-        <div style="font-size:0.62rem;color:var(--text3);margin-bottom:8px;font-weight:600;">TULIS REVIEW KAMU:</div>
-        <input id="rvName" placeholder="NAMA KAMU" maxlength="30">
-        <input id="rvCity" placeholder="KOTA (OPSIONAL)" maxlength="20">
+        <div style="font-size:0.62rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;">✍️ Tulis Review Kamu:</div>
+        <input id="rvName" placeholder="Nama kamu" maxlength="30">
+        <input id="rvCity" placeholder="Kota (opsional)" maxlength="20">
         <div class="stars-wrap" id="starsWrap">
             <span class="star-b" data-s="1">★</span>
             <span class="star-b" data-s="2">★</span>
@@ -2015,8 +2051,8 @@ html, body {
             <span class="star-b" data-s="4">★</span>
             <span class="star-b" data-s="5">★</span>
         </div>
-        <textarea id="rvText" placeholder="CERITAIN PENGALAMAN PAKAI SHOREKEEPER..." maxlength="200"></textarea>
-        <button class="btn btn-p" onclick="submitReview()">KIRIM REVIEW</button>
+        <textarea id="rvText" placeholder="Ceritain pengalaman pakai Shorekeeper..." maxlength="200"></textarea>
+        <button class="btn btn-p" onclick="submitReview()">Kirim Review</button>
     </div>
     <div class="rv-list" id="rvList"></div>
 </div>
@@ -2025,33 +2061,30 @@ html, body {
      PAGE: CHAT
      ============================================================ -->
 <div id="page-chat" class="page" style="padding-bottom:0;padding-top:8px;">
-    <div id="chatNameBox" class="chat-name-box" style="display:none;">
-        <div style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:3px;">CHAT DENGAN ADMIN</div>
-        <div style="font-size:0.62rem;color:var(--text3);margin-bottom:10px;">TANYA APAPUN, ADMIN SIAP BALAS</div>
-        <div class="resp-time-badge">RATA-RATA RESPON: 3 MENIT</div>
+    <div id="chatNameBox" class="chat-name-box">
+        <div style="font-size:0.85rem;font-weight:700;margin-bottom:3px;">💬 Chat dengan Admin</div>
+        <div style="font-size:0.62rem;color:var(--text-muted);margin-bottom:10px;">Tanya apapun, admin siap balas</div>
+        <div class="resp-time-badge">⚡ Rata-rata respon: 3 menit</div>
         <div class="admin-status" id="adminStatusChat">
             <span class="dot online" id="adminDotChat"></span>
-            <span id="adminTextChat">ADMIN ONLINE</span>
+            <span id="adminTextChat">Admin Online</span>
         </div>
-        <input id="chatNameIn" class="search-in" placeholder="NAMA KAMU..." style="width:100%;margin-bottom:8px;margin-top:6px;">
-        <button class="btn btn-p" onclick="startChat()">MULAI CHAT</button>
+        <input id="chatNameIn" class="search-in" placeholder="Nama kamu..." style="width:100%;margin-bottom:8px;margin-top:6px;">
+        <button class="btn btn-p" onclick="startChat()">Mulai Chat</button>
     </div>
     <div id="chatMain" style="display:none;">
         <div class="chat-wrap">
             <div class="chat-hdr">
                 <div class="chat-av"><img src="icon.jpg" alt="SK"></div>
                 <div>
-                    <div class="chat-hdr-name">ADMIN SHOREKEEPER</div>
-                    <div class="chat-status" id="chatOnlineStatus">ONLINE</div>
+                    <div class="chat-hdr-name">Admin Shorekeeper</div>
+                    <div class="chat-status" id="chatOnlineStatus">Online</div>
                 </div>
-                <div style="margin-left:auto;font-size:0.5rem;color:var(--text3);" id="chatUserName">USER</div>
+                <div style="margin-left:auto;font-size:0.5rem;color:var(--text-muted);" id="chatUserName">User</div>
             </div>
             <div class="chat-msgs" id="chatMsgs"></div>
-            <div id="chatOfflineBadge" style="padding:6px 14px 0;display:none;">
-                <div class="chat-offline-badge"><div class="chat-offline-dot"></div>ADMIN OFFLINE • AUTO-REPLY AKTIF</div>
-            </div>
             <div class="chat-footer">
-                <input class="chat-in" id="chatIn" placeholder="KETIK PESAN..." onkeyup="if(event.key==='Enter'&&!event.repeat)sendMsg()">
+                <input class="chat-in" id="chatIn" placeholder="Ketik pesan..." onkeyup="if(event.key==='Enter'&&!event.repeat)sendMsg()">
                 <button class="chat-send" onclick="sendMsg()">➤</button>
             </div>
         </div>
@@ -2062,11 +2095,11 @@ html, body {
      BOTTOM NAV
      ============================================================ -->
 <nav class="bnav">
-    <div class="bnav-item active" data-page="home"><span class="bicon">⌂</span>HOME</div>
-    <div class="bnav-item" data-page="paket"><span class="bicon">▣</span>PAKET</div>
-    <div class="bnav-item" data-page="freekey"><span class="bicon">✧</span>GRATIS</div>
-    <div class="bnav-item" data-page="cekkey"><span class="bicon">✦</span>KEY</div>
-    <div class="bnav-item" data-page="chat"><span class="bicon">✉</span>CHAT</div>
+    <div class="bnav-item active" data-page="home"><span class="bicon">⌂</span>Home</div>
+    <div class="bnav-item" data-page="paket"><span class="bicon">📦</span>Paket</div>
+    <div class="bnav-item" data-page="freekey"><span class="bicon">🎁</span>Gratis</div>
+    <div class="bnav-item" data-page="cekkey"><span class="bicon">🔍</span>Key</div>
+    <div class="bnav-item" data-page="chat"><span class="bicon">💬</span>Chat</div>
 </nav>
 
 <!-- ============================================================
@@ -2081,10 +2114,10 @@ html, body {
             <div class="mbar" id="mb3"></div>
         </div>
         
-        <!-- PANEL 1: Metode Bayar -->
+        <!-- PANEL 1 -->
         <div class="mpane active" id="mp1">
             <div class="mtitle" id="mp1title">-</div>
-            <div class="msub">PILIH CARA BAYAR</div>
+            <div class="msub">Pilih cara bayar</div>
             <div class="metode-grid">
                 <button class="metode-btn active" data-m="qris">QRIS</button>
                 <button class="metode-btn" data-m="dana">DANA/OVO</button>
@@ -2093,80 +2126,77 @@ html, body {
             </div>
             <div class="paybox">
                 <div id="pi-qris">
-                    <div style="font-size:0.52rem;margin-bottom:6px;">SCAN QRIS INI:</div>
+                    <div style="font-size:0.52rem;margin-bottom:6px;">Scan QRIS ini:</div>
                     <div class="qris-wrap"><img id="qrisImg" src="qris-1jam.jpg" alt="QRIS"></div>
-                    <div class="qris-nominal" id="qrisNominal">NOMINAL SUDAH FIX KIRIM SESUAI JUMLAH INI YA</div>
-                    <div style="font-size:0.48rem;color:var(--text3);margin-top:5px;">BCA • OVO • DANA • GOPAY • SHOPEE</div>
+                    <div class="qris-nominal" id="qrisNominal">Nominal sudah fix kirim sesuai jumlah ini ya</div>
+                    <div style="font-size:0.48rem;color:var(--text-muted);margin-top:5px;">BCA • OVO • DANA • GOPAY • SHOPEE</div>
                 </div>
                 <div id="pi-dana" style="display:none;line-height:2;">
-                    <div style="font-weight:700;color:var(--text);font-size:0.75rem;">DANA / OVO</div>
-                    <div style="font-size:0.68rem;color:var(--text2);">0895401347006</div>
-                    <div style="font-size:0.5rem;color:var(--text3);">A/N SHOREKEEPER</div>
+                    <div style="font-weight:700;font-size:0.75rem;">DANA / OVO</div>
+                    <div style="font-size:0.68rem;color:var(--text-secondary);">0895401347006</div>
+                    <div style="font-size:0.5rem;color:var(--text-muted);">A/N SHOREKEEPER</div>
                 </div>
                 <div id="pi-binance" style="display:none;line-height:2;">
-                    <div style="font-weight:700;color:var(--text);font-size:0.75rem;">BINANCE</div>
-                    <div style="font-size:0.68rem;color:var(--text2);">BINANCE ID: 1232544379</div>
-                    <div style="font-size:0.5rem;color:var(--text3);">A/N SHOREKEEPER</div>
+                    <div style="font-weight:700;font-size:0.75rem;">BINANCE</div>
+                    <div style="font-size:0.68rem;color:var(--text-secondary);">BINANCE ID: 1232544379</div>
+                    <div style="font-size:0.5rem;color:var(--text-muted);">A/N SHOREKEEPER</div>
                 </div>
                 <div id="pi-giftcard" style="display:none;line-height:2;">
-                    <div style="font-weight:700;color:var(--text);font-size:0.75rem;">GIFT CARD</div>
-                    <div style="font-size:0.68rem;color:var(--text2);">KIRIM KE @KEYSKIDBOT</div>
-                    <div style="font-size:0.5rem;color:var(--text3);">GOOGLE PLAY • APP STORE • STEAM</div>
+                    <div style="font-weight:700;font-size:0.75rem;">GIFT CARD</div>
+                    <div style="font-size:0.68rem;color:var(--text-secondary);">Kirim ke @Keyskidbot</div>
+                    <div style="font-size:0.5rem;color:var(--text-muted);">Google Play • App Store • Steam</div>
                 </div>
             </div>
-            <button class="btn btn-p" onclick="goMP(2)">LANJUT</button>
-            <button class="btn btn-o" onclick="closeM()" style="margin-top:7px;">BATAL</button>
-            <div class="secure-badge">TRANSAKSI AMAN & TERENKRIPSI</div>
+            <button class="btn btn-p" onclick="goMP(2)">Lanjut</button>
+            <button class="btn btn-o" onclick="closeM()" style="margin-top:7px;">Batal</button>
+            <div class="secure-badge">🔒 Transaksi aman & terenkripsi</div>
         </div>
         
-        <!-- PANEL 2: Data & Bukti -->
+        <!-- PANEL 2 -->
         <div class="mpane" id="mp2">
-            <div class="mtitle">DATA & BUKTI BAYAR</div>
+            <div class="mtitle">Data & Bukti Bayar</div>
             <div class="msub" id="mp2sub">-</div>
-            <div class="field"><label>EMAIL (TERIMA KEY)</label><input type="email" id="inEmail" placeholder="CONTOH@GMAIL.COM"></div>
-            <div class="field"><label>WHATSAPP</label><input type="tel" id="inPhone" placeholder="081234567890"></div>
+            <div class="field"><label>📧 Email (terima key)</label><input type="email" id="inEmail" placeholder="contoh@gmail.com"></div>
+            <div class="field"><label>📱 WhatsApp</label><input type="tel" id="inPhone" placeholder="081234567890"></div>
             <div class="field">
-                <label>UPLOAD BUKTI TRANSFER</label>
+                <label>📸 Upload Bukti Transfer</label>
                 <div class="upload-area" onclick="document.getElementById('fileIn').click()">
-                    <div style="font-size:0.6rem;color:var(--text3);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">UPLOAD</div>
-                    <div style="font-size:0.6rem;color:var(--text3);margin-top:5px;">TAP UNTUK UPLOAD SCREENSHOT</div>
+                    <div style="font-size:0.6rem;color:var(--text-muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;">Upload</div>
+                    <div style="font-size:0.6rem;color:var(--text-muted);margin-top:5px;">Tap untuk upload screenshot</div>
                     <input type="file" id="fileIn" accept="image/*" style="display:none;" onchange="handleUpload(event)">
                     <img id="prevImg">
                 </div>
-                <div style="font-size:0.52rem;color:var(--text2);margin-top:3px;min-height:13px;" id="uploadMsg"></div>
+                <div style="font-size:0.52rem;color:var(--text-muted);margin-top:3px;min-height:13px;" id="uploadMsg"></div>
             </div>
             <div style="display:flex;gap:7px;">
                 <button class="btn btn-o" onclick="goMP(1)" style="flex:0 0 44px;padding:12px 0;">←</button>
-                <button class="btn btn-p" id="btnSend" disabled onclick="submitOrder()">UPLOAD BUKTI DULU</button>
+                <button class="btn btn-p" id="btnSend" disabled onclick="submitOrder()">Upload Bukti Dulu</button>
             </div>
         </div>
         
-        <!-- PANEL 3: Sukses -->
+        <!-- PANEL 3 -->
         <div class="mpane" id="mp3">
             <div style="text-align:center;padding:6px 0;">
                 <div class="s-ring">✓</div>
-                <div class="mtitle" style="font-size:0.95rem;margin-bottom:3px;">ORDER MASUK!</div>
-                <div style="font-size:0.62rem;color:var(--text3);line-height:1.6;margin-bottom:12px;">PEMBAYARAN SEDANG DICEK ADMIN.<br>KEY AKTIF DI <b style="color:var(--text);">CEK KEY</b> SETELAH DIVERIF.</div>
+                <div class="mtitle" style="font-size:0.95rem;margin-bottom:3px;">Order Masuk!</div>
+                <div style="font-size:0.62rem;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">Pembayaran sedang dicek admin.<br>Key aktif di <b style="color:var(--color-purple-light);">Cek Key</b> setelah diverifikasi.</div>
                 <div class="order-table">
-                    <div class="orow"><span class="olabel">PAKET</span><span class="oval" id="s3pkg">-</span></div>
-                    <div class="orow"><span class="olabel">HARGA</span><span class="oval" id="s3price">-</span></div>
-                    <div class="orow"><span class="olabel">EMAIL</span><span class="oval" id="s3email" style="font-size:0.58rem;">-</span></div>
-                    <div class="orow"><span class="olabel">STATUS</span><span style="color:var(--text2);font-weight:600;font-size:0.65rem;">MENUNGGU</span></div>
+                    <div class="orow"><span class="olabel">Paket</span><span class="oval" id="s3pkg">-</span></div>
+                    <div class="orow"><span class="olabel">Harga</span><span class="oval" id="s3price">-</span></div>
+                    <div class="orow"><span class="olabel">Email</span><span class="oval" id="s3email" style="font-size:0.58rem;">-</span></div>
+                    <div class="orow"><span class="olabel">Status</span><span style="color:#F59E0B;font-weight:600;font-size:0.65rem;">⏳ Menunggu Verifikasi</span></div>
                 </div>
-                <div style="font-size:0.52rem;color:var(--text3);margin-bottom:5px;">SIMPAN ORDER ID:</div>
+                <div style="font-size:0.52rem;color:var(--text-muted);margin-bottom:5px;">Simpan Order ID:</div>
                 <div class="order-id" id="s3oid">-</div>
                 <div style="display:flex;gap:7px;margin-top:10px;">
-                    <button class="btn btn-o" onclick="cpOid()" style="flex:1;padding:10px;">SALIN ID</button>
-                    <button class="btn btn-p" onclick="goToKey()" style="flex:1;padding:10px;">CEK KEY</button>
+                    <button class="btn btn-o" onclick="cpOid()" style="flex:1;padding:10px;">📋 Salin ID</button>
+                    <button class="btn btn-p" onclick="goToKey()" style="flex:1;padding:10px;">🔍 Cek Key</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ============================================================
-     JAVASCRIPT FULL
-     ============================================================ -->
 <script>
 // ============================================================
 // KONFIGURASI
@@ -2174,42 +2204,23 @@ html, body {
 const API_URL = window.location.origin || '';
 
 // ============================================================
-// LOADING SCREEN
+// LOADING
 // ============================================================
 function hideLoader() {
     const loader = document.getElementById('loader');
-    if (loader && !loader.classList.contains('hide')) {
+    if (loader) {
         loader.classList.add('hide');
-        setTimeout(() => {
-            if (loader) loader.style.display = 'none';
-        }, 500);
-        return true;
+        setTimeout(() => loader.style.display = 'none', 500);
     }
-    return false;
 }
-
-if (document.readyState === 'complete') {
-    setTimeout(hideLoader, 300);
-} else {
-    window.addEventListener('load', function() {
-        setTimeout(hideLoader, 300);
-    });
-}
-setTimeout(hideLoader, 2000);
-setTimeout(function() {
-    const loader = document.getElementById('loader');
-    if (loader && !loader.classList.contains('hide')) {
-        loader.style.display = 'none';
-    }
-}, 5000);
+setTimeout(hideLoader, 1500);
 
 // ============================================================
-// STOK SYSTEM (localStorage + Sync ke Server)
+// STOK
 // ============================================================
 function getStock() {
-    try {
-        return JSON.parse(localStorage.getItem('sk_stock')) || {};
-    } catch(e) { return {}; }
+    try { return JSON.parse(localStorage.getItem('sk_stock')) || {}; } 
+    catch(e) { return {}; }
 }
 
 function saveStock(s) {
@@ -2226,7 +2237,6 @@ function useStock(label) {
     if (!s[label] || s[label].length === 0) return null;
     const key = s[label].shift();
     saveStock(s);
-    syncToServer(s);
     return key;
 }
 
@@ -2236,82 +2246,49 @@ function addStock(label, key) {
     if (!s[label].includes(key)) {
         s[label].push(key);
         saveStock(s);
-        syncToServer(s);
-        return true;
-    }
-    return false;
-}
-
-function removeStock(label, key) {
-    const s = getStock();
-    if (s[label]) {
-        s[label] = s[label].filter(k => k !== key);
-        saveStock(s);
-        syncToServer(s);
         return true;
     }
     return false;
 }
 
 // ============================================================
-// SYNC KE SERVER
+// SYNC
 // ============================================================
-async function syncToServer(stockData) {
-    try {
-        await fetch(`${API_URL}/api/stock/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ stock: stockData || getStock() })
-        });
-    } catch(e) {
-        // Silent fail
-    }
-}
-
 async function syncFromServer() {
     try {
         const res = await fetch(`${API_URL}/api/stock`);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
-        
         if (data.stock) {
             saveStock(data.stock);
             renderPackages();
             renderStockStatus();
-            
             const soldEl = document.getElementById('terjualCnt');
             if (soldEl && data.totalSold !== undefined) {
-                const val = data.totalSold || 0;
-                soldEl.innerText = val > 1000 ? (val/1000).toFixed(1) + 'K' : val;
+                soldEl.innerText = data.totalSold > 1000 ? (data.totalSold/1000).toFixed(1) + 'K' : data.totalSold;
             }
-            
-            console.log('✅ Sync dari server berhasil!', new Date().toLocaleTimeString());
         }
     } catch (e) {
-        console.log('⚠️ Sync dari server gagal:', e.message);
+        console.log('Sync gagal:', e.message);
     }
 }
-
 setInterval(syncFromServer, 30000);
-setTimeout(syncFromServer, 2000);
+setTimeout(syncFromServer, 1000);
 
 // ============================================================
-// ORDERS & FREE REQUESTS
+// ORDERS
 // ============================================================
 function getOrders() {
     try { return JSON.parse(localStorage.getItem('sk_orders')) || []; }
     catch(e) { return []; }
 }
-
 function saveOrders(o) {
     localStorage.setItem('sk_orders', JSON.stringify(o));
 }
-
 function getFreeRequests() {
     try { return JSON.parse(localStorage.getItem('sk_free_requests')) || []; }
     catch(e) { return []; }
 }
-
 function saveFreeRequests(r) {
     localStorage.setItem('sk_free_requests', JSON.stringify(r));
 }
@@ -2332,9 +2309,7 @@ const pkgs = [
 
 function renderPackages() {
     const list = document.getElementById('pkgList');
-    const info = document.getElementById('pkgStockInfo');
     if (!list) return;
-    
     let html = '';
     pkgs.forEach(p => {
         const c = getStockCount(p.label);
@@ -2342,46 +2317,36 @@ function renderPackages() {
         if (c === 0) b = '<span class="stock-badge empty">HABIS</span>';
         else if (c <= 3) b = '<span class="stock-badge low">SISA ' + c + '</span>';
         else b = '<span class="stock-badge available">' + c + ' TERSEDIA</span>';
-        
         html += `<div class="pkg${p.hot ? ' hot' : ''}" onclick="openOrder('${p.id}')">
             ${p.hot ? '<div class="hot-tag">TERLARIS</div>' : ''}
             <div>
                 <div class="pkg-name">${p.name} ${b}</div>
-                <div class="pkg-desc">${p.id === 'LIFE' ? 'BAYAR SEKALI, SELAMANYA' : 'AKSES PENUH ' + p.name}</div>
+                <div class="pkg-desc">${p.id === 'LIFE' ? 'Bayar sekali, selamanya' : 'Akses penuh ' + p.name}</div>
             </div>
             <div>
-                <div class="pkg-price">${p.idr}</div>
+                <div class="pkg-price"><span class="glow-text">${p.idr}</span></div>
                 <div class="pkg-usd">${p.usd}</div>
             </div>
         </div>`;
     });
     list.innerHTML = html;
-    
     const total = Object.values(getStock()).reduce((a, b) => a + b.length, 0);
-    if (info) info.innerText = 'TOTAL STOK KEY: ' + total + ' | KLIK PAKET UNTUK ORDER';
+    const info = document.getElementById('pkgStockInfo');
+    if (info) info.innerText = '📦 Total stok key: ' + total + ' | Klik paket untuk order';
     renderStockStatus();
 }
 
-// ============================================================
-// STOCK STATUS DI HOME
-// ============================================================
 function renderStockStatus() {
     const container = document.getElementById('stockStatusHome');
     if (!container) return;
-    
     const stock = getStock();
     const labels = ['Lifetime', '30Day', '7Day', '3Day', '1Day', '1Jam'];
     let html = '';
     labels.forEach(label => {
         const count = stock[label] ? stock[label].length : 0;
-        let cls = '';
-        if (count === 0) cls = 'empty';
-        else if (count <= 3) cls = 'low';
+        let cls = count === 0 ? 'empty' : count <= 3 ? 'low' : '';
         const displayName = label.replace('Day', ' HARI').replace('Jam', ' JAM');
-        html += `<div class="stock-item">
-            <span class="s-label">${displayName}</span>
-            <span class="s-count ${cls}">${count}</span>
-        </div>`;
+        html += `<div class="stock-item"><span class="s-label">${displayName}</span><span class="s-count ${cls}">${count}</span></div>`;
     });
     container.innerHTML = html;
 }
@@ -2397,21 +2362,18 @@ function goPage(p) {
     document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
     const el = document.getElementById('page-' + p);
     if (el) el.classList.add('active');
-    
     document.querySelectorAll('.bnav-item').forEach(x => {
         x.classList.toggle('active', x.dataset.page === p);
     });
-    
     if (p === 'paket') renderPackages();
     if (p === 'review') renderReviews();
     if (p === 'chat') initChat();
     if (p === 'freekey') renderFreeStatus();
-    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ============================================================
-// OPEN ORDER
+// MODAL ORDER
 // ============================================================
 let curPkg = null, selM = 'qris', upImg = null, lastOid = null;
 
@@ -2419,29 +2381,24 @@ function openOrder(pkgId) {
     const p = pkgs.find(x => x.id === pkgId);
     if (!p) return;
     if (getStockCount(p.label) === 0) {
-        toast('STOK ' + p.name + ' HABIS!', '#ff3b3b');
+        toast('Stok ' + p.name + ' habis!', '#EF4444');
         return;
     }
-    
     curPkg = p;
     selM = 'qris';
     upImg = null;
-    
     document.getElementById('inEmail').value = '';
     document.getElementById('inPhone').value = '';
     document.getElementById('prevImg').style.display = 'none';
     document.getElementById('uploadMsg').innerText = '';
-    
     const btn = document.getElementById('btnSend');
     btn.disabled = true;
-    btn.innerText = 'UPLOAD BUKTI DULU';
+    btn.innerText = 'Upload Bukti Dulu';
     btn.className = 'btn btn-p';
-    
     document.getElementById('mp1title').innerText = p.name + ' — ' + p.idr;
     document.getElementById('mp2sub').innerText = p.name + ' • ' + p.idr;
     document.getElementById('qrisImg').src = p.qris;
-    document.getElementById('qrisNominal').innerText = 'NOMINAL SUDAH FIX: ' + p.idr + ' KIRIM SESUAI JUMLAH INI YA';
-    
+    document.getElementById('qrisNominal').innerText = 'Nominal sudah fix: ' + p.idr + ' kirim sesuai jumlah ini ya';
     document.querySelectorAll('.metode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.m === 'qris');
     });
@@ -2453,7 +2410,6 @@ function openOrder(pkgId) {
 function closeM() {
     document.getElementById('modalOrder').classList.remove('show');
 }
-
 document.getElementById('modalOrder').onclick = e => {
     if (e.target === document.getElementById('modalOrder')) closeM();
 };
@@ -2487,64 +2443,54 @@ function showPI(m) {
 function handleUpload(e) {
     const f = e.target.files[0];
     if (!f || !f.type.match('image.*')) return;
-    
     const r = new FileReader();
     r.onload = ev => {
         upImg = ev.target.result;
         const img = document.getElementById('prevImg');
         img.src = upImg;
         img.style.display = 'block';
-        document.getElementById('uploadMsg').innerText = 'BUKTI SIAP';
-        
+        document.getElementById('uploadMsg').innerText = '✅ Bukti siap';
         const btn = document.getElementById('btnSend');
         btn.disabled = false;
-        btn.innerText = 'KIRIM ORDER';
-        btn.className = 'btn btn-g';
+        btn.innerText = 'Kirim Order';
+        btn.className = 'btn btn-p';
     };
     r.readAsDataURL(f);
 }
 
-// ============================================================
-// SUBMIT ORDER - VIA SERVER
-// ============================================================
 async function submitOrder() {
     const email = document.getElementById('inEmail').value.trim();
     const phone = document.getElementById('inPhone').value.trim();
-    
-    if (!upImg) { toast('UPLOAD BUKTI DULU!', '#666'); return; }
-    if (!email) { toast('ISI EMAIL DULU!', '#666'); return; }
-    if (!phone) { toast('ISI NOMOR WA DULU!', '#666'); return; }
+    if (!upImg) { toast('Upload bukti dulu!', '#EF4444'); return; }
+    if (!email) { toast('Isi email dulu!', '#EF4444'); return; }
+    if (!phone) { toast('Isi nomor WA dulu!', '#EF4444'); return; }
     
     const btn = document.getElementById('btnSend');
     btn.disabled = true;
-    btn.innerHTML = '<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;"></span>MENGIRIM...';
+    btn.innerHTML = '⏳ Mengirim...';
     
     const key = useStock(curPkg.label);
     if (!key) {
-        toast('STOK HABIS!', '#ff3b3b');
+        toast('Stok habis!', '#EF4444');
         btn.disabled = false;
-        btn.innerText = 'KIRIM ORDER';
+        btn.innerText = 'Kirim Order';
         return;
     }
-    
-    const orderData = {
-        packageId: curPkg.id,
-        email: email,
-        phone: phone,
-        key: key,
-        method: selM,
-        proofImage: upImg
-    };
     
     try {
         const res = await fetch(`${API_URL}/api/order/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
+            body: JSON.stringify({
+                packageId: curPkg.id,
+                email: email,
+                phone: phone,
+                key: key,
+                method: selM,
+                proofImage: upImg
+            })
         });
-        
         const result = await res.json();
-        
         if (result.success) {
             document.getElementById('s3pkg').innerText = curPkg.name;
             document.getElementById('s3price').innerText = curPkg.idr + ' (' + curPkg.usd + ')';
@@ -2552,108 +2498,26 @@ async function submitOrder() {
             document.getElementById('s3oid').innerText = result.orderId;
             lastOid = result.orderId;
             goMP(3);
-            toast('ORDER BERHASIL! KEY AKTIF.', '#888');
+            toast('Order masuk! Tunggu verifikasi admin.', '#F59E0B');
             renderPackages();
         } else {
-            toast('GAGAL: ' + (result.message || 'Coba lagi'), '#ff3b3b');
+            toast('Gagal: ' + (result.message || 'Coba lagi'), '#EF4444');
             addStock(curPkg.label, key);
             btn.disabled = false;
-            btn.innerText = 'KIRIM ORDER';
+            btn.innerText = 'Kirim Order';
         }
     } catch(e) {
-        toast('GAGAL KONEKSI KE SERVER!', '#ff3b3b');
+        toast('Gagal koneksi ke server!', '#EF4444');
         addStock(curPkg.label, key);
         btn.disabled = false;
-        btn.innerText = 'KIRIM ORDER';
+        btn.innerText = 'Kirim Order';
     }
-}
-
-// ============================================================
-// CEK KEY
-// ============================================================
-async function doCheck() {
-    const id = document.getElementById('oidInput').value.trim();
-    if (!id) { toast('MASUKKAN ORDER ID ATAU USER ID!', '#666'); return; }
-    
-    const res = document.getElementById('checkRes');
-    
-    try {
-        const response = await fetch(`${API_URL}/api/order/${id}`);
-        const data = await response.json();
-        
-        if (data.success && data.order) {
-            const order = data.order;
-            const isFree = order.type === 'free';
-            
-            res.innerHTML = `<div class="result-active">
-                <div class="result-label">${isFree ? 'KEY GRATIS' : 'KEY AKTIF'} — ${order.package}</div>
-                <div class="key-display">${order.key || 'BELUM ADA KEY'}</div>
-                <div style="font-size:0.5rem;color:var(--text3);margin-top:5px;">${order.createdAt || ''}</div>
-                <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-                    <a href="https://t.me/AutofeedbackSK" target="_blank" class="btn btn-p" style="flex:1;text-decoration:none;text-align:center;padding:10px;font-size:0.7rem;">UNDUH APK</a>
-                    ${order.key ? `<button class="btn btn-g" onclick="cpKey('${order.key}')" style="flex:1;padding:10px;font-size:0.7rem;">SALIN KEY</button>` : ''}
-                </div>
-            </div>`;
-        } else {
-            const orders = getOrders();
-            const order = orders.find(o => o.orderId === id || o.userId === id);
-            if (order && order.key) {
-                res.innerHTML = `<div class="result-active">
-                    <div class="result-label">KEY AKTIF — ${order.package}</div>
-                    <div class="key-display">${order.key}</div>
-                    <div style="font-size:0.5rem;color:var(--text3);margin-top:5px;">${order.created || ''}</div>
-                </div>`;
-            } else {
-                res.innerHTML = `<div class="result-404">
-                    <div style="font-size:0.72rem;color:var(--text3);">TIDAK DITEMUKAN</div>
-                    <div style="font-size:0.55rem;color:var(--text3);margin-top:3px;">PASTIKAN ORDER ID / USER ID BENAR</div>
-                </div>`;
-            }
-        }
-    } catch(e) {
-        const orders = getOrders();
-        const order = orders.find(o => o.orderId === id || o.userId === id);
-        if (order && order.key) {
-            res.innerHTML = `<div class="result-active">
-                <div class="result-label">KEY AKTIF — ${order.package}</div>
-                <div class="key-display">${order.key}</div>
-                <div style="font-size:0.5rem;color:var(--text3);margin-top:5px;">${order.created || ''}</div>
-            </div>`;
-        } else {
-            res.innerHTML = `<div class="result-404">
-                <div style="font-size:0.72rem;color:var(--text3);">TIDAK DITEMUKAN</div>
-                <div style="font-size:0.55rem;color:var(--text3);margin-top:3px;">PASTIKAN ORDER ID / USER ID BENAR</div>
-            </div>`;
-        }
-    }
-}
-
-function cpKey(k) {
-    navigator.clipboard.writeText(k).then(() => {
-        const btn = event.target;
-        const orig = btn.innerText;
-        btn.innerText = 'TERSALIN!';
-        btn.style.background = '#888';
-        setTimeout(() => {
-            btn.innerText = orig;
-            btn.style.background = null;
-        }, 2000);
-        toast('KEY DISALIN!', '#888');
-    });
 }
 
 function cpOid() {
     const txt = document.getElementById('s3oid').innerText;
     navigator.clipboard.writeText(txt).then(() => {
-        const btn = event.target;
-        const orig = btn.innerText;
-        btn.innerText = 'TERSALIN!';
-        btn.style.background = '#888';
-        setTimeout(() => {
-            btn.innerText = orig;
-            btn.style.background = null;
-        }, 2000);
-        toast('ORDER ID DISALIN!', '#888');
+        toast('Order ID disalin!', '#34D399');
     });
 }
 
@@ -2662,6 +2526,52 @@ function goToKey() {
     document.getElementById('oidInput').value = lastOid || '';
     goPage('cekkey');
     if (lastOid) doCheck();
+}
+
+// ============================================================
+// CEK KEY
+// ============================================================
+async function doCheck() {
+    const id = document.getElementById('oidInput').value.trim();
+    if (!id) { toast('Masukkan Order ID atau User ID!', '#EF4444'); return; }
+    const res = document.getElementById('checkRes');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/order/${id}`);
+        const data = await response.json();
+        if (data.success && data.order) {
+            const order = data.order;
+            const status = order.status === 'pending' ? '⏳ Menunggu Verifikasi' : '✅ Aktif';
+            const statusColor = order.status === 'pending' ? '#F59E0B' : '#34D399';
+            res.innerHTML = `<div class="result-active">
+                <div class="result-label">Status: <span style="color:${statusColor}">${status}</span></div>
+                <div class="key-display">${order.key || 'Belum ada key'}</div>
+                <div style="font-size:0.5rem;color:var(--text-muted);margin-top:5px;">${order.package} • ${order.createdAt || ''}</div>
+                <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+                    <a href="https://t.me/AutofeedbackSK" target="_blank" class="btn btn-p" style="flex:1;text-decoration:none;text-align:center;padding:10px;font-size:0.7rem;">⬇️ Unduh APK</a>
+                    ${order.key ? `<button class="btn btn-g" onclick="cpKey('${order.key}')" style="flex:1;padding:10px;font-size:0.7rem;">📋 Salin Key</button>` : ''}
+                </div>
+            </div>`;
+        } else {
+            res.innerHTML = `<div class="result-404">
+                <div style="font-size:2rem;margin-bottom:10px;">🔍</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">Tidak ditemukan</div>
+                <div style="font-size:0.55rem;color:var(--text-muted);margin-top:3px;">Pastikan Order ID / User ID benar</div>
+            </div>`;
+        }
+    } catch(e) {
+        res.innerHTML = `<div class="result-404">
+            <div style="font-size:2rem;margin-bottom:10px;">⚠️</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);">Error</div>
+            <div style="font-size:0.55rem;color:var(--text-muted);margin-top:3px;">${e.message}</div>
+        </div>`;
+    }
+}
+
+function cpKey(k) {
+    navigator.clipboard.writeText(k).then(() => {
+        toast('Key disalin!', '#34D399');
+    });
 }
 
 // ============================================================
@@ -2681,16 +2591,15 @@ function getFreeUserId() {
 function handleFreeUpload(e) {
     const f = e.target.files[0];
     if (!f || !f.type.match('image.*')) return;
-    
     const r = new FileReader();
     r.onload = ev => {
         freeUpImg = ev.target.result;
         const img = document.getElementById('freePrevImg');
         img.src = freeUpImg;
         img.style.display = 'block';
-        document.getElementById('freeUploadMsg').innerText = 'BUKTI SIAP DIKIRIM';
+        document.getElementById('freeUploadMsg').innerText = '✅ Bukti siap dikirim';
         document.getElementById('btnFreeRequest').disabled = false;
-        document.getElementById('btnFreeRequest').innerText = 'AMBIL KEY GRATIS';
+        document.getElementById('btnFreeRequest').innerText = '🎁 Ambil Key Gratis';
         document.getElementById('btnFreeRequest').className = 'btn btn-p';
     };
     r.readAsDataURL(f);
@@ -2703,75 +2612,52 @@ function renderFreeStatus() {
     const box = document.getElementById('freeStatusBox');
     const stock = getStockCount('Free1Day');
     document.getElementById('freeStockDisplay').innerText = stock;
-    
     if (req && req.key) {
         box.style.display = 'block';
-        box.className = 'free-status-box approved';
-        document.getElementById('freeStatusText').innerHTML = 'KEY AKTIF! CEK DI HALAMAN <a href="#" onclick="goPage(\'cekkey\');document.getElementById(\'oidInput\').value=\'' + req.userId + '\';doCheck();return false;" style="color:var(--text);">CEK KEY</a>';
-        document.getElementById('freeStatusSub').innerText = 'KEY: ' + req.key;
+        document.getElementById('freeStatusText').innerHTML = '✅ Key Aktif! Cek di halaman <a href="#" onclick="goPage(\'cekkey\');document.getElementById(\'oidInput\').value=\'' + req.userId + '\';doCheck();return false;" style="color:var(--color-purple-light);">Cek Key</a>';
+        document.getElementById('freeStatusSub').innerText = 'Key: ' + req.key;
     } else {
         box.style.display = 'none';
     }
 }
 
 async function submitFreeRequest() {
-    if (!freeUpImg) { toast('UPLOAD BUKTI SHARE DULU!', '#666'); return; }
-    if (getStockCount('Free1Day') === 0) { toast('MAAF, STOK KEY GRATIS HABIS!', '#ff3b3b'); return; }
-    
+    if (!freeUpImg) { toast('Upload bukti share dulu!', '#EF4444'); return; }
+    if (getStockCount('Free1Day') === 0) { toast('Maaf, stok key gratis habis!', '#EF4444'); return; }
     const userId = getFreeUserId();
     const reqs = getFreeRequests();
     if (reqs.find(r => r.userId === userId && r.key)) {
-        toast('KAMU SUDAH PERNAH AMBIL KEY GRATIS!', '#666');
+        toast('Kamu sudah pernah ambil key gratis!', '#F59E0B');
         return;
     }
-    
     const btn = document.getElementById('btnFreeRequest');
     btn.disabled = true;
-    btn.innerHTML = '<span style="display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;"></span>MEMPROSES...';
-    
+    btn.innerHTML = '⏳ Memproses...';
     const key = useStock('Free1Day');
     if (!key) {
-        toast('STOK HABIS!', '#ff3b3b');
+        toast('Stok habis!', '#EF4444');
         btn.disabled = false;
-        btn.innerText = 'AMBIL KEY GRATIS';
+        btn.innerText = '🎁 Ambil Key Gratis';
         return;
     }
-    
     const oid = 'FREE' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
     const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-    
-    try {
-        await fetch(`${API_URL}/api/free/request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, key })
-        });
-    } catch(e) {}
-    
+    await fetch(`${API_URL}/api/free/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, key })
+    }).catch(() => {});
     reqs.push({ userId, orderId: oid, key: key, status: 'approved', created: now, type: 'free' });
     saveFreeRequests(reqs);
-    
     const orders = getOrders();
     orders.push({ orderId: oid, userId: userId, package: 'GRATIS 1 HARI', label: 'Free1Day', key: key, status: 'active', created: now, type: 'free' });
     saveOrders(orders);
-    
-    btn.innerHTML = 'KEY DIDAPATKAN!';
+    btn.innerHTML = '✅ Key Didapatkan!';
     btn.className = 'btn btn-g';
-    
-    try {
-        await fetch(`${API_URL}/api/notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text: '🎁 FREE KEY DIAMBIL!\nUSER ID: ' + userId + '\nKEY: ' + key + '\nWAKTU: ' + now
-            })
-        });
-    } catch(e) {}
-    
     renderFreeStatus();
     renderPackages();
     renderStockStatus();
-    toast('KEY GRATIS BERHASIL! CEK DI HALAMAN CEK KEY', '#888');
+    toast('Key gratis berhasil! Cek di halaman Cek Key', '#34D399');
 }
 
 // ============================================================
@@ -2811,8 +2697,8 @@ function saveReviews(r) {
 (function() {
     if (getReviews().length === 0) {
         saveReviews([
-            { name: 'BUDI S.', city: 'JAKARTA', rating: 5, text: 'MANTAP BRO LANGSUNG AKTIF! KEY DIKIRIM CEPET BANGET.', time: '2 HARI LALU' },
-            { name: 'CITRA R.', city: 'BANDUNG', rating: 5, text: 'UDAH BELI 3X GAK PERNAH KECEWA. UNDETECTED BENERAN AMAN.', time: '5 HARI LALU' }
+            { name: 'BUDI S.', city: 'JAKARTA', rating: 5, text: 'Mantap bro langsung aktif! Key dikirim cepet banget.', time: '2 hari lalu' },
+            { name: 'CITRA R.', city: 'BANDUNG', rating: 5, text: 'Udah beli 3x gak pernah kecewa. Undetected beneran aman.', time: '5 hari lalu' }
         ]);
     }
 })();
@@ -2823,15 +2709,12 @@ function renderReviews() {
     if (reviewFilter !== 'all') {
         filtered = rvs.filter(r => r.rating >= parseInt(reviewFilter));
     }
-    
-    const colors = ['#1a1030', '#0a1a10', '#1a100a', '#0a0a1a'];
+    const colors = ['#6C3CE1', '#4FACFE', '#EC4899', '#34D399'];
     const list = document.getElementById('rvList');
-    
     if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-ic">★</div><div class="empty-title">BELUM ADA REVIEW</div><div class="empty-sub">JADI YANG PERTAMA KASIH REVIEW!</div></div>';
+        list.innerHTML = '<div class="empty-state"><div class="empty-ic">⭐</div><div class="empty-title">Belum ada review</div><div class="empty-sub">Jadi yang pertama kasih review!</div></div>';
         return;
     }
-    
     list.innerHTML = filtered.slice().reverse().map(r => {
         const color = colors[Math.abs(r.name.charCodeAt(0)) % colors.length];
         return `<div class="rv-card">
@@ -2842,7 +2725,7 @@ function renderReviews() {
                     <div class="rv-time">${r.time}</div>
                 </div>
             </div>
-            <div class="rv-stars">${'★'.repeat(r.rating)}<span class="rv-verified">PEMBELIAN TERVERIFIKASI</span></div>
+            <div class="rv-stars">${'★'.repeat(r.rating)}<span class="rv-verified">✅ Pembelian terverifikasi</span></div>
             <div class="rv-text">${r.text}</div>
         </div>`;
     }).join('');
@@ -2852,33 +2735,22 @@ function submitReview() {
     const name = document.getElementById('rvName').value.trim().toUpperCase();
     const city = document.getElementById('rvCity').value.trim().toUpperCase();
     const text = document.getElementById('rvText').value.trim();
-    
-    if (!name) { toast('ISI NAMA DULU!', '#666'); return; }
-    if (!text) { toast('ISI REVIEW DULU!', '#666'); return; }
-    
+    if (!name) { toast('Isi nama dulu!', '#EF4444'); return; }
+    if (!text) { toast('Isi review dulu!', '#EF4444'); return; }
     const rvs = getReviews();
-    rvs.push({ name, city, rating: selStar, text, time: 'BARU SAJA' });
+    rvs.push({ name, city, rating: selStar, text, time: 'Baru saja' });
     saveReviews(rvs);
-    
     document.getElementById('rvName').value = '';
     document.getElementById('rvCity').value = '';
     document.getElementById('rvText').value = '';
     selStar = 5;
     document.querySelectorAll('.star-b').forEach(x => x.classList.add('on'));
     renderReviews();
-    toast('REVIEW TERKIRIM, MAKASIH!', '#888');
-    
-    fetch(`${API_URL}/api/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            text: 'REVIEW BARU\n\n' + '★'.repeat(selStar) + '\n' + name + (city ? ', ' + city : '') + '\n' + text
-        })
-    }).catch(() => {});
+    toast('Review terkirim, makasih!', '#34D399');
 }
 
 // ============================================================
-// FAQ ACCORDION
+// FAQ
 // ============================================================
 function toggleFaq(el) {
     const isOpen = el.classList.contains('open');
@@ -2900,10 +2772,10 @@ function updateAdminStatus() {
         const dot = document.getElementById('adminDot' + where);
         const text = document.getElementById('adminText' + where);
         if (dot) dot.className = 'dot ' + (online ? 'online' : 'offline');
-        if (text) text.innerText = online ? 'ADMIN ONLINE' : 'ADMIN OFFLINE';
+        if (text) text.innerText = online ? 'Admin Online' : 'Admin Offline';
     });
     const badge = document.getElementById('adminBadge');
-    if (badge) badge.style.background = online ? '#888' : '#666';
+    if (badge) badge.style.background = online ? '#34D399' : '#6B7280';
 }
 setInterval(updateAdminStatus, 30000);
 updateAdminStatus();
@@ -2943,25 +2815,14 @@ function initChat() {
 
 function startChat() {
     const name = document.getElementById('chatNameIn').value.trim();
-    if (!name) { toast('ISI NAMA DULU!', '#666'); return; }
-    
+    if (!name) { toast('Isi nama dulu!', '#EF4444'); return; }
     activeChatId = 'CHAT' + Date.now();
     localStorage.setItem('sk_chat_id', activeChatId);
     localStorage.setItem('sk_chat_name', name);
     saveChatMsgs(activeChatId, []);
-    
     document.getElementById('chatNameBox').style.display = 'none';
     document.getElementById('chatMain').style.display = 'block';
     document.getElementById('chatUserName').innerText = name.toUpperCase();
-    
-    fetch(`${API_URL}/api/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            text: 'CHAT BARU\n' + name + '\nCHAT ID: ' + activeChatId + '\n\nBALAS: REPLY ' + activeChatId + ' [PESAN]'
-        })
-    }).catch(() => {});
-    
     renderMsgs();
     startChatPolling();
 }
@@ -2970,17 +2831,14 @@ function renderMsgs() {
     const msgs = getChatMsgs(activeChatId);
     const name = localStorage.getItem('sk_chat_name') || 'U';
     const c = document.getElementById('chatMsgs');
-    
-    let html = '<div class="msg-row them"><div class="msg-av-sm"><img src="icon.jpg" alt="SK"></div><div><div class="bubble">HALO! ADA YANG BISA KAMI BANTU?</div><div class="msg-time">ADMIN</div></div></div>';
-    
+    let html = '<div class="msg-row them"><div class="msg-av-sm"><img src="icon.jpg" alt="SK"></div><div><div class="bubble">Halo! Ada yang bisa kami bantu?</div><div class="msg-time">Admin</div></div></div>';
     msgs.forEach(m => {
         if (m.from === 'admin') {
-            html += `<div class="msg-row them"><div class="msg-av-sm"><img src="icon.jpg" alt="SK"></div><div><div class="bubble">${m.text}</div><div class="msg-time">ADMIN • ${m.time}</div></div></div>`;
+            html += `<div class="msg-row them"><div class="msg-av-sm"><img src="icon.jpg" alt="SK"></div><div><div class="bubble">${m.text}</div><div class="msg-time">Admin • ${m.time}</div></div></div>`;
         } else {
-            html += `<div class="msg-row me"><div class="msg-av-sm" style="background:#1a1a1a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;">${name[0].toUpperCase()}</div><div><div class="bubble">${m.text}</div><div class="msg-time">${m.time}</div></div></div>`;
+            html += `<div class="msg-row me"><div class="msg-av-sm" style="background:var(--gradient-main);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;">${name[0].toUpperCase()}</div><div><div class="bubble">${m.text}</div><div class="msg-time">${m.time}</div></div></div>`;
         }
     });
-    
     c.innerHTML = html;
     c.scrollTop = c.scrollHeight;
 }
@@ -3013,41 +2871,21 @@ async function pollChatMsgs() {
     } catch (e) {}
 }
 
-let _sending = false;
-
 async function sendMsg() {
-    if (_sending) return;
     const inp = document.getElementById('chatIn');
     const text = inp.value.trim();
     if (!text) return;
-    
-    _sending = true;
-    setTimeout(() => _sending = false, 1000);
     inp.value = '';
-    
     const name = localStorage.getItem('sk_chat_name') || 'CUSTOMER';
     const msgs = getChatMsgs(activeChatId);
     msgs.push({ from: 'user', text, time: nowTime() });
     saveChatMsgs(activeChatId, msgs);
     renderMsgs();
-    
-    try {
-        await fetch(`${API_URL}/api/chat/${activeChatId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ from: 'user', text })
-        });
-    } catch (e) {}
-    
-    try {
-        await fetch(`${API_URL}/api/notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text: 'CHAT CUSTOMER\n' + name + '\n' + text + '\n\nCHAT ID: ' + activeChatId + '\n\nBALAS: REPLY ' + activeChatId + ' [PESAN]'
-            })
-        });
-    } catch(e) {}
+    await fetch(`${API_URL}/api/chat/${activeChatId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'user', text })
+    }).catch(() => {});
 }
 
 // ============================================================
@@ -3056,7 +2894,6 @@ async function sendMsg() {
 (function() {
     const target = new Date();
     target.setHours(23, 59, 59, 0);
-    
     function tick() {
         const diff = target - new Date();
         if (diff <= 0) {
@@ -3065,12 +2902,9 @@ async function sendMsg() {
             document.getElementById('cdS').innerText = '00';
             return;
         }
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        document.getElementById('cdH').innerText = String(h).padStart(2, '0');
-        document.getElementById('cdM').innerText = String(m).padStart(2, '0');
-        document.getElementById('cdS').innerText = String(s).padStart(2, '0');
+        document.getElementById('cdH').innerText = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        document.getElementById('cdM').innerText = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        document.getElementById('cdS').innerText = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
     }
     tick();
     setInterval(tick, 1000);
@@ -3079,7 +2913,7 @@ async function sendMsg() {
 // ============================================================
 // TOAST
 // ============================================================
-function toast(msg, color = '#888') {
+function toast(msg, color = '#8B5CF6') {
     const c = document.getElementById('toasts');
     const t = document.createElement('div');
     t.className = 'toast';
@@ -3095,16 +2929,16 @@ function toast(msg, color = '#888') {
 // ============================================================
 // TICKER
 // ============================================================
-const ns = ['ANDI', 'BUDI', 'CITRA', 'DITO', 'EKA', 'FAJAR', 'GILANG', 'HANA', 'IVAN', 'JOKO'];
-const cs = ['JAKARTA', 'SURABAYA', 'BANDUNG', 'MEDAN', 'BALI', 'MAKASSAR', 'SEMARANG'];
-const ps = ['LIFETIME', '30 HARI', '7 HARI', '3 HARI', '1 JAM'];
+const names = ['ANDI', 'BUDI', 'CITRA', 'DITO', 'EKA', 'FAJAR', 'GILANG', 'HANA', 'IVAN', 'JOKO'];
+const cities = ['JAKARTA', 'SURABAYA', 'BANDUNG', 'MEDAN', 'BALI', 'MAKASSAR', 'SEMARANG'];
+const packs = ['LIFETIME', '30 HARI', '7 HARI', '3 HARI', '1 JAM'];
 
 function rotateTicker() {
     const el = document.getElementById('tickerTxt');
     if (el) {
-        el.innerText = ns[Math.floor(Math.random() * ns.length)] + ' DARI ' + 
-            cs[Math.floor(Math.random() * cs.length)] + ' BELI ' + 
-            ps[Math.floor(Math.random() * ps.length)];
+        el.innerText = names[Math.floor(Math.random() * names.length)] + ' dari ' + 
+            cities[Math.floor(Math.random() * cities.length)] + ' beli ' + 
+            packs[Math.floor(Math.random() * packs.length)];
     }
 }
 setInterval(rotateTicker, 6000);
@@ -3112,11 +2946,11 @@ setInterval(rotateTicker, 6000);
 // ============================================================
 // COUNTER
 // ============================================================
-let vis = 187;
+let visitors = 187;
 setInterval(() => {
-    vis += Math.floor(Math.random() * 2);
+    visitors += Math.floor(Math.random() * 2);
     const el = document.getElementById('visCnt');
-    if (el) el.innerText = vis;
+    if (el) el.innerText = visitors;
 }, 7000);
 
 (function() {
@@ -3135,14 +2969,12 @@ setInterval(() => {
 // THEME
 // ============================================================
 let isDark = true;
-
 function toggleTheme() {
     isDark = !isDark;
     document.body.classList.toggle('light', !isDark);
     document.getElementById('themeBtn').innerText = isDark ? '◐' : '◑';
     localStorage.setItem('sk_theme', isDark ? 'dark' : 'light');
 }
-
 (function() {
     const saved = localStorage.getItem('sk_theme');
     if (saved === 'light') {
@@ -3158,11 +2990,7 @@ function toggleTheme() {
 renderPackages();
 renderFreeStatus();
 renderReviews();
-
-console.log('🏠 SHOREKEEPER ELITE READY');
-console.log('🔗 API URL:', API_URL);
-console.log('📊 Total stok:', Object.values(getStock()).reduce((a,b) => a + b.length, 0));
+console.log('🚀 Shorekeeper Elite Ready!');
 </script>
-
 </body>
 </html>
