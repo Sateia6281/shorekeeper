@@ -7,7 +7,10 @@ const TelegramBot = require('node-telegram-bot-api');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const BOT_TOKEN = '8950107483:AAEWtWky1Xe99ZN8SJvHhUo2EugtACiv0Cs';
+// ============================================================
+// KONFIGURASI - TOKEN BARU!
+// ============================================================
+const BOT_TOKEN = '8950107483:AAE-GLbaL0SgsT9nzvh-LZCPPXw0vAVZ_yM';
 const ADMIN_ID = '6284402885';
 const DATA_FILE = path.join(__dirname, 'data.json');
 
@@ -24,6 +27,9 @@ app.get('/', (req, res) => {
     }
 });
 
+// ============================================================
+// DATA MANAGER
+// ============================================================
 function loadData() {
     try {
         if (fs.existsSync(DATA_FILE)) {
@@ -185,29 +191,47 @@ const PKG_LIST = [
     { id: 'Lifetime', name: 'LIFETIME', price: 300000 },
 ];
 
-console.log('🤖 Mencoba start Telegram Bot...');
+// ============================================================
+// BOT - PAKAI WEBHOOK (BUKAN POLLING)
+// ============================================================
+console.log('🤖 Starting bot with webhook...');
 let bot = null;
 const userTransactions = new Map();
+const userStates = new Map();
 
 try {
-    bot = new TelegramBot(BOT_TOKEN, { polling: true });
-    console.log('✅ Telegram Bot started!');
+    bot = new TelegramBot(BOT_TOKEN);
 
-    bot.on('polling_error', (err) => {
-        console.error('❌ Polling error:', err.code, err.message);
+    const WEBHOOK_URL = 'https://shorekeeper-skcheat.up.railway.app/webhook';
+    bot.setWebHook(WEBHOOK_URL).then(() => {
+        console.log('✅ Webhook set to:', WEBHOOK_URL);
+    }).catch((err) => {
+        console.error('❌ Webhook error:', err);
     });
 
-    bot.on('error', (err) => {
-        console.error('❌ Bot error:', err);
+    console.log('✅ Bot ready!');
+
+    // ============================================================
+    // WEBHOOK ENDPOINT
+    // ============================================================
+    app.post('/webhook', (req, res) => {
+        try {
+            bot.processUpdate(req.body);
+            res.sendStatus(200);
+        } catch (error) {
+            console.error('❌ Webhook error:', error);
+            res.sendStatus(500);
+        }
     });
 
-    const userStates = new Map();
-
+    // ============================================================
+    // BOT COMMANDS
+    // ============================================================
     bot.onText(/\/start/, (msg) => {
         const chatId = msg.chat.id;
         const name = msg.from.first_name || 'User';
         const isAdmin = String(chatId) === String(ADMIN_ID);
-        
+
         const keyboard = {
             reply_markup: {
                 keyboard: [
@@ -218,15 +242,15 @@ try {
                 one_time_keyboard: false
             }
         };
-        
+
         let text = `👋 Halo ${name}!\n\n🏠 **SHOREKEEPER ELITE**\n━━━━━━━━━━━━━━━\n\n🔫 Blood Strike Tool #1 Indonesia\n✅ No Root • Undetected\n\n`;
-        
+
         if (isAdmin) {
             const pending = getPendingOrders().length;
             const totalStock = getTotalStock();
             text += `👑 **ADMIN MODE**\n📋 Pending: ${pending}\n📊 Total Stok: ${totalStock}\n\n`;
         }
-        
+
         text += `📌 Pilih menu di bawah:`;
         bot.sendMessage(chatId, text, { parse_mode: 'Markdown', ...keyboard });
     });
@@ -1113,7 +1137,7 @@ try {
         } catch (error) {
             console.error('❌ Callback error:', error);
             try {
-                await bot.sendMessage(chatId, '❌ Terjadi error! Coba lagi nanti.');
+                await bot.sendMessage(callback.message.chat.id, '❌ Terjadi error! Coba lagi nanti.');
             } catch (e) {}
         }
     });
@@ -1240,8 +1264,7 @@ try {
     });
 
 } catch (error) {
-    console.error('❌ Bot GAGAL start:', error.message);
-    console.log('⚠️ Web TETAP berjalan meskipun bot mati!');
+    console.error('❌ Bot error:', error);
 }
 
 // ============================================================
@@ -1408,7 +1431,7 @@ app.get('/api/stats', (req, res) => {
 });
 
 // ============================================================
-// ENDPOINT 1: JNI LAMA (krunchpoint)
+// JNI ENDPOINTS
 // ============================================================
 app.post('/krunchpoint/connect', (req, res) => {
     const { user_key, serial, challenge } = req.body;
@@ -1467,9 +1490,6 @@ app.post('/krunchpoint/connect', (req, res) => {
     res.json(response);
 });
 
-// ============================================================
-// ENDPOINT 2: JNI BARU (skcheat)
-// ============================================================
 app.post('/connect', (req, res) => {
     const { user_key, serial, challenge } = req.body;
     
@@ -1534,4 +1554,5 @@ app.listen(PORT, () => {
     console.log(`\n🌐 Website: http://localhost:${PORT}`);
     console.log(`🔗 JNI Krunchpoint: /krunchpoint/connect`);
     console.log(`🔗 JNI SKCheat: /connect`);
+    console.log(`🔗 Webhook URL: https://shorekeeper-skcheat.up.railway.app/webhook`);
 });
