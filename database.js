@@ -60,15 +60,6 @@ function getTotalStock() {
     return total;
 }
 
-function generateRandomKey() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = 'BS-';
-    for (let i = 0; i < 10; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-}
-
 function reserveKey(label) {
     if (!data.stock[label] || data.stock[label].length === 0) return null;
     const key = data.stock[label].shift();
@@ -158,7 +149,6 @@ module.exports = {
     addKey,
     getStockCount,
     getTotalStock,
-    generateRandomKey,
     reserveKey,
     addOrder,
     getOrders,
