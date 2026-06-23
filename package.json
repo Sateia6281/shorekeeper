@@ -1,17 +1,16 @@
 {
   "name": "shorekeeper-bot",
   "version": "1.0.0",
-  "description": "Shorekeeper Bot + API",
-  "main": "server.js",
+  "description": "Shorekeeper Bot + Server Gabung",
+  "main": "app.js",
   "scripts": {
-    "start": "node server.js & node bot.js",
-    "server": "node server.js",
-    "bot": "node bot.js"
+    "start": "node app.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "node-telegram-bot-api": "^0.64.0"
+    "node-telegram-bot-api": "^0.64.0",
+    "form-data": "^4.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
