@@ -12,10 +12,10 @@
         :root {
             --bg: #f0f2f5; --bg-card: #ffffff; --bg-input: #f0f2f5;
             --text: #1a1a2e; --text2: #2d2d44; --text3: #6c6c8a;
-            --border: #e4e6ed; --blue: #4361ee; --blue-light: rgba(67,97,238,0.12);
+            --border: #e4e6ed; --blue: #4361ee; --blue-light: rgba(67,97,238,0.10);
             --green: #2ecc71; --red: #e74c3c; --orange: #f39c12;
             --purple: #7c3aed; --gradient: linear-gradient(135deg, #4361ee, #7c3aed);
-            --shadow: 0 8px 32px rgba(0,0,0,0.08); --radius: 20px; --radius-sm: 12px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.06); --radius: 20px; --radius-sm: 12px;
             --transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
             --transition-spring: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
             --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -36,8 +36,8 @@
         /* SPLASH */
         #splashScreen { position: fixed; inset: 0; z-index: 10000; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease, transform 0.8s ease; padding: 20px; }
         #splashScreen.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
-        .splash-avatar { width: 140px; height: 140px; border-radius: 30px; overflow: hidden; border: 3px solid var(--blue); box-shadow: 0 20px 60px rgba(67,97,238,0.3); margin-bottom: 20px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; animation: pulseGlow 2s ease-in-out infinite; }
-        @keyframes pulseGlow { 0%,100% { box-shadow: 0 20px 60px rgba(67,97,238,0.3); } 50% { box-shadow: 0 20px 80px rgba(67,97,238,0.5); } }
+        .splash-avatar { width: 140px; height: 140px; border-radius: 30px; overflow: hidden; border: 3px solid var(--blue); box-shadow: 0 20px 60px rgba(67,97,238,0.25); margin-bottom: 20px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; animation: pulseGlow 2s ease-in-out infinite; }
+        @keyframes pulseGlow { 0%,100% { box-shadow: 0 20px 60px rgba(67,97,238,0.25); } 50% { box-shadow: 0 20px 80px rgba(67,97,238,0.45); } }
         .splash-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .splash-title { font-size: 2rem; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.5px; }
         .splash-sub { font-size: 0.7rem; color: var(--text3); letter-spacing: 3px; text-transform: uppercase; font-weight: 600; }
@@ -67,7 +67,7 @@
         .topbar-title { font-size: 0.85rem; font-weight: 700; }
         .topbar-sub { font-size: 0.4rem; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
         .topbar-right { display: flex; align-items: center; gap: 8px; }
-        .topbar-badge { background: rgba(46,204,113,0.15); color: var(--green); font-size: 0.45rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 0.5px solid var(--green); animation: pulseBadge 2s ease-in-out infinite; }
+        .topbar-badge { background: rgba(46,204,113,0.12); color: var(--green); font-size: 0.45rem; font-weight: 700; padding: 4px 12px; border-radius: 999px; border: 0.5px solid var(--green); animation: pulseBadge 2s ease-in-out infinite; }
         @keyframes pulseBadge { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
         .topbar-refresh { width: 30px; height: 30px; border-radius: 50%; background: var(--bg-input); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; cursor: pointer; color: var(--text); transition: var(--transition-spring); }
         .topbar-refresh:active { transform: rotate(180deg) scale(0.9); }
@@ -86,18 +86,18 @@
         .page-content { padding: 14px 16px 20px; }
 
         /* BRAND BANNER */
-        .brand-banner { position: relative; width: 100%; height: 190px; border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.12); border: 0.5px solid var(--border); background: var(--gradient); }
-        .brand-banner video { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        .brand-banner { position: relative; width: 100%; height: 190px; border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.10); border: 0.5px solid var(--border); background: var(--gradient); }
+        .brand-banner video { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
         .brand-banner-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.6) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 18px 20px; }
         .brand-banner-overlay .title { color: #fff; font-size: 1.3rem; font-weight: 900; letter-spacing: 0.5px; text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
         .brand-banner-overlay .title .highlight { background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .brand-banner-overlay .sub { color: rgba(255,255,255,0.85); font-size: 0.5rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 1px 10px rgba(0,0,0,0.5); margin-top: 2px; }
-        .brand-banner-overlay .badge { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 5px 16px; border-radius: 999px; font-size: 0.45rem; color: #fff; font-weight: 700; letter-spacing: 0.5px; border: 0.5px solid rgba(255,255,255,0.2); }
+        .brand-banner-overlay .badge { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.12); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 5px 16px; border-radius: 999px; font-size: 0.45rem; color: #fff; font-weight: 700; letter-spacing: 0.5px; border: 0.5px solid rgba(255,255,255,0.15); }
 
         /* HERO */
         .hero { background: var(--bg-card); border-radius: var(--radius); padding: 22px 20px 24px; margin-bottom: 14px; box-shadow: var(--shadow); border: 0.5px solid var(--border); position: relative; overflow: hidden; }
-        .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 200px; height: 200px; border-radius: 50%; background: var(--blue-light); opacity: 0.4; pointer-events: none; }
-        .hero::after { content: ''; position: absolute; bottom: -60px; left: -60px; width: 150px; height: 150px; border-radius: 50%; background: rgba(124,58,237,0.08); pointer-events: none; }
+        .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 200px; height: 200px; border-radius: 50%; background: var(--blue-light); opacity: 0.3; pointer-events: none; }
+        .hero::after { content: ''; position: absolute; bottom: -60px; left: -60px; width: 150px; height: 150px; border-radius: 50%; background: rgba(124,58,237,0.06); pointer-events: none; }
         .hero-tag { display: inline-block; background: var(--gradient); color: #fff; font-size: 0.5rem; font-weight: 700; padding: 4px 16px; border-radius: 999px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; position: relative; z-index: 1; }
         .hero-title { font-size: 1.4rem; font-weight: 900; line-height: 1.3; margin-bottom: 4px; position: relative; z-index: 1; }
         .hero-title .highlight { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -149,9 +149,9 @@
         .game-card-name { font-size: 0.7rem; font-weight: 700; color: var(--text); }
         .game-card-status { font-size: 0.45rem; color: var(--text3); margin-top: 2px; font-weight: 500; }
         .game-card.coming-soon { border: 2px solid var(--red) !important; animation: blinkRed 1.2s ease-in-out infinite; }
-        @keyframes blinkRed { 0%,100% { border-color: var(--red); box-shadow: 0 0 15px rgba(231,76,60,0.2); } 50% { border-color: #ff6b6b; box-shadow: 0 0 30px rgba(231,76,60,0.4); } }
-        .game-card.hot { border: 2px solid var(--green) !important; background: rgba(46,204,113,0.08); }
-        .game-card.hot::before { content: '🔥 TERLARIS'; position: absolute; top: -8px; right: -8px; background: var(--green); color: #fff; font-size: 0.4rem; font-weight: 700; padding: 3px 12px; border-radius: 999px; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(46,204,113,0.4); z-index: 2; }
+        @keyframes blinkRed { 0%,100% { border-color: var(--red); box-shadow: 0 0 15px rgba(231,76,60,0.15); } 50% { border-color: #ff6b6b; box-shadow: 0 0 30px rgba(231,76,60,0.3); } }
+        .game-card.hot { border: 2px solid var(--green) !important; background: rgba(46,204,113,0.06); }
+        .game-card.hot::before { content: 'POPULAR'; position: absolute; top: -8px; right: -8px; background: var(--green); color: #fff; font-size: 0.4rem; font-weight: 700; padding: 3px 12px; border-radius: 999px; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(46,204,113,0.3); z-index: 2; }
 
         /* PKG */
         .pkg .pkg-icon-img { width: 52px; height: 52px; margin: 0 auto 6px; border-radius: 14px; overflow: hidden; background: var(--bg-input); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; transition: var(--transition-spring); }
@@ -167,8 +167,8 @@
         .pkg .pkg-price { font-size: 0.8rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .pkg .pkg-duration { font-size: 0.6rem; color: var(--text3); margin-top: 2px; font-weight: 600; }
         .pkg .pkg-stock { font-size: 0.45rem; color: var(--text3); margin-top: 2px; }
-        .pkg.out-of-stock { opacity: 0.6; cursor: not-allowed !important; border-color: var(--red) !important; background: rgba(231,76,60,0.05); position: relative; }
-        .pkg.out-of-stock::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(231,76,60,0.05) 8px, rgba(231,76,60,0.05) 16px); border-radius: var(--radius); pointer-events: none; }
+        .pkg.out-of-stock { opacity: 0.6; cursor: not-allowed !important; border-color: var(--red) !important; background: rgba(231,76,60,0.04); position: relative; }
+        .pkg.out-of-stock::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(231,76,60,0.04) 8px, rgba(231,76,60,0.04) 16px); border-radius: var(--radius); pointer-events: none; }
         .pkg.out-of-stock .pkg-stock.empty { color: var(--red); font-weight: 700; }
         .pkg.out-of-stock .hot-tag { background: var(--red) !important; }
 
@@ -178,18 +178,18 @@
         .admin-item:active { transform: scale(0.97); }
         .admin-item .admin-ic { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.1rem; }
         .admin-item .admin-ic.blue { background: var(--blue-light); color: var(--blue); }
-        .admin-item .admin-ic.green { background: rgba(46,204,113,0.15); color: var(--green); }
+        .admin-item .admin-ic.green { background: rgba(46,204,113,0.12); color: var(--green); }
         .admin-item .admin-name { font-size: 0.8rem; font-weight: 700; }
         .admin-item .admin-sub { font-size: 0.52rem; color: var(--text3); margin-top: 1px; }
         .admin-item .admin-badge { margin-left: auto; font-size: 0.45rem; padding: 3px 12px; border-radius: 999px; background: var(--green); color: #fff; font-weight: 700; animation: pulseBadge 2s ease-in-out infinite; }
 
         /* FREE KEY */
         .free-hero { background: var(--gradient); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; border: 0.5px solid var(--border); position: relative; overflow: hidden; }
-        .free-hero::before { content: '🎁'; position: absolute; top: -20px; right: -10px; font-size: 5rem; opacity: 0.1; transform: rotate(20deg); }
-        .free-hero .hero-tag { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; }
+        .free-hero::before { content: '🎁'; position: absolute; top: -20px; right: -10px; font-size: 5rem; opacity: 0.08; transform: rotate(20deg); }
+        .free-hero .hero-tag { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: #fff; }
         .free-hero .title { color: #fff; font-size: 1rem; font-weight: 800; margin-bottom: 4px; position: relative; z-index: 1; }
         .free-hero .sub { color: rgba(255,255,255,0.85); font-size: 0.7rem; line-height: 1.6; margin-bottom: 12px; position: relative; z-index: 1; }
-        .free-hero .btn { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; border: 0.5px solid rgba(255,255,255,0.2); }
+        .free-hero .btn { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); color: #fff; border: 0.5px solid rgba(255,255,255,0.15); }
 
         .share-step { background: var(--bg-card); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); border: 0.5px solid var(--border); }
         .share-step .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--gradient); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; flex-shrink: 0; }
@@ -219,6 +219,7 @@
         .result-label { font-size: 0.5rem; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 600; }
         .key-display { font-size: 1rem; font-weight: 800; letter-spacing: 2px; word-break: break-all; font-family: monospace; background: var(--bg-input); padding: 10px 14px; border-radius: var(--radius-sm); border: 0.5px solid var(--border); }
         .result-404 { background: var(--bg-card); border-radius: var(--radius); padding: 20px; text-align: center; box-shadow: var(--shadow); border: 0.5px solid var(--border); animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+        .key-pending { background: var(--bg-input); border-radius: var(--radius-sm); padding: 12px 14px; border: 0.5px solid var(--orange); color: var(--orange); font-size: 0.7rem; text-align: center; font-weight: 600; }
 
         /* VIDEO */
         .video-wrap { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 10px; border: 0.5px solid var(--border); }
@@ -226,11 +227,11 @@
 
         /* TERMS */
         .terms-text ul { list-style: none; padding: 0; font-size: 0.6rem; color: var(--text2); line-height: 2.2; }
-        .terms-text ul li::before { content: '✦ '; color: var(--blue); font-weight: 700; }
+        .terms-text ul li::before { content: '◆ '; color: var(--blue); font-weight: 700; }
 
         /* TOASTS */
         .toasts { position: fixed; bottom: 80px; left: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
-        .toast { background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.62rem; color: #fff; display: flex; align-items: center; gap: 10px; animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1); border: 0.5px solid rgba(255,255,255,0.1); }
+        .toast { background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: var(--radius-sm); padding: 12px 16px; font-size: 0.62rem; color: #fff; display: flex; align-items: center; gap: 10px; animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1); border: 0.5px solid rgba(255,255,255,0.06); }
         .toast .tdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
         @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -242,11 +243,11 @@
         .btn-o { background: transparent; border: 1.5px solid var(--border); color: var(--text2); }
         .btn-g { background: var(--bg-input); border: 0.5px solid var(--border); color: var(--text2); }
         .btn-success { background: var(--green); color: #fff; box-shadow: 0 4px 20px rgba(46,204,113,0.3); }
-        .btn-telegram { background: linear-gradient(135deg, #0088cc, #005f8a); color: #fff; box-shadow: 0 4px 20px rgba(0,136,204,0.3); }
+        .btn-telegram { background: linear-gradient(135deg, #0088cc, #005f8a); color: #fff; box-shadow: 0 4px 20px rgba(0,136,204,0.25); }
         .btn-telegram:active { transform: scale(0.97); }
 
         /* MODAL */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 9000; align-items: flex-end; justify-content: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 9000; align-items: flex-end; justify-content: center; }
         .modal.show { display: flex; }
         .mbox { background: var(--bg-card); border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; max-height: 94vh; overflow-y: auto; padding: 20px 20px 32px; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -283,10 +284,6 @@
         .order-id { font-size: 0.7rem; font-weight: 700; font-family: monospace; background: var(--bg-input); padding: 8px 12px; border-radius: var(--radius-sm); text-align: center; border: 0.5px solid var(--border); }
         .success-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--gradient); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 2.2rem; color: #fff; box-shadow: 0 8px 30px rgba(67,97,238,0.3); }
         .success-box { text-align: center; padding: 10px 0; }
-
-        /* STOCK EMPTY OVERLAY */
-        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popIn { 0% { transform: scale(0.8) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
 
         /* RESPONSIVE */
         @media(max-width: 420px) {
@@ -330,8 +327,8 @@
     </div>
     <div class="splash-title">Shorekeeper</div>
     <div class="splash-sub">Elite Tool</div>
-    <div class="splash-dear">Dear <b>Neastse</b> 🤍</div>
-    <button onclick="closeSplash()" class="splash-btn">✨ Masuk Sekarang</button>
+    <div class="splash-dear">Welcome <b>Neastse</b></div>
+    <button onclick="closeSplash()" class="splash-btn">Enter</button>
 </div>
 
 <!-- TOASTS -->
@@ -348,7 +345,7 @@
                 <source src="baner-video.mp4" type="video/mp4">
             </video>
             <div class="brand-banner-overlay">
-                <div class="badge">⚡ #1 Indonesia</div>
+                <div class="badge">#1 Indonesia</div>
                 <div class="title">SHOREKEEPER <span class="highlight">ELITE</span></div>
                 <div class="sub">Blood Strike • No Root • Undetected</div>
             </div>
@@ -360,39 +357,39 @@
                 <div><div style="font-size:0.8rem;font-weight:800;">Shorekeeper</div><div style="font-size:0.35rem;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-weight:600;">Elite Tool</div></div>
             </div>
             <div class="topbar-right">
-                <span class="topbar-badge">🟢 LIVE</span>
-                <button class="topbar-refresh" onclick="location.reload()">⟳</button>
+                <span class="topbar-badge">Live</span>
+                <button class="topbar-refresh" onclick="location.reload()">↻</button>
             </div>
         </div>
 
         <div style="margin-bottom:6px;">
-            <div class="sec-title">🎮 Pilih Game</div>
-            <div class="sec-sub">Klik game untuk lihat paket</div>
+            <div class="sec-title">Select Game</div>
+            <div class="sec-sub">Click a game to see packages</div>
             <div class="game-grid" id="homeGameList"></div>
         </div>
 
         <div class="hero">
-            <div class="hero-tag">⚡ Blood Strike • No Root</div>
+            <div class="hero-tag">Blood Strike • No Root</div>
             <div class="hero-title">Tool <span class="highlight">#1 Indonesia</span></div>
-            <div class="hero-sub">Aim Assist, ESP, No Recoil. Undetected. Key aktif setelah admin verifikasi.</div>
-            <button class="hero-btn" onclick="navigateTo('game')">✨ Lihat Semua Paket</button>
+            <div class="hero-sub">Aim Assist, ESP, No Recoil. Undetected. Key activated after admin verification.</div>
+            <button class="hero-btn" onclick="navigateTo('game')">View All Packages</button>
         </div>
 
         <div class="stats">
-            <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">Online</div><div class="stat-t">⚡ Live</div></div>
+            <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">Online</div><div class="stat-t">Active Users</div></div>
             <div class="stat"><div class="stat-n" id="ratingCnt">4.8</div><div class="stat-l">Rating</div><div class="stat-t">★★★★★</div></div>
-            <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">Terjual</div><div class="stat-t">Minggu Ini</div></div>
+            <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">Sold</div><div class="stat-t">This Week</div></div>
         </div>
 
         <div style="margin-bottom:12px;">
-            <div class="sec-title">📦 Stok Key</div>
-            <div class="sec-sub">Update stok key setiap hari</div>
+            <div class="sec-title">Key Stock</div>
+            <div class="sec-sub">Stock updated daily</div>
             <div class="stock-grid" id="stockStatusHome"></div>
         </div>
 
         <div style="margin-bottom:12px;">
-            <div class="sec-title">🛒 Paket Tersedia</div>
-            <div class="sec-sub">Klik paket untuk order</div>
+            <div class="sec-title">Available Packages</div>
+            <div class="sec-sub">Click a package to order</div>
             <div class="pkg-list" id="homePkgList"></div>
         </div>
 
@@ -402,72 +399,72 @@
             <div class="feat"><div class="feat-ic">🔫</div><div class="feat-name">No Recoil</div></div>
             <div class="feat"><div class="feat-ic">🛡️</div><div class="feat-name">Undetected</div></div>
             <div class="feat"><div class="feat-ic">📱</div><div class="feat-name">No Root</div></div>
-            <div class="feat"><div class="feat-ic">⚡</div><div class="feat-name">Update Rutin</div></div>
+            <div class="feat"><div class="feat-ic">⚡</div><div class="feat-name">Regular Updates</div></div>
         </div>
 
         <div style="margin-bottom:14px;">
-            <div class="sec-title">📹 Video Tutorial</div>
-            <div class="sec-sub">Cara install & aktifkan key</div>
+            <div class="sec-title">Video Tutorial</div>
+            <div class="sec-sub">How to install & activate key</div>
             <div class="video-wrap">
                 <iframe src="https://www.youtube.com/embed/e8YfaXtIqEU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </div>
 
         <div style="margin-bottom:12px;">
-            <div class="sec-title">💳 Bayar Langsung ke Admin</div>
-            <div class="sec-sub">Transfer ke admin, kirim bukti, key dikirim!</div>
+            <div class="sec-title">Pay Direct to Admin</div>
+            <div class="sec-sub">Transfer to admin, send proof, key will be sent</div>
             <div class="admin-contact">
                 <a href="https://t.me/Zelewin" target="_blank" class="admin-item" style="border:2px solid var(--blue);">
                     <div class="admin-ic blue">👤</div>
-                    <div><div class="admin-name">@Zelewin</div><div class="admin-sub">Admin 1 • Respon cepat</div></div>
+                    <div><div class="admin-name">@Zelewin</div><div class="admin-sub">Admin 1 • Fast Response</div></div>
                     <div class="admin-badge">Online</div>
                 </a>
                 <a href="https://t.me/Yuangme" target="_blank" class="admin-item" style="border:2px solid var(--green);">
                     <div class="admin-ic green">👤</div>
-                    <div><div class="admin-name">@Yuangme</div><div class="admin-sub">Admin 2 • Respon cepat</div></div>
+                    <div><div class="admin-name">@Yuangme</div><div class="admin-sub">Admin 2 • Fast Response</div></div>
                     <div class="admin-badge">Online</div>
                 </a>
             </div>
             <div style="background:var(--bg-input);border-radius:var(--radius-sm);padding:14px;border:0.5px solid var(--border);">
-                <div style="font-size:0.5rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">📌 Cara Order:</div>
-                <div style="font-size:0.58rem;color:var(--text2);margin-top:4px;line-height:2;">1️⃣ Transfer ke admin (DANA/OVO/QRIS)<br>2️⃣ Screenshot bukti transfer<br>3️⃣ Upload di form<br>4️⃣ Admin verifikasi ✅</div>
+                <div style="font-size:0.5rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">How to Order:</div>
+                <div style="font-size:0.58rem;color:var(--text2);margin-top:4px;line-height:2;">1. Transfer to admin (DANA/OVO/QRIS)<br>2. Screenshot the transfer proof<br>3. Upload in the form<br>4. Admin verifies ✅</div>
             </div>
         </div>
 
         <div class="free-hero">
-            <div class="hero-tag" style="background:rgba(255,255,255,0.2);color:#fff;">🎁 Gratis</div>
-            <div class="title">Dapatkan Key Gratis 1 Hari</div>
-            <div class="sub">Share ke 3 grup Telegram + upload bukti. Key langsung aktif!</div>
-            <button class="btn" style="background:rgba(255,255,255,0.2);color:#fff;border:0.5px solid rgba(255,255,255,0.2);" onclick="navigateTo('freekey')">🎁 Ambil Sekarang</button>
+            <div class="hero-tag" style="background:rgba(255,255,255,0.15);color:#fff;">Free</div>
+            <div class="title">Get 1 Day Free Key</div>
+            <div class="sub">Share to 3 Telegram groups + upload proof. Key will be activated immediately!</div>
+            <button class="btn" style="background:rgba(255,255,255,0.15);color:#fff;border:0.5px solid rgba(255,255,255,0.15);" onclick="navigateTo('freekey')">Claim Now</button>
         </div>
 
         <div style="margin-bottom:12px;">
-            <div class="sec-title">❓ Pertanyaan Umum</div>
-            <div class="sec-sub">Yang sering ditanyakan</div>
+            <div class="sec-title">FAQ</div>
+            <div class="sec-sub">Frequently asked questions</div>
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span class="faq-q-text">🔒 Apakah aman dari ban?</span><span class="faq-arrow">▼</span></div>
-                <div class="faq-a"><div class="faq-a-text">Tool kami bypass anti-cheat dengan metode injeksi terbaru. Update setiap minggu sesuai patch game.</div></div>
+                <div class="faq-q"><span class="faq-q-text">Is it safe from ban?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">Our tool bypasses anti-cheat with the latest injection method. Updated weekly according to game patches.</div></div>
             </div>
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span class="faq-q-text">📱 Perlu root HP?</span><span class="faq-arrow">▼</span></div>
-                <div class="faq-a"><div class="faq-a-text">Tidak perlu root. Cukup install APK, masukkan key. Compatible Android 8.0+</div></div>
+                <div class="faq-q"><span class="faq-q-text">Do I need root?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">No root needed. Just install the APK and enter the key. Compatible with Android 8.0+</div></div>
             </div>
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span class="faq-q-text">⏳ Key aktif berapa lama?</span><span class="faq-arrow">▼</span></div>
-                <div class="faq-a"><div class="faq-a-text">Key diaktifkan manual admin dalam 5-15 menit setelah bukti bayar diterima.</div></div>
+                <div class="faq-q"><span class="faq-q-text">How long does key activation take?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">Key is activated manually by admin within 5-15 minutes after payment proof is received.</div></div>
             </div>
             <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span class="faq-q-text">💰 Ada garansi?</span><span class="faq-arrow">▼</span></div>
-                <div class="faq-a"><div class="faq-a-text">Garansi 7 hari. Jika tool tidak bisa jalan, kami refund atau extend.</div></div>
+                <div class="faq-q"><span class="faq-q-text">Is there a warranty?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">7-day warranty. If the tool doesn't work, we refund or extend.</div></div>
             </div>
         </div>
 
         <div class="card">
-            <div class="sec-title" style="font-size:0.8rem;">📋 Syarat & Ketentuan</div>
-            <div class="terms-text"><ul><li>Key tidak bisa direfund setelah diaktifkan</li><li>Garansi 7 hari untuk masalah teknis</li><li>1 key untuk 1 device</li><li>Dilarang share key ke orang lain</li></ul></div>
+            <div class="sec-title" style="font-size:0.8rem;">Terms & Conditions</div>
+            <div class="terms-text"><ul><li>Key cannot be refunded after activation</li><li>7-day warranty for technical issues</li><li>1 key for 1 device</li><li>Sharing key with others is prohibited</li></ul></div>
         </div>
         <div class="card" style="text-align:center;border-color:var(--blue);">
-            <div style="font-size:0.55rem;color:var(--text3);">🛡️ Garansi 7 Hari • 🔑 Key via Web • 📱 No Root</div>
+            <div style="font-size:0.55rem;color:var(--text3);">7-Day Warranty • Key via Web • No Root</div>
         </div>
     </div>
 </div>
@@ -476,51 +473,51 @@
 <div class="page-wrapper" id="page-game" data-page="game">
     <div class="page-content">
         <div style="margin-bottom:12px;">
-            <div class="sec-title">🎮 Pilih Game</div>
-            <div class="sec-sub">Klik game untuk lihat paket</div>
+            <div class="sec-title">Select Game</div>
+            <div class="sec-sub">Click a game to see packages</div>
             <div class="game-grid" id="gameGridList"></div>
         </div>
         <div id="pkgContainer" style="display:none;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;background:var(--bg-card);padding:10px 14px;border-radius:var(--radius-sm);border:0.5px solid var(--border);">
                 <img id="selectedGameIcon" src="" style="width:36px;height:36px;border-radius:10px;object-fit:cover;">
                 <span style="font-size:1rem;font-weight:800;" id="selectedGameName">-</span>
-                <button onclick="closePackages()" style="margin-left:auto;background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:6px 14px;font-size:0.6rem;cursor:pointer;font-weight:600;color:var(--text2);">✕ Tutup</button>
+                <button onclick="closePackages()" style="margin-left:auto;background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;padding:6px 14px;font-size:0.6rem;cursor:pointer;font-weight:600;color:var(--text2);">✕ Close</button>
             </div>
-            <div class="sec-title" style="font-size:0.8rem;">📦 Pilih Paket</div>
-            <div class="sec-sub">Klik paket untuk order</div>
+            <div class="sec-title" style="font-size:0.8rem;">Select Package</div>
+            <div class="sec-sub">Click package to order</div>
             <div class="pkg-list" id="gamePkgList"></div>
             <div id="pkgStockInfo" style="font-size:0.55rem;color:var(--text3);margin:8px 0;text-align:center;font-weight:500;"></div>
         </div>
         <div id="comingSoonMsg" style="display:none;text-align:center;padding:40px 0;">
             <div style="font-size:3rem;margin-bottom:12px;">⏳</div>
             <div style="font-size:1rem;font-weight:800;">Coming Soon!</div>
-            <div style="font-size:0.65rem;color:var(--text3);margin-top:4px;">Game ini sedang dalam pengembangan</div>
+            <div style="font-size:0.65rem;color:var(--text3);margin-top:4px;">This game is under development</div>
         </div>
-        <button onclick="goHome()" style="width:100%;padding:14px;margin-top:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);cursor:pointer;font-size:0.75rem;font-weight:700;transition:var(--transition-spring);">← Kembali ke Home</button>
+        <button onclick="goHome()" style="width:100%;padding:14px;margin-top:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);cursor:pointer;font-size:0.75rem;font-weight:700;transition:var(--transition-spring);">← Back to Home</button>
     </div>
 </div>
 
 <!-- PAGE CEK KEY -->
 <div class="page-wrapper" id="page-cekkey" data-page="cekkey">
     <div class="page-content">
-        <div class="sec-title">🔍 Cek Key</div>
-        <div class="sec-sub">Masukkan Order ID atau User ID</div>
+        <div class="sec-title">Check Key</div>
+        <div class="sec-sub">Enter Order ID or User ID</div>
         <div class="search-row">
-            <input class="search-in" id="oidInput" placeholder="ORD1234567ABC atau FREE123ABC">
-            <button class="search-btn" onclick="doCheck()">Cek</button>
+            <input class="search-in" id="oidInput" placeholder="ORD1234567ABC or FREE123ABC">
+            <button class="search-btn" onclick="doCheck()">Check</button>
         </div>
         <div id="checkRes"></div>
         <div class="card" style="margin-top:12px;border:2px solid var(--blue);background:var(--blue-light);">
             <div style="text-align:center;">
                 <div style="font-size:1.8rem;margin-bottom:4px;">📱</div>
                 <div style="font-size:0.85rem;font-weight:800;">Download APK</div>
-                <div style="font-size:0.55rem;color:var(--text3);margin-bottom:12px;">Install APK, masukkan key, langsung main!</div>
-                <a href="https://t.me/Keyskidbot" target="_blank" class="btn btn-telegram" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.75rem;">🤖 Dapatkan APK di Bot</a>
-                <div style="font-size:0.45rem;color:var(--text3);margin-top:6px;">Atau cek order: <span class="text-blue" onclick="document.getElementById('oidInput').focus()" style="cursor:pointer;font-weight:600;">masukkan Order ID</span></div>
+                <div style="font-size:0.55rem;color:var(--text3);margin-bottom:12px;">Install APK, enter key, and play!</div>
+                <a href="https://t.me/Keyskidbot" target="_blank" class="btn btn-telegram" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.75rem;">🤖 Get APK from Bot</a>
+                <div style="font-size:0.45rem;color:var(--text3);margin-top:6px;">Or check order: <span class="text-blue" onclick="document.getElementById('oidInput').focus()" style="cursor:pointer;font-weight:600;">enter Order ID</span></div>
             </div>
         </div>
         <div class="card" style="text-align:center;border-color:var(--border);">
-            <div style="font-size:0.55rem;color:var(--text3);">📌 Order ID dikirim setelah order / request gratis</div>
+            <div style="font-size:0.55rem;color:var(--text3);">Order ID is sent after ordering / free request</div>
         </div>
     </div>
 </div>
@@ -528,34 +525,34 @@
 <!-- PAGE FREE KEY -->
 <div class="page-wrapper" id="page-freekey" data-page="freekey">
     <div class="page-content">
-        <div class="sec-title">🎁 Dapatkan Key Gratis</div>
-        <div class="sec-sub">Share ke 3 grup Telegram + upload bukti</div>
+        <div class="sec-title">Get Free Key</div>
+        <div class="sec-sub">Share to 3 Telegram groups + upload proof</div>
         <div class="free-hero" style="background:var(--gradient);">
-            <div class="hero-tag" style="background:rgba(255,255,255,0.2);color:#fff;">🎁 Gratis 1 Hari</div>
-            <div class="title">Key Gratis 1 Hari</div>
-            <div class="sub">Cukup share ke 3 grup Telegram, upload screenshot bukti, key langsung aktif!</div>
-            <div style="font-size:0.55rem;color:rgba(255,255,255,0.8);font-weight:600;">Stok: <span id="freeStockDisplay">0</span> key tersisa</div>
+            <div class="hero-tag" style="background:rgba(255,255,255,0.15);color:#fff;">Free 1 Day</div>
+            <div class="title">1 Day Free Key</div>
+            <div class="sub">Simply share to 3 Telegram groups, upload screenshot proof, key will be activated immediately!</div>
+            <div style="font-size:0.55rem;color:rgba(255,255,255,0.8);font-weight:600;">Stock: <span id="freeStockDisplay">0</span> keys remaining</div>
         </div>
-        <div class="share-step"><div class="step-num">1</div><div class="step-text">Share link ini ke <b>3 grup Telegram</b> yang berbeda</div></div>
-        <div class="share-step"><div class="step-num">2</div><div class="step-text">Screenshot bukti share (3 grup dalam 1 foto atau 3 foto)</div></div>
-        <div class="share-step"><div class="step-num">3</div><div class="step-text">Upload screenshot dan key langsung aktif!</div></div>
-        <a href="https://t.me/share/url?url=https://shorekeeper-skcheat.up.railway.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="btn btn-telegram" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;font-size:0.75rem;">📤 Share ke Telegram</a>
+        <div class="share-step"><div class="step-num">1</div><div class="step-text">Share this link to <b>3 different Telegram groups</b></div></div>
+        <div class="share-step"><div class="step-num">2</div><div class="step-text">Screenshot proof of sharing (3 groups in 1 photo or 3 photos)</div></div>
+        <div class="share-step"><div class="step-num">3</div><div class="step-text">Upload the screenshot and key will be activated immediately!</div></div>
+        <a href="https://t.me/share/url?url=https://shorekeeper-skcheat.up.railway.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="btn btn-telegram" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;font-size:0.75rem;">📤 Share to Telegram</a>
         <div class="card">
-            <div style="font-size:0.6rem;font-weight:700;margin-bottom:8px;">📤 Upload Bukti Share</div>
+            <div style="font-size:0.6rem;font-weight:700;margin-bottom:8px;">Upload Sharing Proof</div>
             <div class="upload-area" onclick="document.getElementById('freeFileIn').click()" style="padding:14px;">
-                <div style="font-size:0.55rem;color:var(--text3);">Tap untuk upload screenshot</div>
+                <div style="font-size:0.55rem;color:var(--text3);">Tap to upload screenshot</div>
                 <input type="file" id="freeFileIn" accept="image/*" style="display:none;" onchange="handleFreeUpload(event)">
                 <img id="freePrevImg" style="max-width:100%;max-height:120px;margin-top:8px;border-radius:var(--radius-sm);display:none;">
             </div>
             <div style="font-size:0.5rem;color:var(--text3);min-height:13px;" id="freeUploadMsg"></div>
         </div>
-        <button class="btn btn-p" id="btnFreeRequest" disabled onclick="submitFreeRequest()">Upload Bukti Dulu</button>
+        <button class="btn btn-p" id="btnFreeRequest" disabled onclick="submitFreeRequest()">Upload Proof First</button>
         <div id="freeStatusBox" style="margin-top:10px;display:none;background:var(--bg-card);border-radius:var(--radius);padding:16px;text-align:center;border:0.5px solid var(--border);">
             <div style="font-size:1.4rem;margin-bottom:4px;">✅</div>
-            <div style="font-size:0.68rem;font-weight:700;" id="freeStatusText">Key Aktif!</div>
-            <div style="font-size:0.58rem;color:var(--text3);margin-top:3px;" id="freeStatusSub">Cek di halaman Cek Key</div>
+            <div style="font-size:0.68rem;font-weight:700;" id="freeStatusText">Key Active!</div>
+            <div style="font-size:0.58rem;color:var(--text3);margin-top:3px;" id="freeStatusSub">Check on Check Key page</div>
         </div>
-        <div style="margin-top:12px;text-align:center;font-size:0.55rem;color:var(--text3);"><span>Key aktif 1 hari • 1x per user • Stok terbatas</span></div>
+        <div style="margin-top:12px;text-align:center;font-size:0.55rem;color:var(--text3);"><span>Key active for 1 day • 1x per user • Limited stock</span></div>
     </div>
 </div>
 
@@ -567,13 +564,13 @@
         <span class="bicon"><svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg><span class="dot"></span></span>Home
     </button>
     <button class="bnav-item" data-page="game" onclick="navigateTo('game')">
-        <span class="bicon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg><span class="dot"></span></span>Paket
+        <span class="bicon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg><span class="dot"></span></span>Packages
     </button>
     <button class="bnav-item" data-page="freekey" onclick="navigateTo('freekey')">
-        <span class="bicon"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg><span class="dot"></span></span>Gratis
+        <span class="bicon"><svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg><span class="dot"></span></span>Free
     </button>
     <button class="bnav-item" data-page="cekkey" onclick="navigateTo('cekkey')">
-        <span class="bicon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span class="dot"></span></span>Cek Key
+        <span class="bicon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span class="dot"></span></span>Check
     </button>
 </nav>
 
@@ -585,7 +582,7 @@
 
         <div class="mpane active" id="mp1">
             <div class="mtitle" id="mp1title">-</div>
-            <div class="msub">Pilih cara bayar</div>
+            <div class="msub">Select payment method</div>
             <div class="metode-grid">
                 <button class="metode-btn active" data-m="qris">QRIS</button>
                 <button class="metode-btn" data-m="dana">DANA/OVO</button>
@@ -593,9 +590,9 @@
             </div>
             <div class="paybox">
                 <div id="pi-qris">
-                    <div style="font-size:0.5rem;margin-bottom:6px;color:var(--text3);font-weight:600;">Scan QRIS ini:</div>
+                    <div style="font-size:0.5rem;margin-bottom:6px;color:var(--text3);font-weight:600;">Scan this QRIS:</div>
                     <div class="qris-wrap"><img id="qrisImg" src="qris-1hari.jpg" alt="QRIS"></div>
-                    <div class="qris-nominal" id="qrisNominal">Nominal sudah fix kirim sesuai jumlah ini ya</div>
+                    <div class="qris-nominal" id="qrisNominal">Amount is fixed, send accordingly</div>
                     <div style="font-size:0.45rem;color:var(--text3);margin-top:5px;">DANA • OVO • GOPAY • QRIS</div>
                 </div>
                 <div id="pi-dana" style="display:none;line-height:2.2;">
@@ -605,24 +602,24 @@
                 </div>
                 <div id="pi-giftcard" style="display:none;line-height:2.2;">
                     <div style="font-weight:800;font-size:0.75rem;">GIFT CARD</div>
-                    <div style="font-size:0.68rem;color:var(--text2);font-weight:600;">Kirim ke @Zelewin atau @Yuangme</div>
+                    <div style="font-size:0.68rem;color:var(--text2);font-weight:600;">Send to @Zelewin or @Yuangme</div>
                     <div style="font-size:0.5rem;color:var(--text3);">Google Play • App Store • Steam</div>
                 </div>
             </div>
-            <button class="btn btn-p" onclick="goMP(2)">Lanjut</button>
-            <button class="btn btn-o" onclick="closeM()" style="margin-top:7px;">Batal</button>
-            <div class="secure-badge">🔒 Transaksi aman & terenkripsi</div>
+            <button class="btn btn-p" onclick="goMP(2)">Next</button>
+            <button class="btn btn-o" onclick="closeM()" style="margin-top:7px;">Cancel</button>
+            <div class="secure-badge">🔒 Secure & encrypted transaction</div>
         </div>
 
         <div class="mpane" id="mp2">
-            <div class="mtitle">Data & Bukti Bayar</div>
+            <div class="mtitle">Data & Payment Proof</div>
             <div class="msub" id="mp2sub">-</div>
-            <div class="field"><label>📧 Email (terima key)</label><input type="email" id="inEmail" placeholder="contoh@gmail.com"></div>
-            <div class="field"><label>📱 WhatsApp</label><input type="tel" id="inPhone" placeholder="081234567890"></div>
+            <div class="field"><label>Email (receive key)</label><input type="email" id="inEmail" placeholder="example@gmail.com"></div>
+            <div class="field"><label>WhatsApp</label><input type="tel" id="inPhone" placeholder="081234567890"></div>
             <div class="field">
-                <label>📸 Upload Bukti Transfer</label>
+                <label>Upload Payment Proof</label>
                 <div class="upload-area" onclick="document.getElementById('fileIn').click()">
-                    <div style="font-size:0.55rem;color:var(--text3);">Tap untuk upload screenshot</div>
+                    <div style="font-size:0.55rem;color:var(--text3);">Tap to upload screenshot</div>
                     <input type="file" id="fileIn" accept="image/*" style="display:none;" onchange="handleUpload(event)">
                     <img id="prevImg" style="max-width:100%;max-height:120px;margin-top:8px;border-radius:var(--radius-sm);display:none;">
                 </div>
@@ -630,31 +627,31 @@
             </div>
             <div style="display:flex;gap:7px;">
                 <button class="btn btn-o" onclick="goMP(1)" style="flex:0 0 44px;padding:12px 0;">←</button>
-                <button class="btn btn-p" id="btnSend" disabled onclick="submitOrder()">Upload Bukti Dulu</button>
+                <button class="btn btn-p" id="btnSend" disabled onclick="submitOrder()">Upload Proof First</button>
             </div>
         </div>
 
         <div class="mpane" id="mp3">
             <div class="success-box">
                 <div class="success-icon">✓</div>
-                <div class="mtitle" style="font-size:0.95rem;margin-bottom:3px;">Order Masuk!</div>
-                <div style="font-size:0.62rem;color:var(--text2);line-height:1.6;margin-bottom:12px;">Pembayaran sedang dicek admin.<br>Key aktif di <b style="color:var(--blue);">Cek Key</b> setelah diverifikasi.</div>
+                <div class="mtitle" style="font-size:0.95rem;margin-bottom:3px;">Order Submitted!</div>
+                <div style="font-size:0.62rem;color:var(--text2);line-height:1.6;margin-bottom:12px;">Payment is being verified by admin.<br>Key will be active on <b style="color:var(--blue);">Check Key</b> after verification.</div>
                 <div class="order-table">
-                    <div class="orow"><span class="olabel">Paket</span><span class="oval" id="s3pkg">-</span></div>
-                    <div class="orow"><span class="olabel">Harga</span><span class="oval" id="s3price">-</span></div>
+                    <div class="orow"><span class="olabel">Package</span><span class="oval" id="s3pkg">-</span></div>
+                    <div class="orow"><span class="olabel">Price</span><span class="oval" id="s3price">-</span></div>
                     <div class="orow"><span class="olabel">Email</span><span class="oval" id="s3email" style="font-size:0.58rem;">-</span></div>
-                    <div class="orow"><span class="olabel">Status</span><span style="color:var(--orange);font-weight:700;font-size:0.65rem;" id="s3status">⏳ Menunggu Verifikasi</span></div>
+                    <div class="orow"><span class="olabel">Status</span><span style="color:var(--orange);font-weight:700;font-size:0.65rem;" id="s3status">⏳ Waiting Verification</span></div>
                 </div>
-                <div style="font-size:0.5rem;color:var(--text3);margin-bottom:5px;font-weight:600;">Simpan Order ID:</div>
+                <div style="font-size:0.5rem;color:var(--text3);margin-bottom:5px;font-weight:600;">Save Order ID:</div>
                 <div class="order-id" id="s3oid">-</div>
                 <div style="display:flex;gap:7px;margin-top:10px;">
-                    <button class="btn btn-o" onclick="cpOid()" style="flex:1;padding:10px;">📋 Salin ID</button>
-                    <button class="btn btn-p" onclick="goToKey()" style="flex:1;padding:10px;">🔍 Cek Key</button>
+                    <button class="btn btn-o" onclick="cpOid()" style="flex:1;padding:10px;">📋 Copy ID</button>
+                    <button class="btn btn-p" onclick="goToKey()" style="flex:1;padding:10px;">🔍 Check Key</button>
                 </div>
                 <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">
-                    <div style="font-size:0.5rem;color:var(--text3);margin-bottom:6px;font-weight:600;">📱 Dapatkan APK di Bot:</div>
-                    <a href="https://t.me/Keyskidbot" target="_blank" class="btn btn-telegram" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.72rem;">🤖 Klik ke Bot @Keyskidbot</a>
-                    <div style="font-size:0.4rem;color:var(--text3);margin-top:4px;">Bot akan kirim APK + Key otomatis</div>
+                    <div style="font-size:0.5rem;color:var(--text3);margin-bottom:6px;font-weight:600;">Get APK from Bot:</div>
+                    <a href="https://t.me/Keyskidbot" target="_blank" class="btn btn-telegram" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.72rem;">🤖 Go to @Keyskidbot</a>
+                    <div style="font-size:0.4rem;color:var(--text3);margin-top:4px;">Bot will send APK + Key automatically</div>
                 </div>
             </div>
         </div>
@@ -766,7 +763,7 @@ function renderGameGrid(containerId, clickable = true) {
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2256%22%3E%3Crect width=%2256%22 height=%2256%22 fill=%22%23e5e5ea%22/%3E%3Ctext x=%2228%22 y=%2235%22 text-anchor=%22middle%22 font-size=%2220%22%3E🎮%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="game-card-name">${game.name}</div>
-                <div class="game-card-status">${isActive ? '✅ Tersedia' : '⏳ Segera'}</div>
+                <div class="game-card-status">${isActive ? 'Available' : 'Soon'}</div>
             </div>
         `;
     });
@@ -791,7 +788,7 @@ function renderGamePage() {
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2256%22%3E%3Crect width=%2256%22 height=%2256%22 fill=%22%23e5e5ea%22/%3E%3Ctext x=%2228%22 y=%2235%22 text-anchor=%22middle%22 font-size=%2220%22%3E🎮%3C/text%3E%3C/svg%3E'">
                 </div>
                 <div class="game-card-name">${game.name}</div>
-                <div class="game-card-status">${isActive ? '✅ Tersedia' : '⏳ Segera'}</div>
+                <div class="game-card-status">${isActive ? 'Available' : 'Soon'}</div>
             </div>
         `;
     });
@@ -811,7 +808,7 @@ function selectGameFromPage(gameId) {
     if (game.status === 'coming_soon') {
         document.getElementById('pkgContainer').style.display = 'none';
         document.getElementById('comingSoonMsg').style.display = 'block';
-        toast('⏳ ' + game.name + ' masih dalam pengembangan!', '#f39c12');
+        toast('⏳ ' + game.name + ' is still under development!', '#f39c12');
         return;
     }
 
@@ -835,7 +832,7 @@ function selectGameFromHome(gameId) {
     if (!game) return;
 
     if (game.status === 'coming_soon') {
-        toast('⏳ ' + game.name + ' masih dalam pengembangan!', '#f39c12');
+        toast('⏳ ' + game.name + ' is still under development!', '#f39c12');
         return;
     }
 
@@ -907,10 +904,6 @@ async function getStock() {
     }
 }
 
-function saveStock(s) {
-    localStorage.setItem('sk_stock', JSON.stringify(s));
-}
-
 async function getStockCount(label) {
     const s = await getStock();
     return s[label] ? s[label].length : 0;
@@ -949,14 +942,14 @@ async function renderPackagesForGame() {
     packages.forEach(pkg => {
         const count = stock[pkg.id] ? stock[pkg.id].length : 0;
         const isAvailable = count > 0;
-        const stockText = isAvailable ? `<div class="pkg-stock available">✅ ${count} tersisa</div>` : `<div class="pkg-stock empty">❌ HABIS</div>`;
+        const stockText = isAvailable ? `<div class="pkg-stock available">✅ ${count} left</div>` : `<div class="pkg-stock empty">❌ OUT OF STOCK</div>`;
         const disabledClass = isAvailable ? '' : 'out-of-stock';
         const onclickAttr = isAvailable ? `onclick="openOrder('${pkg.id}')"` : `onclick="showStockEmptyAlert('${pkg.name}')"`;
         
         html += `
             <div class="pkg${pkg.hot ? ' hot' : ''} ${disabledClass}" ${onclickAttr} style="${!isAvailable ? 'opacity:0.6;cursor:not-allowed;' : ''}">
-                ${pkg.hot ? '<div class="hot-tag">TERLARIS</div>' : ''}
-                ${!isAvailable ? '<div class="hot-tag" style="background:#e74c3c;">HABIS</div>' : ''}
+                ${pkg.hot ? '<div class="hot-tag">BEST SELLER</div>' : ''}
+                ${!isAvailable ? '<div class="hot-tag" style="background:#e74c3c;">OUT OF STOCK</div>' : ''}
                 <div class="pkg-icon-img">
                     <img src="${pkg.iconFile}" alt="${pkg.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%23e5e5ea%22/%3E%3Ctext x=%2220%22 y=%2225%22 text-anchor=%22middle%22 font-size=%2218%22%3E📦%3C/text%3E%3C/svg%3E'">
@@ -971,7 +964,7 @@ async function renderPackagesForGame() {
 
     const total = await getTotalStock();
     const info = document.getElementById('pkgStockInfo');
-    if (info) info.innerText = '📊 Total stok: ' + total + ' key • Klik paket untuk order';
+    if (info) info.innerText = 'Total stock: ' + total + ' keys • Click package to order';
 }
 
 // ============================================================
@@ -1003,8 +996,8 @@ async function renderHome() {
         
         html += `
             <div class="pkg${pkg.hot ? ' hot' : ''} ${disabledClass}" ${onclickAttr} style="${!isAvailable ? 'opacity:0.6;cursor:not-allowed;' : ''}">
-                ${pkg.hot ? '<div class="hot-tag">TERLARIS</div>' : ''}
-                ${!isAvailable ? '<div class="hot-tag" style="background:#e74c3c;">HABIS</div>' : ''}
+                ${pkg.hot ? '<div class="hot-tag">BEST SELLER</div>' : ''}
+                ${!isAvailable ? '<div class="hot-tag" style="background:#e74c3c;">OUT OF STOCK</div>' : ''}
                 <div class="pkg-icon-img">
                     <img src="${defaultIcon}" alt="${pkg.name}" 
                          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%23e5e5ea%22/%3E%3Ctext x=%2220%22 y=%2225%22 text-anchor=%22middle%22 font-size=%2218%22%3E📦%3C/text%3E%3C/svg%3E'">
@@ -1060,23 +1053,23 @@ function showStockEmptyAlert(packageName) {
     overlay.id = 'stockEmptyOverlay';
     overlay.style.cssText = `
         position: fixed; inset: 0; z-index: 99999;
-        background: rgba(0,0,0,0.7); backdrop-filter: blur(12px);
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(12px);
         display: flex; align-items: center; justify-content: center;
         animation: fadeInOverlay 0.3s ease;
     `;
     
     overlay.innerHTML = `
-        <div style="background:var(--bg-card);border-radius:24px;padding:40px 32px 32px;max-width:340px;width:90%;text-align:center;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);border:2px solid #e74c3c;box-shadow:0 20px 60px rgba(231,76,60,0.3);">
-            <div style="width:80px;height:80px;border-radius:50%;background:rgba(231,76,60,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:3px solid #e74c3c;">
+        <div style="background:var(--bg-card);border-radius:24px;padding:40px 32px 32px;max-width:340px;width:90%;text-align:center;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);border:2px solid #e74c3c;box-shadow:0 20px 60px rgba(231,76,60,0.25);">
+            <div style="width:80px;height:80px;border-radius:50%;background:rgba(231,76,60,0.10);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:3px solid #e74c3c;">
                 <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </div>
-            <div style="font-size:1.1rem;font-weight:800;color:#e74c3c;margin-bottom:4px;">STOK HABIS!</div>
-            <div style="font-size:0.75rem;color:var(--text2);margin-bottom:20px;line-height:1.6;">Paket <b>${packageName}</b> sedang kosong.<br>Silakan pilih paket lain atau hubungi admin.</div>
-            <button onclick="closeStockAlert()" style="background:#e74c3c;color:#fff;border:none;padding:12px 32px;border-radius:12px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font);transition:transform 0.2s;width:100%;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onmousedown="this.style.transform='scale(0.95)'">✕ Tutup</button>
-            <div style="margin-top:12px;font-size:0.5rem;color:var(--text3);">💡 Stok akan diupdate setiap hari</div>
+            <div style="font-size:1.1rem;font-weight:800;color:#e74c3c;margin-bottom:4px;">OUT OF STOCK!</div>
+            <div style="font-size:0.75rem;color:var(--text2);margin-bottom:20px;line-height:1.6;">Package <b>${packageName}</b> is currently empty.<br>Please choose another package or contact admin.</div>
+            <button onclick="closeStockAlert()" style="background:#e74c3c;color:#fff;border:none;padding:12px 32px;border-radius:12px;font-size:0.75rem;font-weight:700;cursor:pointer;font-family:var(--font);transition:transform 0.2s;width:100%;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onmousedown="this.style.transform='scale(0.95)'">✕ Close</button>
+            <div style="margin-top:12px;font-size:0.5rem;color:var(--text3);">Stock is updated daily</div>
         </div>
     `;
     
@@ -1116,7 +1109,7 @@ async function openOrder(pkgId) {
         const count = stock[p.label] ? stock[p.label].length : 0;
         
         if (count === 0) {
-            toast('❌ Stok ' + p.name + ' HABIS!', '#e74c3c');
+            toast('❌ Stock ' + p.name + ' is EMPTY!', '#e74c3c');
             showStockEmptyAlert(p.name);
             cachedStock = stock;
             lastFetchTime = Date.now();
@@ -1130,7 +1123,7 @@ async function openOrder(pkgId) {
         lastFetchTime = Date.now();
         
     } catch (e) {
-        toast('⚠️ Gagal cek stok, coba lagi!', '#f39c12');
+        toast('⚠️ Failed to check stock, try again!', '#f39c12');
         return;
     }
     
@@ -1143,12 +1136,12 @@ async function openOrder(pkgId) {
     document.getElementById('uploadMsg').innerText = '';
     const btn = document.getElementById('btnSend');
     btn.disabled = true;
-    btn.innerText = 'Upload Bukti Dulu';
+    btn.innerText = 'Upload Proof First';
     btn.className = 'btn btn-p';
     document.getElementById('mp1title').innerText = p.name + ' — ' + p.idr;
     document.getElementById('mp2sub').innerText = p.name + ' • ' + p.idr;
     document.getElementById('qrisImg').src = p.qris;
-    document.getElementById('qrisNominal').innerText = 'Nominal sudah fix: ' + p.idr + ' kirim sesuai jumlah ini ya';
+    document.getElementById('qrisNominal').innerText = 'Amount is fixed: ' + p.idr + ' send accordingly';
     document.querySelectorAll('.metode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.m === 'qris');
     });
@@ -1201,10 +1194,10 @@ function handleUpload(e) {
         const img = document.getElementById('prevImg');
         img.src = upImg;
         img.style.display = 'block';
-        document.getElementById('uploadMsg').innerText = '✅ Bukti siap';
+        document.getElementById('uploadMsg').innerText = '✅ Proof ready';
         const btn = document.getElementById('btnSend');
         btn.disabled = false;
-        btn.innerText = 'Kirim Order';
+        btn.innerText = 'Submit Order';
         btn.className = 'btn btn-p';
     };
     r.readAsDataURL(f);
@@ -1216,13 +1209,13 @@ function handleUpload(e) {
 async function submitOrder() {
     const email = document.getElementById('inEmail').value.trim();
     const phone = document.getElementById('inPhone').value.trim();
-    if (!upImg) { toast('Upload bukti dulu!', '#e74c3c'); return; }
-    if (!email) { toast('Isi email dulu!', '#e74c3c'); return; }
-    if (!phone) { toast('Isi nomor WA dulu!', '#e74c3c'); return; }
+    if (!upImg) { toast('Upload proof first!', '#e74c3c'); return; }
+    if (!email) { toast('Fill in email!', '#e74c3c'); return; }
+    if (!phone) { toast('Fill in WhatsApp number!', '#e74c3c'); return; }
 
     const btn = document.getElementById('btnSend');
     btn.disabled = true;
-    btn.innerHTML = '⏳ Memproses...';
+    btn.innerHTML = '⏳ Processing...';
 
     try {
         // 🔥 CEK STOK KE SERVER
@@ -1231,9 +1224,9 @@ async function submitOrder() {
         const stock = stockData.stock || {};
         
         if (!stock[curPkg.label] || stock[curPkg.label].length === 0) {
-            toast('❌ Stok ' + curPkg.name + ' habis!', '#e74c3c');
+            toast('❌ Stock ' + curPkg.name + ' is empty!', '#e74c3c');
             btn.disabled = false;
-            btn.innerText = 'Kirim Order';
+            btn.innerText = 'Submit Order';
             return;
         }
         
@@ -1268,12 +1261,12 @@ async function submitOrder() {
             document.getElementById('s3price').innerText = curPkg.idr + ' (' + curPkg.usd + ')';
             document.getElementById('s3email').innerText = email;
             document.getElementById('s3oid').innerText = result.orderId;
-            document.getElementById('s3status').innerHTML = '⏳ Menunggu Verifikasi';
+            document.getElementById('s3status').innerHTML = '⏳ Waiting Verification';
             document.getElementById('s3status').style.color = '#f39c12';
             lastOid = result.orderId;
             
             goMP(3);
-            toast('✅ Order masuk! Tunggu verifikasi admin.', '#f39c12');
+            toast('✅ Order submitted! Waiting for admin verification.', '#f39c12');
             
             // REFRESH UI - STOK LANGSUNG BERKURANG!
             await renderPackagesForGame();
@@ -1282,7 +1275,7 @@ async function submitOrder() {
             
             // 🔥 KIRIM NOTIFIKASI KE ADMIN VIA BOT
             try {
-                const notifyRes = await fetch('/api/notify', {
+                const notifyRes = await fetch('/api/notify-admin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1302,22 +1295,22 @@ async function submitOrder() {
             }
             
         } else {
-            toast('❌ Gagal: ' + (result.message || 'Coba lagi'), '#e74c3c');
+            toast('❌ Failed: ' + (result.message || 'Try again'), '#e74c3c');
             btn.disabled = false;
-            btn.innerText = 'Kirim Order';
+            btn.innerText = 'Submit Order';
         }
     } catch(e) {
         console.error('Submit error:', e);
-        toast('❌ Gagal koneksi ke server!', '#e74c3c');
+        toast('❌ Connection error!', '#e74c3c');
         btn.disabled = false;
-        btn.innerText = 'Kirim Order';
+        btn.innerText = 'Submit Order';
     }
 }
 
 function cpOid() {
     const txt = document.getElementById('s3oid').innerText;
     navigator.clipboard.writeText(txt).then(() => {
-        toast('Order ID disalin!', '#2ecc71');
+        toast('Order ID copied!', '#2ecc71');
     });
 }
 
@@ -1329,11 +1322,11 @@ function goToKey() {
 }
 
 // ============================================================
-// CEK KEY
+// CEK KEY - 🔥 KEY HIDDEN SAMPAI APPROVED!
 // ============================================================
 async function doCheck() {
     const id = document.getElementById('oidInput').value.trim();
-    if (!id) { toast('Masukkan Order ID!', '#e74c3c'); return; }
+    if (!id) { toast('Enter Order ID!', '#e74c3c'); return; }
     const res = document.getElementById('checkRes');
 
     try {
@@ -1341,20 +1334,31 @@ async function doCheck() {
         const data = await response.json();
         if (data.success && data.order) {
             const order = data.order;
-            const status = order.status === 'pending' ? '⏳ Menunggu Verifikasi' : '✅ Aktif';
-            const statusColor = order.status === 'pending' ? '#f39c12' : '#2ecc71';
+            const isPending = order.status === 'pending';
+            const statusText = isPending ? '⏳ Waiting Verification' : '✅ Active';
+            const statusColor = isPending ? '#f39c12' : '#2ecc71';
+            
+            // 🔥 KEY HANYA TAMPIL JIKA SUDAH APPROVED!
+            let keyDisplay;
+            if (isPending) {
+                keyDisplay = `<div class="key-pending">🔒 Key will appear after admin verification</div>`;
+            } else {
+                keyDisplay = `<div class="key-display">${order.key || 'No key yet'}</div>`;
+            }
+            
             res.innerHTML = `<div class="result-active">
-                <div class="result-label">Status: <span style="color:${statusColor}">${status}</span></div>
-                <div class="key-display">${order.key || 'Belum ada key'}</div>
+                <div class="result-label">Status: <span style="color:${statusColor}">${statusText}</span></div>
+                ${keyDisplay}
                 <div style="font-size:0.5rem;color:var(--text3);margin-top:5px;">${order.package} • ${order.createdAt || ''}</div>
+                ${isPending ? `<div style="font-size:0.55rem;color:var(--orange);margin-top:8px;font-weight:600;">⏳ Please wait for admin to verify your payment proof</div>` : ''}
                 <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-                    <a href="https://t.me/Keyskidbot" target="_blank" class="btn btn-telegram" style="flex:1;text-decoration:none;text-align:center;padding:10px;font-size:0.7rem;display:flex;align-items:center;justify-content:center;gap:6px;">🤖 Ambil APK di Bot</a>
-                    ${order.key ? `<button class="btn btn-g" onclick="cpKey('${order.key}')" style="flex:1;padding:10px;font-size:0.7rem;">📋 Salin Key</button>` : ''}
+                    <a href="https://t.me/Keyskidbot" target="_blank" class="btn btn-telegram" style="flex:1;text-decoration:none;text-align:center;padding:10px;font-size:0.7rem;display:flex;align-items:center;justify-content:center;gap:6px;">🤖 Get APK from Bot</a>
+                    ${!isPending && order.key ? `<button class="btn btn-g" onclick="cpKey('${order.key}')" style="flex:1;padding:10px;font-size:0.7rem;">📋 Copy Key</button>` : ''}
                 </div>
-                <div style="font-size:0.45rem;color:var(--text3);margin-top:6px;">💡 Bot akan kirim APK + Key otomatis</div>
+                <div style="font-size:0.45rem;color:var(--text3);margin-top:6px;">Bot will send APK + Key automatically</div>
             </div>`;
         } else {
-            res.innerHTML = `<div class="result-404"><div style="font-size:2rem;margin-bottom:10px;">🔍</div><div style="font-size:0.72rem;color:var(--text3);">Tidak ditemukan</div><div style="font-size:0.55rem;color:var(--text3);margin-top:3px;">Pastikan Order ID benar</div></div>`;
+            res.innerHTML = `<div class="result-404"><div style="font-size:2rem;margin-bottom:10px;">🔍</div><div style="font-size:0.72rem;color:var(--text3);">Not found</div><div style="font-size:0.55rem;color:var(--text3);margin-top:3px;">Please check your Order ID</div></div>`;
         }
     } catch(e) {
         res.innerHTML = `<div class="result-404"><div style="font-size:2rem;margin-bottom:10px;">⚠️</div><div style="font-size:0.72rem;color:var(--text3);">Error</div><div style="font-size:0.55rem;color:var(--text3);margin-top:3px;">${e.message}</div></div>`;
@@ -1363,7 +1367,7 @@ async function doCheck() {
 
 function cpKey(k) {
     navigator.clipboard.writeText(k).then(() => {
-        toast('Key disalin!', '#2ecc71');
+        toast('Key copied!', '#2ecc71');
     });
 }
 
@@ -1390,9 +1394,9 @@ function handleFreeUpload(e) {
         const img = document.getElementById('freePrevImg');
         img.src = freeUpImg;
         img.style.display = 'block';
-        document.getElementById('freeUploadMsg').innerText = '✅ Bukti siap dikirim';
+        document.getElementById('freeUploadMsg').innerText = '✅ Proof ready';
         document.getElementById('btnFreeRequest').disabled = false;
-        document.getElementById('btnFreeRequest').innerText = '🎁 Ambil Key Gratis';
+        document.getElementById('btnFreeRequest').innerText = '🎁 Claim Free Key';
         document.getElementById('btnFreeRequest').className = 'btn btn-p';
     };
     r.readAsDataURL(f);
@@ -1407,7 +1411,7 @@ function renderFreeStatus() {
     document.getElementById('freeStockDisplay').innerText = stock;
     if (req && req.key) {
         box.style.display = 'block';
-        document.getElementById('freeStatusText').innerHTML = '✅ Key Aktif! Cek di <a href="#" onclick="navigateTo(\'cekkey\');document.getElementById(\'oidInput\').value=\'' + req.userId + '\';doCheck();return false;" style="color:var(--blue);font-weight:700;">Cek Key</a>';
+        document.getElementById('freeStatusText').innerHTML = '✅ Key Active! Check on <a href="#" onclick="navigateTo(\'cekkey\');document.getElementById(\'oidInput\').value=\'' + req.userId + '\';doCheck();return false;" style="color:var(--blue);font-weight:700;">Check Key</a>';
         document.getElementById('freeStatusSub').innerText = 'Key: ' + req.key;
     } else {
         box.style.display = 'none';
@@ -1415,24 +1419,24 @@ function renderFreeStatus() {
 }
 
 async function submitFreeRequest() {
-    if (!freeUpImg) { toast('Upload bukti share dulu!', '#e74c3c'); return; }
-    if (getStockCount('Free1Day') === 0) { toast('Maaf, stok key gratis habis!', '#e74c3c'); return; }
+    if (!freeUpImg) { toast('Upload sharing proof first!', '#e74c3c'); return; }
+    if (getStockCount('Free1Day') === 0) { toast('Sorry, free keys are out of stock!', '#e74c3c'); return; }
     const userId = getFreeUserId();
     const reqs = getFreeRequests();
     if (reqs.find(r => r.userId === userId && r.key)) {
-        toast('Kamu sudah pernah ambil key gratis!', '#f39c12');
+        toast('You have already claimed a free key!', '#f39c12');
         return;
     }
     const btn = document.getElementById('btnFreeRequest');
     btn.disabled = true;
-    btn.innerHTML = '⏳ Memproses...';
+    btn.innerHTML = '⏳ Processing...';
     
     const stock = await getStock();
     const key = stock.Free1Day ? stock.Free1Day.shift() : null;
     if (!key) {
-        toast('Stok habis!', '#e74c3c');
+        toast('Out of stock!', '#e74c3c');
         btn.disabled = false;
-        btn.innerText = '🎁 Ambil Key Gratis';
+        btn.innerText = '🎁 Claim Free Key';
         return;
     }
     saveStock(stock);
@@ -1449,13 +1453,13 @@ async function submitFreeRequest() {
     const orders = getOrders();
     orders.push({ orderId: oid, userId: userId, package: 'GRATIS 1 HARI', label: 'Free1Day', key: key, status: 'active', created: now, type: 'free' });
     saveOrders(orders);
-    btn.innerHTML = '✅ Key Didapatkan!';
+    btn.innerHTML = '✅ Key Claimed!';
     btn.className = 'btn btn-g';
     renderFreeStatus();
     renderPackagesForGame();
     renderHome();
     renderStockStatus();
-    toast('Key gratis berhasil! Cek di halaman Cek Key', '#2ecc71');
+    toast('Free key claimed! Check on Check Key page', '#2ecc71');
 }
 
 // ============================================================
@@ -1474,6 +1478,9 @@ function getFreeRequests() {
 }
 function saveFreeRequests(r) {
     localStorage.setItem('sk_free_requests', JSON.stringify(r));
+}
+function saveStock(s) {
+    localStorage.setItem('sk_stock', JSON.stringify(s));
 }
 
 // ============================================================
@@ -1505,7 +1512,7 @@ async function syncFromServer() {
                 if (soldEl && data.totalSold !== undefined) {
                     soldEl.innerText = data.totalSold > 1000 ? (data.totalSold/1000).toFixed(1) + 'K' : data.totalSold;
                 }
-                console.log('⚡ REAL TIME! Stok update!');
+                console.log('⚡ Real-time stock updated!');
             }
         }
     } catch (e) {
@@ -1592,7 +1599,7 @@ setInterval(() => {
                     renderStockStatus();
                     renderPackagesForGame();
                     renderHome();
-                    console.log('⚡ REAL TIME! Stok update!');
+                    console.log('⚡ Real-time stock updated!');
                 }
             }
         })

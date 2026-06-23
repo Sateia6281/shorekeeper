@@ -28,7 +28,7 @@ const {
 } = require('./database');
 
 // ============================================================
-// 🔥 KONFIGURASI - PAKAI TOKEN BARU!
+// 🔥 KONFIGURASI
 // ============================================================
 const BOT_TOKEN = '8950107483:AAGdp4njIQSCmesk5-22p1bRODNMm6YqIaw';
 const ADMIN_ID = '6284402885';
@@ -54,7 +54,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.static(__dirname));
 
 // ============================================================
-// TELEGRAM BOT - PAKAI TOKEN BARU!
+// TELEGRAM BOT
 // ============================================================
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 console.log('🤖 Bot @Keyskidbot connected!');
@@ -141,7 +141,77 @@ app.post('/api/trigger-update', (req, res) => {
 });
 
 // ============================================================
-// 🔥 ORDER CREATE - DENGAN NOTIFIKASI YANG PASTI JALAN!
+// 🔥 NOTIFIKASI KE ADMIN - VIA TELEGRAM BOT
+// ============================================================
+app.post('/api/notify-admin', async (req, res) => {
+    const { orderId, packageName, price, email, phone, proofImage, username } = req.body;
+    
+    if (!proofImage) {
+        return res.json({ success: false, message: 'No proof image' });
+    }
+    
+    try {
+        console.log('📤 Sending notification to admin...');
+        
+        // Kirim foto ke admin
+        const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+        const formData = new FormData();
+        formData.append('chat_id', ADMIN_ID);
+        formData.append('photo', proofImage);
+        formData.append('caption', 
+            `📸 NEW PAYMENT PROOF!\n─────────────────\n\n` +
+            `🆔 Order: ${orderId}\n` +
+            `👤 User: ${username || 'Customer'}\n` +
+            `📦 Package: ${packageName}\n` +
+            `💰 Price: ${price}\n` +
+            `📧 Email: ${email}\n` +
+            `📱 WA: ${phone}\n\n` +
+            `📌 Click below to verify:`
+        );
+        formData.append('parse_mode', 'Markdown');
+        
+        const response = await fetch(botUrl, {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        console.log('📸 Photo sent:', result.ok);
+        
+        if (result.ok) {
+            // Kirim tombol verifikasi
+            const keyboardUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const keyboardData = {
+                chat_id: ADMIN_ID,
+                text: `🔑 **Verify Order:** ${orderId}\n\nClick button below:`,
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '✅ APPROVE', callback_data: `approve_${orderId}` },
+                            { text: '❌ REJECT', callback_data: `reject_${orderId}` }
+                        ]
+                    ]
+                },
+                parse_mode: 'Markdown'
+            };
+            
+            const kbResponse = await fetch(keyboardUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(keyboardData)
+            });
+            const kbResult = await kbResponse.json();
+            console.log('⌨️ Keyboard sent:', kbResult.ok);
+        }
+        
+        res.json({ success: true });
+    } catch (e) {
+        console.error('❌ Notif error:', e.message);
+        res.json({ success: false, message: e.message });
+    }
+});
+
+// ============================================================
+// 🔥 ORDER CREATE - TANPA AWAIT NOTIF!
 // ============================================================
 app.post('/api/order/create', async (req, res) => {
     try {
@@ -187,25 +257,31 @@ app.post('/api/order/create', async (req, res) => {
         refreshData();
         console.log('✅ Order saved, ID:', orderId);
         
-        // ============================================================
-        // 🔥 KIRIM NOTIFIKASI KE ADMIN - PASTI JALAN!
-        // ============================================================
+        // 🔥 RESPONSE LANGSUNG KEMBALI - JANGAN TUNGGU NOTIFIKASI!
+        res.json({ success: true, orderId: orderId, status: 'pending' });
+        
+        // 🔥 KIRIM NOTIFIKASI DI BACKGROUND - TIDAK MENUNGGU!
         if (proofImage) {
-            console.log('📤 Sending notification to admin...');
-            try {
-                await notifyAdmin(orderId, pkg.name, pkg.price, email, phone, proofImage, username);
-                console.log('✅ Notification sent successfully!');
-            } catch (e) {
-                console.error('❌ Gagal kirim notifikasi:', e.message);
-                // TAPI ORDER TETAP BERHASIL!
-            }
+            console.log('📤 Sending notification in background...');
+            fetch(`http://localhost:${PORT}/api/notify-admin`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: orderId,
+                    packageName: pkg.name,
+                    price: 'Rp ' + pkg.price.toLocaleString(),
+                    email: email,
+                    phone: phone,
+                    proofImage: proofImage,
+                    username: username || 'Customer'
+                })
+            }).catch(e => console.log('⚠️ Notif error:', e.message));
         } else {
             console.log('⚠️ No proof image, skipping notification');
         }
         
-        await triggerWebUpdate();
-        
-        res.json({ success: true, orderId: orderId, status: 'pending' });
+        // 🔥 TRIGGER UPDATE DI BACKGROUND
+        triggerWebUpdate().catch(e => {});
         
     } catch (e) {
         console.error('❌ /api/order/create error:', e.message);
@@ -213,14 +289,21 @@ app.post('/api/order/create', async (req, res) => {
     }
 });
 
-// ===== CEK ORDER =====
+// ===== CEK ORDER - 🔥 KEY HIDDEN JIKA PENDING! =====
 app.get('/api/order/:orderId', (req, res) => {
     try {
         refreshData();
         const { orderId } = req.params;
         const order = getOrderById(orderId);
+        
         if (order) {
-            return res.json({ success: true, order: order });
+            // 🔥 JANGAN KIRIM KEY KALAU STATUS PENDING!
+            const result = { ...order };
+            if (order.status === 'pending') {
+                result.key = null;
+                result.message = 'Menunggu verifikasi admin';
+            }
+            return res.json({ success: true, order: result });
         }
         res.json({ success: false, message: 'Order not found' });
     } catch (e) {
@@ -426,86 +509,7 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================================
-// 🔥 NOTIFIKASI ADMIN - PAKAI BOT @Keyskidbot!
-// ============================================================
-async function notifyAdmin(orderId, packageName, price, email, phone, proofImage, username) {
-    try {
-        console.log('📤 Sending notification...');
-        console.log('📸 Proof image length:', proofImage ? proofImage.length : 0);
-        
-        // Kirim foto ke admin
-        const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-        
-        const formData = new FormData();
-        formData.append('chat_id', ADMIN_ID);
-        formData.append('photo', proofImage);
-        formData.append('caption', 
-            `📸 **BUKTI PEMBAYARAN BARU!**\n─────────────────\n\n` +
-            `🆔 Order: ${orderId}\n` +
-            `👤 User: ${username || 'Customer'}\n` +
-            `📦 Paket: ${packageName}\n` +
-            `💰 Harga: Rp ${price.toLocaleString()}\n` +
-            `📧 Email: ${email}\n` +
-            `📱 WA: ${phone}\n\n` +
-            `📌 Klik tombol di bawah untuk verifikasi:`
-        );
-        formData.append('parse_mode', 'Markdown');
-        
-        console.log('📤 Sending photo to Telegram...');
-        const response = await fetch(botUrl, {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        console.log('📸 Response:', JSON.stringify(result).substring(0, 200));
-        
-        if (result.ok) {
-            console.log('✅ Photo sent!');
-            
-            // Kirim tombol verifikasi
-            const keyboardUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            const keyboardData = {
-                chat_id: ADMIN_ID,
-                text: `🔑 **Verifikasi Order:** ${orderId}\n\nKlik tombol di bawah:`,
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '✅ SETUJU', callback_data: `approve_${orderId}` },
-                            { text: '❌ TOLAK', callback_data: `reject_${orderId}` }
-                        ]
-                    ]
-                },
-                parse_mode: 'Markdown'
-            };
-            
-            console.log('⌨️ Sending keyboard...');
-            const kbResponse = await fetch(keyboardUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(keyboardData)
-            });
-            
-            const kbResult = await kbResponse.json();
-            console.log('⌨️ Keyboard response:', JSON.stringify(kbResult).substring(0, 200));
-            
-            if (kbResult.ok) {
-                console.log('✅ Keyboard sent!');
-            } else {
-                console.log('❌ Keyboard failed:', kbResult);
-            }
-        } else {
-            console.log('❌ Photo failed:', result);
-        }
-        
-    } catch (e) {
-        console.error('❌ Notify error:', e.message);
-        console.error(e.stack);
-    }
-}
-
-// ============================================================
-// 🤖 TELEGRAM BOT HANDLERS - @Keyskidbot
+// 🤖 TELEGRAM BOT HANDLERS
 // ============================================================
 
 // ===== START =====
@@ -514,25 +518,26 @@ bot.onText(/\/start/, (msg) => {
     const isAdmin = String(chatId) === String(ADMIN_ID);
     
     let text = '👋 **KEY SKID BOT**\n─────────────────\n\n';
-    text += '🛒 **PEMBELI:**\n';
-    text += '   /buy - Lihat paket & harga\n';
-    text += '   /order [paket] - Order key\n';
-    text += '   /cek [order_id] - Cek status key\n';
-    text += '   /stok - Cek stok key\n';
-    text += '   /payment - Cara pembayaran\n\n';
+    text += '🛒 **BUYER:**\n';
+    text += '   /buy - View packages & prices\n';
+    text += '   /order [package] - Order key\n';
+    text += '   /cek [order_id] - Check key status\n';
+    text += '   /stok - Check key stock\n';
+    text += '   /payment - Payment methods\n\n';
     
     if (isAdmin) {
         text += '🔑 **ADMIN:**\n';
-        text += '   /addkey [paket] [key] - Tambah 1 key\n';
-        text += '   /addkeys - Tambah banyak key\n';
-        text += '   /addfreekey [key] - Tambah 1 key gratis\n';
-        text += '   /addfreekeys - Tambah banyak key gratis\n';
-        text += '   /orders - Lihat semua order\n';
-        text += '   /stats - Statistik\n';
-        text += '   /pkg - Daftar paket\n';
+        text += '   /addkey [package] [key] - Add 1 key\n';
+        text += '   /addkeys - Add multiple keys\n';
+        text += '   /addfreekey [key] - Add 1 free key\n';
+        text += '   /addfreekeys - Add multiple free keys\n';
+        text += '   /orders - View all orders\n';
+        text += '   /stats - Statistics\n';
+        text += '   /pkg - Package list\n';
+        text += '   /addapk - Upload APK file\n';
     }
     
-    text += '\n❓ /help - Bantuan';
+    text += '\n❓ /help - Help';
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
@@ -542,23 +547,25 @@ bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
     const isAdmin = String(chatId) === String(ADMIN_ID);
     
-    let text = '❓ **BANTUAN**\n─────────────────\n\n';
-    text += '🛒 **PEMBELI:**\n';
-    text += '   /buy - Lihat paket & harga\n';
-    text += '   /order [paket] - Order key\n';
-    text += '   /cek [order_id] - Cek status key\n';
-    text += '   /stok - Cek stok key\n';
-    text += '   /payment - Cara pembayaran\n\n';
+    let text = '❓ **HELP**\n─────────────────\n\n';
+    text += '🛒 **BUYER:**\n';
+    text += '   /buy - View packages & prices\n';
+    text += '   /order [package] - Order key\n';
+    text += '   /cek [order_id] - Check key status\n';
+    text += '   /stok - Check key stock\n';
+    text += '   /payment - Payment methods\n';
+    text += '   /apk - Download APK\n\n';
     
     if (isAdmin) {
         text += '🔑 **ADMIN:**\n';
-        text += '   /addkey [paket] [key] - Tambah 1 key\n';
-        text += '   /addkeys - Tambah banyak key\n';
-        text += '   /addfreekey [key] - Tambah 1 key gratis\n';
-        text += '   /addfreekeys - Tambah banyak key gratis\n';
-        text += '   /orders - Lihat semua order\n';
-        text += '   /stats - Statistik\n';
-        text += '   /pkg - Daftar paket\n';
+        text += '   /addkey [package] [key] - Add 1 key\n';
+        text += '   /addkeys - Add multiple keys\n';
+        text += '   /addfreekey [key] - Add 1 free key\n';
+        text += '   /addfreekeys - Add multiple free keys\n';
+        text += '   /orders - View all orders\n';
+        text += '   /stats - Statistics\n';
+        text += '   /pkg - Package list\n';
+        text += '   /addapk - Upload APK file\n';
     }
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -569,11 +576,11 @@ bot.onText(/\/buy/, (msg) => {
     const chatId = msg.chat.id;
     refreshData();
     
-    let text = '🛒 **DAFTAR PAKET**\n─────────────────\n\n';
+    let text = '🛒 **PACKAGES**\n─────────────────\n\n';
     
     PKG_LIST.forEach(pkg => {
         const stock = getStockCount(pkg.id);
-        const status = stock > 0 ? `✅ Stok: ${stock}` : '❌ HABIS';
+        const status = stock > 0 ? `✅ Stock: ${stock}` : '❌ OUT OF STOCK';
         text += `📌 *${pkg.name}*\n`;
         text += `   💰 Rp ${pkg.price.toLocaleString()}\n`;
         text += `   📊 ${status}\n`;
@@ -581,8 +588,8 @@ bot.onText(/\/buy/, (msg) => {
     });
     
     text += '─────────────────\n';
-    text += '📝 Cara order: /order [paket]\n';
-    text += 'Contoh: /order 1HARI';
+    text += '📝 How to order: /order [package]\n';
+    text += 'Example: /order 1HARI';
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
@@ -603,7 +610,7 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     
     if (!pkg) {
         bot.sendMessage(chatId, 
-            `❌ Paket *${packageInput}* tidak ditemukan!`,
+            `❌ Package *${packageInput}* not found!`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -612,21 +619,21 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     const stock = getStockCount(pkg.id);
     if (stock === 0) {
         bot.sendMessage(chatId, 
-            `❌ Stok *${pkg.name}* habis!`,
+            `❌ Stock *${pkg.name}* is empty!`,
             { parse_mode: 'Markdown' }
         );
         return;
     }
     
     await bot.sendMessage(chatId, 
-        `⏳ Memproses order *${pkg.name}*...`,
+        `⏳ Processing order *${pkg.name}*...`,
         { parse_mode: 'Markdown' }
     );
     
     try {
         const key = reserveKey(pkg.id);
         if (!key) {
-            bot.sendMessage(chatId, '❌ Stok habis!');
+            bot.sendMessage(chatId, '❌ Out of stock!');
             return;
         }
         
@@ -651,16 +658,27 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
         await triggerWebUpdate();
         
         bot.sendMessage(chatId,
-            `✅ **ORDER BERHASIL!**\n─────────────────\n\n` +
+            `✅ **ORDER SUCCESS!**\n─────────────────\n\n` +
             `🔑 **KEY:** \`${key}\`\n` +
-            `📦 Paket: ${pkg.name}\n` +
-            `💰 Harga: Rp ${pkg.price.toLocaleString()}\n` +
+            `📦 Package: ${pkg.name}\n` +
+            `💰 Price: Rp ${pkg.price.toLocaleString()}\n` +
             `🆔 Order ID: \`${orderId}\``,
             { parse_mode: 'Markdown' }
         );
         
+        // Kirim APK otomatis
+        try {
+            const data = loadData();
+            if (data.apkFile && data.apkFile.fileId) {
+                await bot.sendDocument(chatId, data.apkFile.fileId, {
+                    caption: `📦 **SHOREKEEPER ELITE APK**\n\n🔑 Key: \`${key}\`\n📦 Package: ${pkg.name}`,
+                    parse_mode: 'Markdown'
+                });
+            }
+        } catch (e) {}
+        
         bot.sendMessage(ADMIN_ID,
-            `🛒 **ORDER BARU!**\n─────────────────\n\n` +
+            `🛒 **NEW ORDER!**\n─────────────────\n\n` +
             `👤 ${username}\n` +
             `📦 ${pkg.name}\n` +
             `💰 Rp ${pkg.price.toLocaleString()}\n` +
@@ -685,7 +703,7 @@ bot.onText(/\/cek (.+)/, (msg, match) => {
     
     if (!order) {
         bot.sendMessage(chatId,
-            `❌ Order ID *${orderId}* tidak ditemukan!`,
+            `❌ Order ID *${orderId}* not found!`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -695,24 +713,28 @@ bot.onText(/\/cek (.+)/, (msg, match) => {
     let statusEmoji = '';
     
     if (order.status === 'approved') {
-        statusText = 'AKTIF ✅';
+        statusText = 'ACTIVE ✅';
         statusEmoji = '✅';
     } else if (order.status === 'pending') {
-        statusText = 'MENUNGGU VERIFIKASI ⏳';
+        statusText = 'WAITING VERIFICATION ⏳';
         statusEmoji = '⏳';
     } else {
-        statusText = 'DITOLAK ❌';
+        statusText = 'REJECTED ❌';
         statusEmoji = '❌';
     }
     
-    let text = `🔍 **CEK ORDER**\n─────────────────\n\n`;
+    let text = `🔍 **CHECK ORDER**\n─────────────────\n\n`;
     text += `🆔 Order: \`${order.orderId}\`\n`;
-    text += `📦 Paket: ${order.package}\n`;
-    text += `💰 Harga: ${order.price || 'Gratis'}\n`;
+    text += `📦 Package: ${order.package}\n`;
+    text += `💰 Price: ${order.price || 'Free'}\n`;
     text += `📊 Status: ${statusEmoji} ${statusText}\n`;
     
     if (order.key && order.status === 'approved') {
         text += `\n🔑 **KEY:** \`${order.key}\``;
+    }
+    
+    if (order.status === 'pending') {
+        text += `\n\n⏳ Please wait for admin verification.`;
     }
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -723,7 +745,7 @@ bot.onText(/\/stok/, (msg) => {
     const chatId = msg.chat.id;
     refreshData();
     
-    let text = '📊 **STOK KEY**\n─────────────────\n\n';
+    let text = '📊 **KEY STOCK**\n─────────────────\n\n';
     
     PKG_LIST.forEach(pkg => {
         const count = getStockCount(pkg.id);
@@ -732,10 +754,10 @@ bot.onText(/\/stok/, (msg) => {
     });
     
     const freeCount = getStockCount('Free1Day');
-    text += `🎁 FREE 1 HARI: ${freeCount > 0 ? `✅ ${freeCount}` : '❌ 0'}\n`;
+    text += `🎁 FREE 1 DAY: ${freeCount > 0 ? `✅ ${freeCount}` : '❌ 0'}\n`;
     
     const total = getTotalStock();
-    text += `\n─────────────────\n📦 Total: ${total} key`;
+    text += `\n─────────────────\n📦 Total: ${total} keys`;
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
@@ -744,14 +766,14 @@ bot.onText(/\/stok/, (msg) => {
 bot.onText(/\/payment/, async (msg) => {
     const chatId = msg.chat.id;
     
-    let text = '💳 **METODE PEMBAYARAN**\n─────────────────\n\n';
+    let text = '💳 **PAYMENT METHODS**\n─────────────────\n\n';
     text += '💰 **QRIS:**\n';
-    text += '   Scan QRIS di website\n\n';
+    text += '   Scan QRIS on website\n\n';
     text += '💰 **DANA / OVO / GOPAY:**\n';
     text += '   📞 0895401347006\n';
     text += '   👤 A/N SHOREKEEPER\n\n';
     text += '💰 **GIFT CARD:**\n';
-    text += '   Kirim ke @Zelewin atau @Yuangme\n\n';
+    text += '   Send to @Zelewin or @Yuangme\n\n';
     text += '👤 **ADMIN:**\n';
     text += '   @Zelewin\n';
     text += '   @Yuangme';
@@ -766,6 +788,47 @@ bot.onText(/\/payment/, async (msg) => {
     }
 });
 
+// ===== APK - DOWNLOAD =====
+bot.onText(/\/apk/, async (msg) => {
+    const chatId = msg.chat.id;
+    
+    const data = loadData();
+    const apkFile = data.apkFile;
+    
+    if (!apkFile || !apkFile.fileId) {
+        bot.sendMessage(chatId,
+            '❌ **APK not available!**\n─────────────────\n\n' +
+            'Contact admin to get APK.\n' +
+            '📞 @Zelewin or @Yuangme',
+            { parse_mode: 'Markdown' }
+        );
+        return;
+    }
+    
+    try {
+        await bot.sendDocument(chatId, apkFile.fileId, {
+            caption: 
+                `📦 **SHOREKEEPER ELITE APK**\n─────────────────\n\n` +
+                `🔑 Install APK, then enter key.\n` +
+                `📌 Key can be obtained from:\n` +
+                `   • /buy - Buy key\n` +
+                `   • /order [package] - Order key\n` +
+                `   • /cek [order_id] - Check key\n\n` +
+                `💡 Need help? Contact admin:\n` +
+                `   @Zelewin / @Yuangme`,
+            parse_mode: 'Markdown'
+        });
+    } catch (e) {
+        console.error('❌ Error send APK:', e.message);
+        bot.sendMessage(chatId, `❌ Failed to send APK: ${e.message}`);
+    }
+});
+
+// ===== DOWNLOAD =====
+bot.onText(/\/download/, (msg) => {
+    bot.emit('text', { ...msg, text: '/apk' });
+});
+
 // ============================================================
 // 🔴 ADMIN COMMANDS
 // ============================================================
@@ -775,7 +838,7 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        bot.sendMessage(chatId, '⛔ Admin only!');
         return;
     }
     
@@ -785,7 +848,7 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     const pkg = PKG_LIST.find(p => p.id === packageInput);
     if (!pkg) {
         bot.sendMessage(chatId, 
-            `❌ Paket *${packageInput}* tidak ditemukan!\n📋 Paket: 2Jam, 5Jam, 1Day, 3Day, 7Day, 14Day, 30Day, 60Day`,
+            `❌ Package *${packageInput}* not found!\n📋 Packages: 2Jam, 5Jam, 1Day, 3Day, 7Day, 14Day, 30Day, 60Day`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -793,7 +856,7 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     
     if (!key.startsWith('BS-')) {
         bot.sendMessage(chatId, 
-            `❌ Format key salah! Harus diawali *BS-*\nContoh: BS-ABC123XYZ`,
+            `❌ Invalid key format! Must start with *BS-*\nExample: BS-ABC123XYZ`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -806,15 +869,15 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
         triggerWebUpdate();
         
         bot.sendMessage(chatId,
-            `✅ **KEY BERHASIL DITAMBAHKAN!**\n─────────────────\n\n` +
+            `✅ **KEY ADDED!**\n─────────────────\n\n` +
             `🔑 \`${key}\`\n` +
             `📦 ${pkg.name}\n` +
-            `📊 Stok ${pkg.name}: ${getStockCount(packageInput)} key`,
+            `📊 Stock ${pkg.name}: ${getStockCount(packageInput)} keys`,
             { parse_mode: 'Markdown' }
         );
     } else {
         bot.sendMessage(chatId,
-            `⚠️ Key *${key}* sudah ada di stok *${pkg.name}*!`,
+            `⚠️ Key *${key}* already exists in *${pkg.name}* stock!`,
             { parse_mode: 'Markdown' }
         );
     }
@@ -825,20 +888,20 @@ bot.onText(/\/addkeys/, (msg) => {
     const chatId = msg.chat.id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        bot.sendMessage(chatId, '⛔ Admin only!');
         return;
     }
 
     bot.sendMessage(chatId,
-        '📝 **TAMBAH BANYAK KEY**\n─────────────────\n\n' +
-        'Kirim daftar key (SUPPORT FORMAT PANEL!):\n\n' +
-        '📌 Format Panel:\n' +
+        '📝 **ADD MULTIPLE KEYS**\n─────────────────\n\n' +
+        'Send key list (SUPPORTS PANEL FORMAT!):\n\n' +
+        '📌 Panel Format:\n' +
         '`1313  BS  BS-ADF0P1TT  0/1  1 Day  (not started yet)`\n\n' +
-        '📌 Format Simple:\n' +
+        '📌 Simple Format:\n' +
         '`BS-ABC123 0/1 1Day`\n\n' +
-        '📌 Format Minimal:\n' +
+        '📌 Minimal Format:\n' +
         '`BS-ABC123`\n\n' +
-        '📌 Kirim dalam 1 pesan, bisa banyak baris!',
+        '📌 Send in 1 message, multiple lines allowed!',
         { parse_mode: 'Markdown' }
     );
     
@@ -850,7 +913,7 @@ bot.onText(/\/addfreekey (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        bot.sendMessage(chatId, '⛔ Admin only!');
         return;
     }
     
@@ -858,7 +921,7 @@ bot.onText(/\/addfreekey (.+)/, (msg, match) => {
     
     if (!key.startsWith('BS-')) {
         bot.sendMessage(chatId, 
-            `❌ Format key salah! Harus diawali *BS-*`,
+            `❌ Invalid key format! Must start with *BS-*`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -871,15 +934,15 @@ bot.onText(/\/addfreekey (.+)/, (msg, match) => {
         triggerWebUpdate();
         
         bot.sendMessage(chatId,
-            `✅ **KEY GRATIS BERHASIL DITAMBAHKAN!**\n─────────────────\n\n` +
+            `✅ **FREE KEY ADDED!**\n─────────────────\n\n` +
             `🔑 \`${key}\`\n` +
-            `🎁 FREE 1 HARI\n` +
-            `📊 Stok FREE: ${getStockCount('Free1Day')} key`,
+            `🎁 FREE 1 DAY\n` +
+            `📊 Free stock: ${getStockCount('Free1Day')} keys`,
             { parse_mode: 'Markdown' }
         );
     } else {
         bot.sendMessage(chatId,
-            `⚠️ Key *${key}* sudah ada di stok FREE!`,
+            `⚠️ Key *${key}* already exists in FREE stock!`,
             { parse_mode: 'Markdown' }
         );
     }
@@ -890,19 +953,38 @@ bot.onText(/\/addfreekeys/, (msg) => {
     const chatId = msg.chat.id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        bot.sendMessage(chatId, '⛔ Admin only!');
         return;
     }
 
     bot.sendMessage(chatId,
-        '🎁 **TAMBAH BANYAK KEY GRATIS**\n─────────────────\n\n' +
-        'Kirim daftar key gratis:\n\n' +
+        '🎁 **ADD MULTIPLE FREE KEYS**\n─────────────────\n\n' +
+        'Send free key list:\n\n' +
         'Format: `BS-ABC123`\n\n' +
-        'Semua key masuk ke stok FREE 1 HARI',
+        'All keys go to FREE 1 DAY stock',
         { parse_mode: 'Markdown' }
     );
     
     userStates.set(chatId, { step: 'waiting_free_keys' });
+});
+
+// ===== ADDAPK =====
+bot.onText(/\/addapk/, (msg) => {
+    const chatId = msg.chat.id;
+    
+    if (String(chatId) !== String(ADMIN_ID)) {
+        bot.sendMessage(chatId, '⛔ Admin only!');
+        return;
+    }
+
+    bot.sendMessage(chatId,
+        '📦 **UPLOAD APK**\n─────────────────\n\n' +
+        'Send APK file now!\n' +
+        'File will be saved and sent to buyers.',
+        { parse_mode: 'Markdown' }
+    );
+    
+    userStates.set(chatId, { step: 'waiting_apk' });
 });
 
 // ===== ORDERS =====
@@ -910,7 +992,7 @@ bot.onText(/\/orders/, (msg) => {
     const chatId = msg.chat.id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        bot.sendMessage(chatId, '⛔ Admin only!');
         return;
     }
     
@@ -919,12 +1001,12 @@ bot.onText(/\/orders/, (msg) => {
     const pending = getPendingOrders();
     
     if (orders.length === 0 && pending.length === 0) {
-        bot.sendMessage(chatId, '📋 Belum ada order.');
+        bot.sendMessage(chatId, '📋 No orders yet.');
         return;
     }
     
-    let text = '📋 **DAFTAR ORDER**\n─────────────────\n\n';
-    text += `📊 Total: ${orders.length + pending.length} order\n\n`;
+    let text = '📋 **ORDERS**\n─────────────────\n\n';
+    text += `📊 Total: ${orders.length + pending.length} orders\n\n`;
     
     if (pending.length > 0) {
         text += `⏳ **PENDING (${pending.length})**\n`;
@@ -935,7 +1017,7 @@ bot.onText(/\/orders/, (msg) => {
     }
     
     if (orders.length > 0) {
-        text += `✅ **SUKSES (${orders.length})**\n`;
+        text += `✅ **SUCCESS (${orders.length})**\n`;
         orders.slice(-10).forEach(o => {
             text += `• ${o.orderId} - ${o.package} - ${o.username || '-'}\n`;
         });
@@ -949,7 +1031,7 @@ bot.onText(/\/stats/, (msg) => {
     const chatId = msg.chat.id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        bot.sendMessage(chatId, '⛔ Admin only!');
         return;
     }
     
@@ -959,12 +1041,12 @@ bot.onText(/\/stats/, (msg) => {
     const pending = getPendingOrders();
     const totalStock = getTotalStock();
     
-    let text = '📊 **STATISTIK**\n─────────────────\n\n';
-    text += `📦 Total Stok: ${totalStock}\n`;
-    text += `📋 Total Order: ${orders.length}\n`;
+    let text = '📊 **STATISTICS**\n─────────────────\n\n';
+    text += `📦 Total Stock: ${totalStock}\n`;
+    text += `📋 Total Orders: ${orders.length}\n`;
     text += `⏳ Pending: ${pending.length}\n`;
     text += `💰 Revenue: Rp ${(data.totalRevenue || 0).toLocaleString()}\n`;
-    text += `📈 Terjual: ${data.totalSold || 0}\n`;
+    text += `📈 Sold: ${data.totalSold || 0}\n`;
     text += `\n🕐 ${new Date().toLocaleString('id-ID')}`;
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -975,27 +1057,27 @@ bot.onText(/\/pkg/, (msg) => {
     const chatId = msg.chat.id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        bot.sendMessage(chatId, '⛔ Admin only!');
         return;
     }
     
     refreshData();
     
-    let text = '📦 **DAFTAR PAKET**\n─────────────────\n\n';
+    let text = '📦 **PACKAGES**\n─────────────────\n\n';
     
     PKG_LIST.forEach(pkg => {
         text += `📌 ${pkg.name}\n`;
         text += `   💰 Rp ${pkg.price.toLocaleString()}\n`;
-        text += `   📊 Stok: ${getStockCount(pkg.id)}\n\n`;
+        text += `   📊 Stock: ${getStockCount(pkg.id)}\n\n`;
     });
     
-    text += `🎁 FREE 1 HARI: ${getStockCount('Free1Day')} key`;
+    text += `🎁 FREE 1 DAY: ${getStockCount('Free1Day')} keys`;
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
 // ============================================================
-// CALLBACK: SETUJU / TOLAK ORDER
+// CALLBACK: APPROVE / REJECT ORDER
 // ============================================================
 bot.on('callback_query', async (callback) => {
     console.log('📩 Callback received:', callback.data);
@@ -1006,7 +1088,7 @@ bot.on('callback_query', async (callback) => {
     
     if (String(chatId) !== String(ADMIN_ID)) {
         await bot.answerCallbackQuery(callback.id, { 
-            text: '⛔ Hanya admin!', 
+            text: '⛔ Admin only!', 
             show_alert: true 
         });
         return;
@@ -1022,7 +1104,7 @@ bot.on('callback_query', async (callback) => {
         
         const order = getOrderById(orderId);
         if (!order) {
-            await bot.editMessageText(`❌ Order ${orderId} tidak ditemukan!`, {
+            await bot.editMessageText(`❌ Order ${orderId} not found!`, {
                 chat_id: chatId,
                 message_id: messageId
             });
@@ -1036,12 +1118,12 @@ bot.on('callback_query', async (callback) => {
             await triggerWebUpdate();
             
             await bot.editMessageText(
-                `✅ **ORDER DISETUJUI!**\n─────────────────\n\n` +
+                `✅ **ORDER APPROVED!**\n─────────────────\n\n` +
                 `🆔 ${orderId}\n` +
                 `📦 ${order.package}\n` +
                 `👤 ${order.username || 'Customer'}\n` +
                 `🔑 \`${order.key}\`\n\n` +
-                `📌 Key sudah aktif!`,
+                `📌 Key is now active!`,
                 {
                     chat_id: chatId,
                     message_id: messageId,
@@ -1051,12 +1133,23 @@ bot.on('callback_query', async (callback) => {
             
             if (order.userChatId) {
                 bot.sendMessage(order.userChatId,
-                    `✅ **PEMBAYARAN DISETUJUI!**\n─────────────────\n\n` +
+                    `✅ **PAYMENT APPROVED!**\n─────────────────\n\n` +
                     `🔑 **KEY:** \`${order.key}\`\n` +
-                    `📦 Paket: ${order.package}\n\n` +
-                    `💡 Key sudah aktif! Terima kasih!`,
+                    `📦 Package: ${order.package}\n\n` +
+                    `💡 Key is now active! Thank you!`,
                     { parse_mode: 'Markdown' }
                 );
+                
+                // Kirim APK otomatis ke user
+                try {
+                    const data = loadData();
+                    if (data.apkFile && data.apkFile.fileId) {
+                        await bot.sendDocument(order.userChatId, data.apkFile.fileId, {
+                            caption: `📦 **SHOREKEEPER ELITE APK**\n\n🔑 Key: \`${order.key}\`\n📦 Package: ${order.package}`,
+                            parse_mode: 'Markdown'
+                        });
+                    }
+                } catch (e) {}
             }
         }
     }
@@ -1068,7 +1161,7 @@ bot.on('callback_query', async (callback) => {
         
         const order = getOrderById(orderId);
         if (!order) {
-            await bot.editMessageText(`❌ Order ${orderId} tidak ditemukan!`, {
+            await bot.editMessageText(`❌ Order ${orderId} not found!`, {
                 chat_id: chatId,
                 message_id: messageId
             });
@@ -1080,11 +1173,11 @@ bot.on('callback_query', async (callback) => {
         
         if (rejected) {
             await bot.editMessageText(
-                `❌ **ORDER DITOLAK!**\n─────────────────\n\n` +
+                `❌ **ORDER REJECTED!**\n─────────────────\n\n` +
                 `🆔 ${orderId}\n` +
                 `📦 ${order.package}\n` +
                 `👤 ${order.username || 'Customer'}\n\n` +
-                `📌 User sudah diberitahu.`,
+                `📌 User has been notified.`,
                 {
                     chat_id: chatId,
                     message_id: messageId,
@@ -1094,14 +1187,63 @@ bot.on('callback_query', async (callback) => {
             
             if (order.userChatId) {
                 bot.sendMessage(order.userChatId,
-                    `❌ **PEMBAYARAN DITOLAK!**\n─────────────────\n\n` +
+                    `❌ **PAYMENT REJECTED!**\n─────────────────\n\n` +
                     `🆔 ${orderId}\n` +
-                    `📌 Bukti transfer tidak valid / tidak jelas.\n` +
-                    `🔄 Silahkan kirim ulang bukti yang jelas.`,
+                    `📌 Payment proof is invalid / unclear.\n` +
+                    `🔄 Please resend a clear proof.`,
                     { parse_mode: 'Markdown' }
                 );
             }
         }
+    }
+});
+
+// ============================================================
+// HANDLE FILE APK DARI ADMIN
+// ============================================================
+bot.on('document', async (msg) => {
+    const chatId = msg.chat.id;
+    const state = userStates.get(chatId);
+    
+    if (!state || state.step !== 'waiting_apk') return;
+    
+    if (String(chatId) !== String(ADMIN_ID)) {
+        bot.sendMessage(chatId, '⛔ Admin only!');
+        return;
+    }
+    
+    const file = msg.document;
+    const fileName = file.file_name || 'Shorekeeper.apk';
+    
+    if (!fileName.endsWith('.apk')) {
+        bot.sendMessage(chatId, '❌ Must be APK file! (.apk)');
+        return;
+    }
+    
+    try {
+        const fileId = file.file_id;
+        const data = loadData();
+        if (!data.apkFile) data.apkFile = {};
+        data.apkFile.fileId = fileId;
+        data.apkFile.fileName = fileName;
+        data.apkFile.updatedAt = new Date().toISOString();
+        saveData(data);
+        
+        bot.sendMessage(chatId,
+            `✅ **APK SAVED!**\n─────────────────\n\n` +
+            `📦 File: ${fileName}\n` +
+            `🕐 Updated: ${new Date().toLocaleString('id-ID')}\n\n` +
+            `📌 Buyers can get it with:\n` +
+            `   /apk - Download APK\n` +
+            `   /download - Download APK`,
+            { parse_mode: 'Markdown' }
+        );
+        
+        userStates.delete(chatId);
+        
+    } catch (e) {
+        console.error('❌ Error save APK:', e.message);
+        bot.sendMessage(chatId, `❌ Failed to save file: ${e.message}`);
     }
 });
 
@@ -1113,6 +1255,7 @@ bot.on('message', async (msg) => {
     const text = msg.text || '';
     
     if (text.startsWith('/')) return;
+    if (msg.document) return; // handled above
     
     const state = userStates.get(chatId);
     if (!state) return;
@@ -1137,7 +1280,7 @@ bot.on('message', async (msg) => {
                 
                 if (status.startsWith('1/')) {
                     skipped++;
-                    results.push(`⏭️ ${key} - SUDAH DIPAKAI (skip)`);
+                    results.push(`⏭️ ${key} - ALREADY USED (skip)`);
                     continue;
                 }
                 
@@ -1155,12 +1298,12 @@ bot.on('message', async (msg) => {
                     else if (days === 60) packageId = '60Day';
                     else {
                         failed++;
-                        results.push(`❌ ${key} - Hari tidak dikenal: ${days}`);
+                        results.push(`❌ ${key} - Unknown days: ${days}`);
                         continue;
                     }
                 } else {
                     failed++;
-                    results.push(`❌ ${key} - Tidak bisa detect paket`);
+                    results.push(`❌ ${key} - Cannot detect package`);
                     continue;
                 }
                 
@@ -1174,7 +1317,7 @@ bot.on('message', async (msg) => {
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
                     failed++;
-                    results.push(`⚠️ ${key} - Sudah ada di stok`);
+                    results.push(`⚠️ ${key} - Already in stock`);
                 }
                 continue;
             }
@@ -1188,7 +1331,7 @@ bot.on('message', async (msg) => {
                 
                 if (status.startsWith('1/')) {
                     skipped++;
-                    results.push(`⏭️ ${key} - SUDAH DIPAKAI (skip)`);
+                    results.push(`⏭️ ${key} - ALREADY USED (skip)`);
                     continue;
                 }
                 
@@ -1213,7 +1356,7 @@ bot.on('message', async (msg) => {
                 
                 if (!packageId) {
                     failed++;
-                    results.push(`❌ ${key} - Paket tidak dikenal: ${packageRaw}`);
+                    results.push(`❌ ${key} - Unknown package: ${packageRaw}`);
                     continue;
                 }
                 
@@ -1227,7 +1370,7 @@ bot.on('message', async (msg) => {
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
                     failed++;
-                    results.push(`⚠️ ${key} - Sudah ada di stok`);
+                    results.push(`⚠️ ${key} - Already in stock`);
                 }
                 continue;
             }
@@ -1259,7 +1402,7 @@ bot.on('message', async (msg) => {
                 
                 if (!packageId) {
                     failed++;
-                    results.push(`❌ ${key} - Paket tidak dikenal: ${packageRaw}`);
+                    results.push(`❌ ${key} - Unknown package: ${packageRaw}`);
                     continue;
                 }
                 
@@ -1273,7 +1416,7 @@ bot.on('message', async (msg) => {
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
                     failed++;
-                    results.push(`⚠️ ${key} - Sudah ada di stok`);
+                    results.push(`⚠️ ${key} - Already in stock`);
                 }
                 continue;
             }
@@ -1287,30 +1430,30 @@ bot.on('message', async (msg) => {
                 for (const label in fresh.stock) {
                     if (fresh.stock[label].includes(key)) {
                         found = true;
-                        results.push(`⏭️ ${key} - SUDAH ADA di stok (skip)`);
+                        results.push(`⏭️ ${key} - ALREADY IN STOCK (skip)`);
                         break;
                     }
                 }
                 if (!found) {
                     failed++;
-                    results.push(`❌ ${key} - Harus sertakan paket! Contoh: /addkey 1Day ${key}`);
+                    results.push(`❌ ${key} - Must include package! Example: /addkey 1Day ${key}`);
                 }
                 continue;
             }
             
             failed++;
-            results.push(`❌ Format salah: ${trimmed.substring(0, 60)}...`);
+            results.push(`❌ Invalid format: ${trimmed.substring(0, 60)}...`);
         }
         
-        let reply = '📊 **HASIL TAMBAH KEY**\n─────────────────\n\n';
-        reply += `✅ Berhasil: ${added}\n`;
-        reply += `⏭️ Skipped (sudah dipakai): ${skipped}\n`;
-        reply += `❌ Gagal: ${failed}\n\n`;
-        reply += '📋 **DETAIL:**\n';
+        let reply = '📊 **ADD KEY RESULTS**\n─────────────────\n\n';
+        reply += `✅ Success: ${added}\n`;
+        reply += `⏭️ Skipped (already used): ${skipped}\n`;
+        reply += `❌ Failed: ${failed}\n\n`;
+        reply += '📋 **DETAILS:**\n';
         reply += results.slice(0, 20).join('\n');
         
         if (results.length > 20) {
-            reply += `\n\n... dan ${results.length - 20} lainnya`;
+            reply += `\n\n... and ${results.length - 20} more`;
         }
         
         bot.sendMessage(chatId, reply, { parse_mode: 'Markdown' });
@@ -1337,27 +1480,27 @@ bot.on('message', async (msg) => {
                 if (success) {
                     added++;
                     await triggerWebUpdate();
-                    results.push(`✅ ${key} → FREE 1 HARI`);
+                    results.push(`✅ ${key} → FREE 1 DAY`);
                 } else {
                     failed++;
-                    results.push(`⚠️ ${key} - Sudah ada di stok FREE`);
+                    results.push(`⚠️ ${key} - Already in FREE stock`);
                 }
             } else {
                 failed++;
-                results.push(`❌ Format salah: ${trimmed.substring(0, 30)}...`);
+                results.push(`❌ Invalid format: ${trimmed.substring(0, 30)}...`);
             }
         }
         
-        let reply = '🎁 **HASIL TAMBAH KEY GRATIS**\n─────────────────\n\n';
-        reply += `✅ Berhasil: ${added}\n`;
-        reply += `❌ Gagal: ${failed}\n\n`;
-        reply += '📋 **DETAIL:**\n';
+        let reply = '🎁 **ADD FREE KEY RESULTS**\n─────────────────\n\n';
+        reply += `✅ Success: ${added}\n`;
+        reply += `❌ Failed: ${failed}\n\n`;
+        reply += '📋 **DETAILS:**\n';
         reply += results.slice(0, 20).join('\n');
         
         if (results.length > 20) {
-            reply += `\n\n... dan ${results.length - 20} lainnya`;
+            reply += `\n\n... and ${results.length - 20} more`;
         }
-        reply += `\n\n📊 Total stok FREE: ${getStockCount('Free1Day')} key`;
+        reply += `\n\n📊 Total FREE stock: ${getStockCount('Free1Day')} keys`;
         
         bot.sendMessage(chatId, reply, { parse_mode: 'Markdown' });
         userStates.delete(chatId);
@@ -1374,13 +1517,13 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`${'='.repeat(50)}`);
     console.log(`🌐 Web: http://localhost:${PORT}`);
     console.log(`🤖 Bot: @Keyskidbot`);
-    console.log(`📊 Total stok: ${getTotalStock()} key`);
+    console.log(`📊 Total stock: ${getTotalStock()} keys`);
     console.log(`📋 Total orders: ${getOrders().length}`);
     console.log(`⏳ Pending: ${getPendingOrders().length}`);
     console.log(`${'='.repeat(50)}\n`);
 });
 
-console.log('✅ Server + Bot siap!');
-console.log('🛒 Pembeli: /buy, /order, /cek, /stok, /payment');
-console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /orders, /stats');
-console.log('⚡ Notifikasi akan dikirim ke admin!');
+console.log('✅ Server + Bot ready!');
+console.log('🛒 Buyer: /buy, /order, /cek, /stok, /payment, /apk');
+console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /addapk, /orders, /stats');
+console.log('⚡ Notifications sent in background!');
