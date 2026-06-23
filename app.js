@@ -94,79 +94,26 @@ async function triggerWebUpdate() {
 }
 
 // ============================================================
-// 🔥 API ENDPOINTS
+// 🔥 KIRIM NOTIFIKASI KE ADMIN - LANGSUNG KE TELEGRAM!
 // ============================================================
-
-// ===== STOK =====
-app.get('/api/stock', (req, res) => {
-    try {
-        const fresh = refreshData();
-        if (!fresh) {
-            return res.status(500).json({ success: false, message: 'Data error' });
-        }
-        
-        let total = 0;
-        for (const label in fresh.stock) {
-            total += fresh.stock[label].length;
-        }
-        
-        res.json({
-            success: true,
-            stock: fresh.stock,
-            total: total,
-            totalSold: fresh.totalSold || 0,
-            pending: (fresh.pendingOrders || []).length,
-            totalRevenue: fresh.totalRevenue || 0,
-            timestamp: new Date().toISOString()
-        });
-    } catch (e) {
-        console.error('❌ /api/stock error:', e.message);
-        res.status(500).json({ success: false, error: e.message });
-    }
-});
-
-// ===== TRIGGER UPDATE =====
-app.post('/api/trigger-update', (req, res) => {
-    try {
-        const fresh = refreshData();
-        res.json({
-            success: true,
-            total: getTotalStock(),
-            pending: (fresh?.pendingOrders || []).length,
-            timestamp: new Date().toISOString()
-        });
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
-});
-
-// ============================================================
-// 🔥 NOTIFIKASI KE ADMIN - VIA TELEGRAM BOT
-// ============================================================
-app.post('/api/notify-admin', async (req, res) => {
-    const { orderId, packageName, price, email, phone, proofImage, username } = req.body;
-    
-    if (!proofImage) {
-        return res.json({ success: false, message: 'No proof image' });
-    }
-    
+async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
     try {
         console.log('📤 Sending notification to admin...');
         
-        // Kirim foto ke admin
+        // Kirim foto
         const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
         const formData = new FormData();
         formData.append('chat_id', ADMIN_ID);
         formData.append('photo', proofImage);
         formData.append('caption', 
-            `📸 NEW PAYMENT PROOF!\n─────────────────\n\n` +
+            `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
             `🆔 Order: ${orderId}\n` +
             `👤 User: ${username || 'Customer'}\n` +
             `📦 Package: ${packageName}\n` +
             `💰 Price: ${price}\n` +
             `📧 Email: ${email}\n` +
             `📱 WA: ${phone}\n\n` +
-            `📌 Click below to verify:`
+            `📌 Click button below to verify:`
         );
         formData.append('parse_mode', 'Markdown');
         
@@ -203,15 +150,66 @@ app.post('/api/notify-admin', async (req, res) => {
             console.log('⌨️ Keyboard sent:', kbResult.ok);
         }
         
-        res.json({ success: true });
+        return true;
     } catch (e) {
         console.error('❌ Notif error:', e.message);
-        res.json({ success: false, message: e.message });
+        return false;
+    }
+}
+
+// ============================================================
+// 🔥 API ENDPOINTS
+// ============================================================
+
+// ===== STOK =====
+app.get('/api/stock', (req, res) => {
+    try {
+        const fresh = refreshData();
+        if (!fresh) {
+            return res.status(500).json({ success: false, message: 'Data error' });
+        }
+        
+        let total = 0;
+        for (const label in fresh.stock) {
+            total += fresh.stock[label].length;
+        }
+        
+        res.json({
+            success: true,
+            stock: fresh.stock,
+            total: total,
+            totalSold: fresh.totalSold || 0,
+            pending: (fresh.pendingOrders || []).length,
+            totalRevenue: fresh.totalRevenue || 0,
+            timestamp: new Date().toISOString()
+        });
+    } catch (e) {
+        console.error('❌ /api/stock error:', e.message);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// ===== TRIGGER UPDATE =====
+app.post('/api/trigger-update', (req, res) => {
+    try {
+        const fresh = refreshData();
+        let total = 0;
+        for (const label in fresh.stock) {
+            total += fresh.stock[label].length;
+        }
+        res.json({
+            success: true,
+            total: total,
+            pending: (fresh?.pendingOrders || []).length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
     }
 });
 
 // ============================================================
-// 🔥 ORDER CREATE - TANPA AWAIT NOTIF!
+// 🔥 ORDER CREATE - KIRIM NOTIFIKASI LANGSUNG KE TELEGRAM!
 // ============================================================
 app.post('/api/order/create', async (req, res) => {
     try {
@@ -257,25 +255,22 @@ app.post('/api/order/create', async (req, res) => {
         refreshData();
         console.log('✅ Order saved, ID:', orderId);
         
-        // 🔥 RESPONSE LANGSUNG KEMBALI - JANGAN TUNGGU NOTIFIKASI!
+        // 🔥 RESPONSE LANGSUNG KEMBALI - CEPAT!
         res.json({ success: true, orderId: orderId, status: 'pending' });
         
-        // 🔥 KIRIM NOTIFIKASI DI BACKGROUND - TIDAK MENUNGGU!
+        // 🔥 KIRIM NOTIFIKASI LANGSUNG KE TELEGRAM - TANPA TUNGGU!
         if (proofImage) {
-            console.log('📤 Sending notification in background...');
-            fetch(`http://localhost:${PORT}/api/notify-admin`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId: orderId,
-                    packageName: pkg.name,
-                    price: 'Rp ' + pkg.price.toLocaleString(),
-                    email: email,
-                    phone: phone,
-                    proofImage: proofImage,
-                    username: username || 'Customer'
-                })
-            }).catch(e => console.log('⚠️ Notif error:', e.message));
+            console.log('📤 Sending notification directly to Telegram...');
+            // Jangan pakai await biar ga ngeblock response!
+            sendNotificationToAdmin(
+                orderId,
+                pkg.name,
+                'Rp ' + pkg.price.toLocaleString(),
+                email,
+                phone,
+                proofImage,
+                username || 'Customer'
+            ).catch(e => console.log('⚠️ Notif error:', e.message));
         } else {
             console.log('⚠️ No proof image, skipping notification');
         }
@@ -1526,4 +1521,4 @@ app.listen(PORT, '0.0.0.0', () => {
 console.log('✅ Server + Bot ready!');
 console.log('🛒 Buyer: /buy, /order, /cek, /stok, /payment, /apk');
 console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /addapk, /orders, /stats');
-console.log('⚡ Notifications sent in background!');
+console.log('⚡ Notifications sent directly to Telegram!');
