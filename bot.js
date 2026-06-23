@@ -1,19 +1,12 @@
 const TelegramBot = require('node-telegram-bot-api');
-const { 
-    generateKeyAtKruncpoint, 
-    checkLogin, 
-    loginToKruncpoint,
-    getCookieInfo 
-} = require('./kruncpoint');
+const { generateKeyAtKruncpoint } = require('./kruncpoint');
 const { 
     data,
     getStockCount, 
     getTotalStock,
     getOrders,
     getPendingOrders,
-    PKG_LIST,
-    addKey,
-    getOrderById
+    PKG_LIST
 } = require('./database');
 
 // 🔥 GANTI INI!
@@ -23,6 +16,7 @@ const ADMIN_ID = '6284402885';
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 console.log('🤖 Bot Telegram started!');
+console.log('🔗 Kode Referral: PxHzfV');
 
 // ============================================================
 // COMMAND: /start
@@ -32,14 +26,14 @@ bot.onText(/\/start/, (msg) => {
     bot.sendMessage(chatId, 
         '👋 **SHOREKEEPER BOT**\n' +
         '─────────────────\n\n' +
-        '🔑 /login - Login ke Kruncpoint\n' +
-        '🔑 /genkey - Generate key di Kruncpoint\n' +
+        '🔑 /genkey - Generate key (bikin akun baru!)\n' +
         '📊 /stok - Cek stok key\n' +
         '📋 /orders - Lihat semua order\n' +
         '📊 /stats - Statistik\n' +
         '📦 /pkg - Lihat daftar paket\n' +
-        '✅ /check - Cek status login\n' +
-        '❓ /help - Bantuan',
+        '❓ /help - Bantuan\n\n' +
+        '⚡ Setiap generate = akun baru di Kruncpoint!\n' +
+        `🔗 Referral: PxHzfV`,
         { parse_mode: 'Markdown' }
     );
 });
@@ -53,80 +47,15 @@ bot.onText(/\/help/, (msg) => {
         '❓ **BANTUAN**\n' +
         '─────────────────\n\n' +
         '/start - Menu utama\n' +
-        '/login - Login ke Kruncpoint (admin only)\n' +
-        '/genkey - Generate key baru (admin only)\n' +
+        '/genkey - Generate key (admin only)\n' +
         '/stok - Cek stok key\n' +
         '/orders - Lihat semua order (admin only)\n' +
         '/stats - Statistik (admin only)\n' +
         '/pkg - Lihat daftar paket\n' +
-        '/check - Cek status login Kruncpoint\n' +
-        '/help - Bantuan ini',
+        '/help - Bantuan ini\n\n' +
+        `🔗 Kode Referral: PxHzfV`,
         { parse_mode: 'Markdown' }
     );
-});
-
-// ============================================================
-// COMMAND: /login
-// ============================================================
-bot.onText(/\/login/, async (msg) => {
-    const chatId = msg.chat.id;
-    
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
-        return;
-    }
-    
-    await bot.sendMessage(chatId, '⏳ Login ke Kruncpoint...');
-    
-    const cookie = await loginToKruncpoint();
-    
-    if (cookie) {
-        bot.sendMessage(chatId,
-            '✅ **LOGIN BERHASIL!**\n' +
-            '─────────────────\n\n' +
-            `🍪 Cookie: \`${cookie.substring(0, 50)}...\`\n\n` +
-            '💡 Bot sekarang bisa generate key di Kruncpoint!',
-            { parse_mode: 'Markdown' }
-        );
-    } else {
-        bot.sendMessage(chatId,
-            '❌ **LOGIN GAGAL!**\n' +
-            '─────────────────\n\n' +
-            '⚠️ Cek:\n' +
-            '• Username/password benar?\n' +
-            '• Ada captcha?\n' +
-            '• Website Kruncpoint bisa diakses?',
-            { parse_mode: 'Markdown' }
-        );
-    }
-});
-
-// ============================================================
-// COMMAND: /check - Cek status login
-// ============================================================
-bot.onText(/\/check/, async (msg) => {
-    const chatId = msg.chat.id;
-    await bot.sendMessage(chatId, '⏳ Mengecek status login...');
-    
-    const info = await getCookieInfo();
-    
-    if (info.valid) {
-        bot.sendMessage(chatId, 
-            '✅ **LOGIN VALID!**\n' +
-            '─────────────────\n\n' +
-            `🍪 Cookie: \`${info.cookie.substring(0, 50)}...\`\n` +
-            `⏰ Expiry: ${info.expiry}\n\n` +
-            '💡 Bot bisa generate key di Kruncpoint.',
-            { parse_mode: 'Markdown' }
-        );
-    } else {
-        bot.sendMessage(chatId,
-            '❌ **BELUM LOGIN / EXPIRED!**\n' +
-            '─────────────────\n\n' +
-            '⚠️ Ketik /login dulu ya!',
-            { parse_mode: 'Markdown' }
-        );
-    }
 });
 
 // ============================================================
@@ -157,16 +86,20 @@ bot.onText(/\/genkey/, (msg) => {
     };
 
     bot.sendMessage(chatId,
-        '🔑 **GENERATE KEY DI KRUNCPOINT**\n' +
+        '🔑 **GENERATE KEY**\n' +
         '─────────────────\n' +
-        'Pilih paket di bawah:\n' +
-        '⚠️ Key akan otomatis masuk ke database lokal juga!',
+        'Pilih paket di bawah:\n\n' +
+        '⚡ Bot akan:\n' +
+        '1️⃣ Bikin akun baru di Kruncpoint\n' +
+        '2️⃣ Pake referral: PxHzfV\n' +
+        '3️⃣ Generate key\n' +
+        '4️⃣ Kasih tau semua detail!',
         { parse_mode: 'Markdown', ...keyboard }
     );
 });
 
 // ============================================================
-// CALLBACK: Handle tombol genkey
+// CALLBACK: Handle tombol
 // ============================================================
 bot.on('callback_query', async (callback) => {
     const chatId = callback.message.chat.id;
@@ -186,25 +119,13 @@ bot.on('callback_query', async (callback) => {
             return;
         }
 
-        // Cek login dulu
-        const isLoggedIn = await checkLogin();
-        if (!isLoggedIn) {
-            await bot.editMessageText(
-                '❌ **BELUM LOGIN KE KRUNCPOINT!**\n' +
-                '─────────────────\n\n' +
-                '⚠️ Ketik /login dulu ya!',
-                {
-                    chat_id: chatId,
-                    message_id: messageId,
-                    parse_mode: 'Markdown'
-                }
-            );
-            return;
-        }
-
         await bot.editMessageText(
-            `⏳ Generate key untuk **${packageId}** di Kruncpoint...\n` +
-            `Mohon tunggu ~5 detik.`,
+            `⏳ **PROSES...**\n` +
+            `─────────────────\n\n` +
+            `📝 Bikin akun baru di Kruncpoint...\n` +
+            `🔗 Pake referral: PxHzfV\n` +
+            `🔑 Generate key...\n\n` +
+            `⏳ Mohon tunggu ~10 detik.`,
             {
                 chat_id: chatId,
                 message_id: messageId,
@@ -212,21 +133,24 @@ bot.on('callback_query', async (callback) => {
             }
         );
 
-        const key = await generateKeyAtKruncpoint(packageId);
+        const result = await generateKeyAtKruncpoint(packageId);
         
-        if (key) {
+        if (result.success) {
             const pkg = PKG_LIST.find(p => p.id === packageId);
             const pkgName = pkg ? pkg.name : packageId;
             
             await bot.editMessageText(
-                `✅ **KEY BERHASIL!**\n` +
+                `✅ **SEMUA BERHASIL!**\n` +
                 `─────────────────\n\n` +
-                `🔑 \`${key}\`\n` +
-                `📦 ${pkgName}\n` +
-                `🌐 Sumber: Kruncpoint\n\n` +
-                `💡 Key sudah terdaftar di:\n` +
-                `• Kruncpoint ✅\n` +
-                `• Database lokal ✅\n\n` +
+                `🔑 **KEY:** \`${result.key}\`\n` +
+                `📦 Paket: ${pkgName}\n\n` +
+                `👤 **AKUN BARU:**\n` +
+                `   Username: \`${result.account.username}\`\n` +
+                `   Password: \`${result.account.password}\`\n` +
+                `   Email: \`${result.account.email}\`\n` +
+                `   Referral: \`${result.account.referral}\`\n\n` +
+                `🔗 Login: https://krunchpoint.x10.mx/login\n\n` +
+                `💡 Key sudah masuk database lokal!\n` +
                 `📊 Stok ${pkgName}: ${getStockCount(packageId)} key`,
                 {
                     chat_id: chatId,
@@ -234,7 +158,8 @@ bot.on('callback_query', async (callback) => {
                     parse_mode: 'Markdown',
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: '📋 Salin Key', callback_data: `copy_${key}` }],
+                            [{ text: '📋 Salin Key', callback_data: `copy_${result.key}` }],
+                            [{ text: '📋 Salin Akun', callback_data: `copy_account_${result.account.username}|${result.account.password}|${result.account.email}` }],
                             [{ text: '🔄 Generate Lagi', callback_data: 'genkey_again' }]
                         ]
                     }
@@ -242,18 +167,28 @@ bot.on('callback_query', async (callback) => {
             );
         } else {
             await bot.editMessageText(
-                `❌ **GAGAL GENERATE KEY!**\n` +
+                `❌ **GAGAL!**\n` +
                 `─────────────────\n\n` +
-                `⚠️ Kemungkinan:\n` +
-                `• Belum login (ketik /login)\n` +
-                `• Cookie expired (ketik /login)\n` +
-                `• Website Kruncpoint down\n\n` +
-                `🔄 Coba /login dulu ya!`,
+                `⚠️ Error: ${result.error || 'Unknown error'}\n\n` +
+                `🔄 Coba lagi nanti.`,
                 {
                     chat_id: chatId,
                     message_id: messageId,
                     parse_mode: 'Markdown'
                 }
+            );
+        }
+    }
+
+    // Copy account
+    if (dataCb.startsWith('copy_account_')) {
+        const data = dataCb.replace('copy_account_', '');
+        const parts = data.split('|');
+        if (parts.length === 3) {
+            const text = `👤 Username: ${parts[0]}\n🔑 Password: ${parts[1]}\n📧 Email: ${parts[2]}`;
+            await bot.sendMessage(chatId, 
+                `📋 **AKUN:**\n\`\`\`\n${text}\n\`\`\``,
+                { parse_mode: 'Markdown' }
             );
         }
     }
@@ -285,7 +220,8 @@ bot.on('callback_query', async (callback) => {
             }
         };
         await bot.sendMessage(chatId,
-            '🔑 **PILIH PAKET LAGI:**',
+            '🔑 **PILIH PAKET LAGI:**\n\n' +
+            '⚡ Setiap generate = akun baru + referral PxHzfV',
             { parse_mode: 'Markdown', ...keyboard }
         );
     }
@@ -396,4 +332,5 @@ bot.onText(/\/pkg/, (msg) => {
 });
 
 console.log('✅ Bot ready! Commands:');
-console.log('   /start, /login, /genkey, /stok, /orders, /stats, /pkg, /check, /help');
+console.log('   /start, /genkey, /stok, /orders, /stats, /pkg, /help');
+console.log('⚡ Setiap generate = AKUN BARU + REFERRAL PxHzfV!');

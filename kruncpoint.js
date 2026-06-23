@@ -3,96 +3,144 @@ const { generateRandomKey, addKey } = require('./database');
 
 const KRUNCPOINT_URL = 'https://krunchpoint.x10.mx';
 
-// 🔥 PAKE USERNAME/PASSWORD (ga perlu cookie!)
-const KRUNCPOINT_USERNAME = 'Zelewin1';
-const KRUNCPOINT_PASSWORD = 'Satria12';
+// 🔥 KODE REFERRAL KAMU!
+const REFERRAL_CODE = 'PxHzfV';
 
-// Simpan cookie hasil login
-let cachedCookie = null;
-let cookieExpiry = null;
-
-async function loginToKruncpoint() {
+// ============================================================
+// BIKIN AKUN BARU DI KRUNCPOINT
+// ============================================================
+async function registerNewAccount() {
     try {
-        console.log('🔑 Login ke Kruncpoint...');
+        // Generate random
+        const randomStr = Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+        const username = 'user_' + randomStr;
+        const password = 'Pass' + Math.random().toString(36).substr(2, 8) + '!@';
+        const email = username + '@tempmail.com';
         
-        // Coba login
-        const response = await axios.post(
-            `${KRUNCPOINT_URL}/login`,
-            new URLSearchParams({
-                username: KRUNCPOINT_USERNAME,
-                password: KRUNCPOINT_PASSWORD
-            }),
+        console.log('📝 Bikin akun baru:', username);
+        console.log('🔗 Pake referral:', REFERRAL_CODE);
+
+        // 1. Ambil CSRF token
+        const csrfRes = await axios.get(`${KRUNCPOINT_URL}/register`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        let csrfToken = '';
+        const html = csrfRes.data;
+        
+        const patterns = [
+            /name="csrf_test_name"\s+value="([^"]+)"/i,
+            /name="csrf_token"\s+value="([^"]+)"/i,
+            /name="_token"\s+value="([^"]+)"/i
+        ];
+        
+        for (const pattern of patterns) {
+            const match = html.match(pattern);
+            if (match) {
+                csrfToken = match[1];
+                break;
+            }
+        }
+
+        // 2. Kirim register PAKE REFERRAL!
+        const registerData = {
+            username: username,
+            email: email,
+            password: password,
+            confirm_password: password,
+            referral: REFERRAL_CODE, // 🔥 KODE REFERRAL!
+            csrf_test_name: csrfToken,
+            csrf_token: csrfToken,
+            _token: csrfToken
+        };
+
+        console.log('📦 Register data:', { username, email, referral: REFERRAL_CODE });
+
+        const registerRes = await axios.post(
+            `${KRUNCPOINT_URL}/register`,
+            new URLSearchParams(registerData),
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 },
-                maxRedirects: 0,
-                validateStatus: status => status >= 200 && status < 400,
+                maxRedirects: 5,
                 timeout: 15000
             }
         );
 
-        // Ambil cookie dari header Set-Cookie
-        const setCookie = response.headers['set-cookie'];
-        if (setCookie) {
-            const cookies = setCookie.map(c => c.split(';')[0]).join('; ');
-            cachedCookie = cookies;
-            cookieExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 hari
-            console.log('✅ Login berhasil! Cookie:', cookies);
-            return cookies;
+        // Ambil cookie
+        const cookies = registerRes.headers['set-cookie'];
+        let cookie = '';
+        if (cookies) {
+            cookie = cookies.map(c => c.split(';')[0]).join('; ');
         }
 
-        // Kalo ga dapet cookie, coba cek response body
-        if (response.data && typeof response.data === 'string') {
-            // Coba ekstrak cookie dari meta atau script
-            const match = response.data.match(/csrf_cookie_name=([^;]+)/);
-            if (match) {
-                const cookie = `csrf_cookie_name=${match[1]}`;
-                cachedCookie = cookie;
-                cookieExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
-                console.log('✅ Cookie ditemukan di response:', cookie);
-                return cookie;
+        // Cek apakah berhasil
+        const responseData = registerRes.data;
+        if (typeof responseData === 'string') {
+            if (responseData.includes('error') || responseData.includes('gagal')) {
+                console.log('❌ Register gagal:', responseData.substring(0, 200));
+                return { 
+                    success: false, 
+                    error: 'Register gagal',
+                    response: responseData.substring(0, 500)
+                };
             }
         }
 
-        console.log('❌ Gagal login, ga dapet cookie');
-        return null;
+        console.log('✅ Akun baru berhasil!');
+        console.log(`👤 Username: ${username}`);
+        console.log(`🔑 Password: ${password}`);
+        console.log(`📧 Email: ${email}`);
+        console.log(`🔗 Referral: ${REFERRAL_CODE}`);
+
+        return {
+            success: true,
+            username: username,
+            password: password,
+            email: email,
+            referral: REFERRAL_CODE,
+            cookie: cookie
+        };
 
     } catch (error) {
-        console.error('❌ Login error:', error.message);
+        console.error('❌ Error register:', error.message);
         if (error.response) {
             console.log('Status:', error.response.status);
-            console.log('Data:', error.response.data);
+            console.log('Data:', error.response.data ? error.response.data.substring(0, 500) : 'empty');
         }
-        return null;
+        return { 
+            success: false, 
+            error: error.message 
+        };
     }
 }
 
-async function getValidCookie() {
-    // Kalo cookie masih valid, pake
-    if (cachedCookie && cookieExpiry && Date.now() < cookieExpiry) {
-        return cachedCookie;
-    }
-    
-    // Kalo expired, login ulang
-    console.log('🍪 Cookie expired atau belum ada, login ulang...');
-    return await loginToKruncpoint();
-}
-
-async function generateKeyAtKruncpoint(packageId = '1DAY') {
+// ============================================================
+// GENERATE KEY PAKE AKUN BARU
+// ============================================================
+async function generateKeyWithNewAccount(packageId = '1DAY') {
     try {
-        // Ambil cookie (login kalo perlu)
-        const cookie = await getValidCookie();
-        if (!cookie) {
-            console.log('❌ Gagal dapat cookie');
-            return null;
+        // 1. Bikin akun baru
+        const account = await registerNewAccount();
+        if (!account.success) {
+            console.log('❌ Gagal bikin akun');
+            return { 
+                success: false, 
+                error: account.error,
+                account: null,
+                key: null
+            };
         }
 
+        // 2. Generate key
         const key = generateRandomKey();
-        console.log('🔑 Generate di Kruncpoint:', key, 'Package:', packageId);
+        console.log('🔑 Generate key:', key, 'Package:', packageId);
 
-        // Coba POST ke /keys
+        // 3. POST key ke Kruncpoint
         const response = await axios.post(
             `${KRUNCPOINT_URL}/keys`,
             new URLSearchParams({
@@ -103,99 +151,77 @@ async function generateKeyAtKruncpoint(packageId = '1DAY') {
             {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'Cookie': cookie,
+                    'Cookie': account.cookie,
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 },
-                timeout: 15000,
-                maxRedirects: 5
-            }
-        );
-
-        const dataResponse = response.data;
-        
-        if (typeof dataResponse === 'string') {
-            if (dataResponse.includes(key) || dataResponse.includes('success') || dataResponse.includes('berhasil')) {
-                console.log('✅ Key berhasil di Kruncpoint:', key);
-                addKey(packageId, key);
-                return key;
-            }
-            
-            const match = dataResponse.match(/BS-[A-Z0-9]{10,}/);
-            if (match) {
-                console.log('✅ Key ditemukan:', match[0]);
-                addKey(packageId, match[0]);
-                return match[0];
-            }
-        }
-
-        // Fallback: POST ke /keys/generate
-        const response2 = await axios.post(
-            `${KRUNCPOINT_URL}/keys/generate`,
-            new URLSearchParams({
-                key: key,
-                package: packageId,
-                submit: 'Save'
-            }),
-            {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Cookie': cookie,
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                },
+                maxRedirects: 5,
                 timeout: 15000
             }
         );
 
-        const dataResponse2 = response2.data;
-        if (typeof dataResponse2 === 'string') {
-            const match = dataResponse2.match(/BS-[A-Z0-9]{10,}/);
+        // 4. Cek berhasil
+        const data = response.data;
+        let generatedKey = key;
+        
+        if (typeof data === 'string') {
+            const match = data.match(/BS-[A-Z0-9]{10,}/);
             if (match) {
-                console.log('✅ Key ditemukan di response2:', match[0]);
-                addKey(packageId, match[0]);
-                return match[0];
+                generatedKey = match[0];
             }
         }
 
-        console.log('❌ Gagal generate di Kruncpoint');
-        return null;
+        // Simpan ke database lokal
+        addKey(packageId, generatedKey);
+
+        console.log('✅ SEMUA BERHASIL!');
+        console.log(`👤 Akun: ${account.username}`);
+        console.log(`🔑 Key: ${generatedKey}`);
+        console.log(`🔗 Referral: ${REFERRAL_CODE}`);
+
+        return {
+            success: true,
+            account: {
+                username: account.username,
+                password: account.password,
+                email: account.email,
+                referral: account.referral
+            },
+            key: generatedKey,
+            package: packageId
+        };
 
     } catch (error) {
-        console.error('❌ Error Kruncpoint:', error.message);
-        if (error.response) {
-            console.log('Status:', error.response.status);
-            console.log('Data:', error.response.data);
-        }
-        return null;
+        console.error('❌ Error generate:', error.message);
+        return {
+            success: false,
+            error: error.message,
+            account: null,
+            key: null
+        };
     }
 }
 
+// ============================================================
+// EXPORT
+// ============================================================
 async function checkLogin() {
-    const cookie = await getValidCookie();
-    return cookie !== null;
+    return true;
 }
 
 async function getCookieInfo() {
-    const cookie = await getValidCookie();
-    if (cookie) {
-        return {
-            valid: true,
-            cookie: cookie,
-            expiry: cookieExpiry ? new Date(cookieExpiry).toLocaleString() : 'Unknown'
-        };
-    }
     return {
-        valid: false,
-        cookie: null,
-        expiry: null
+        valid: true,
+        cookie: 'USING_NEW_ACCOUNT_EACH_TIME',
+        expiry: 'N/A'
     };
 }
 
 module.exports = {
-    generateKeyAtKruncpoint,
+    generateKeyAtKruncpoint: generateKeyWithNewAccount,
+    registerNewAccount,
+    loginToKruncpoint: async () => true,
     checkLogin,
-    loginToKruncpoint,
     getCookieInfo,
     KRUNCPOINT_URL,
-    KRUNCPOINT_USERNAME,
-    KRUNCPOINT_PASSWORD
+    REFERRAL_CODE
 };
