@@ -8,7 +8,9 @@ function loadData() {
         if (fs.existsSync(DATA_FILE)) {
             return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error('❌ Error baca data.json:', e.message);
+    }
     return {
         stock: {
             "2Jam": [],
@@ -35,7 +37,15 @@ function saveData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-let data = loadData();
+// 🔥 PENTING: Jangan cache data! Selalu reload dari file!
+let data = null;
+
+function getData() {
+    if (!data) {
+        data = loadData();
+    }
+    return data;
+}
 
 // ✅ UBAH LABEL DI SINI!
 const LABEL_MAP = {
@@ -67,6 +77,9 @@ const LABEL_MAP = {
 };
 
 function addKey(label, key) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     // Normalisasi label
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
     
@@ -82,12 +95,18 @@ function addKey(label, key) {
 }
 
 function getStockCount(label) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
     if (!data.stock[normalizedLabel]) return 0;
     return data.stock[normalizedLabel].length;
 }
 
 function getTotalStock() {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     let total = 0;
     for (const label in data.stock) {
         total += data.stock[label].length;
@@ -96,6 +115,9 @@ function getTotalStock() {
 }
 
 function reserveKey(label) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
     if (!data.stock[normalizedLabel] || data.stock[normalizedLabel].length === 0) return null;
     const key = data.stock[normalizedLabel].shift();
@@ -104,6 +126,9 @@ function reserveKey(label) {
 }
 
 function addOrder(order) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     data.orders.push(order);
     data.totalSold = (data.totalSold || 0) + 1;
     data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
@@ -111,14 +136,21 @@ function addOrder(order) {
 }
 
 function getOrders() {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
     return data.orders || [];
 }
 
 function getPendingOrders() {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
     return data.pendingOrders || [];
 }
 
 function getOrderById(orderId) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     const pending = data.pendingOrders || [];
     const found = pending.find(o => o.orderId === orderId);
     if (found) return found;
@@ -127,12 +159,18 @@ function getOrderById(orderId) {
 }
 
 function generateOrderId() {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     data.lastOrderId = (data.lastOrderId || 0) + 1;
     saveData(data);
     return 'ORD' + Date.now().toString(36).toUpperCase() + String(data.lastOrderId).padStart(4, '0');
 }
 
 function addPendingOrder(order) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     if (!data.pendingOrders) data.pendingOrders = [];
     data.pendingOrders.push(order);
     saveData(data);
@@ -140,6 +178,9 @@ function addPendingOrder(order) {
 }
 
 function approveOrder(orderId) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     const pending = data.pendingOrders || [];
     const index = pending.findIndex(o => o.orderId === orderId);
     if (index === -1) return null;
@@ -155,6 +196,9 @@ function approveOrder(orderId) {
 }
 
 function rejectOrder(orderId) {
+    // 🔥 RELOAD FRESH dari file!
+    const data = loadData();
+    
     const pending = data.pendingOrders || [];
     const index = pending.findIndex(o => o.orderId === orderId);
     if (index === -1) return null;
@@ -166,6 +210,13 @@ function rejectOrder(orderId) {
     saveData(data);
     return order;
 }
+
+// 🔥 Export data dengan getter biar always fresh
+Object.defineProperty(module.exports, 'data', {
+    get: function() {
+        return loadData();
+    }
+});
 
 const PKG_LIST = [
     { id: '2Jam', name: '2 JAM', price: 5000 },
@@ -179,7 +230,6 @@ const PKG_LIST = [
 ];
 
 module.exports = {
-    data,
     loadData,
     saveData,
     addKey,
