@@ -25,7 +25,8 @@ const {
     reserveKey,
     addKey,
     PKG_LIST,
-    saveData
+    saveData,
+    LABEL_MAP
 } = require('./database');
 
 app.use(cors());
@@ -72,6 +73,13 @@ app.post('/api/stock/update', (req, res) => {
 });
 
 // ============================================================
+// API TRIGGER - PANGGIL DARI BOT BUAT UPDATE WEB (REAL TIME!)
+// ============================================================
+app.post('/api/trigger-update', (req, res) => {
+    res.json({ success: true, message: 'Web siap update', timestamp: new Date().toISOString() });
+});
+
+// ============================================================
 // API ORDER
 // ============================================================
 app.post('/api/order/create', async (req, res) => {
@@ -80,7 +88,10 @@ app.post('/api/order/create', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
     
-    const pkg = PKG_LIST.find(p => p.id === packageId);
+    // Normalisasi packageId
+    const normalizedPkgId = LABEL_MAP[packageId.toUpperCase().replace(/\s+/g, '')] || packageId;
+    
+    const pkg = PKG_LIST.find(p => p.id === normalizedPkgId);
     if (!pkg) {
         return res.status(400).json({ success: false, message: 'Package not found' });
     }
@@ -89,7 +100,7 @@ app.post('/api/order/create', async (req, res) => {
     const order = {
         orderId: orderId,
         package: pkg.name,
-        packageId: packageId,
+        packageId: normalizedPkgId,
         price: 'Rp ' + pkg.price.toLocaleString(),
         priceNumber: pkg.price,
         key: key,
@@ -425,5 +436,6 @@ app.listen(PORT, () => {
     console.log(`🔑 JNI Endpoint: /api/validate`);
     console.log(`💳 Payment Endpoint: /api/payment`);
     console.log(`🎮 Games Endpoint: /api/games`);
+    console.log(`⚡ Real-time trigger: /api/trigger-update`);
     console.log(`📦 Total orders: ${data.orders.length}\n`);
 });

@@ -2214,29 +2214,53 @@ function renderStockStatus() {
 }
 
 // ============================================================
-// SYNC
+// SYNC - 0 DETIK! REAL TIME!
 // ============================================================
+let lastStockData = '';
+let isUpdating = false;
+
 async function syncFromServer() {
+    if (isUpdating) return;
+    isUpdating = true;
+    
     try {
         const res = await fetch(`/api/stock`);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
+        
         if (data.stock) {
-            saveStock(data.stock);
-            renderStockStatus();
-            renderPackagesForGame();
-            renderHome();
-            const soldEl = document.getElementById('terjualCnt');
-            if (soldEl && data.totalSold !== undefined) {
-                soldEl.innerText = data.totalSold > 1000 ? (data.totalSold/1000).toFixed(1) + 'K' : data.totalSold;
+            const currentData = JSON.stringify(data.stock);
+            if (currentData !== lastStockData) {
+                lastStockData = currentData;
+                saveStock(data.stock);
+                renderStockStatus();
+                renderPackagesForGame();
+                renderHome();
+                const soldEl = document.getElementById('terjualCnt');
+                if (soldEl && data.totalSold !== undefined) {
+                    soldEl.innerText = data.totalSold > 1000 ? (data.totalSold/1000).toFixed(1) + 'K' : data.totalSold;
+                }
+                console.log('⚡ REAL TIME! Stok langsung update!');
             }
         }
     } catch (e) {
-        console.log('Sync gagal:', e.message);
+        console.log('Sync error:', e.message);
     }
+    isUpdating = false;
 }
-setInterval(syncFromServer, 30000);
-setTimeout(syncFromServer, 1000);
+
+// 🔥 UPDATE SETIAP 500ms (0.5 DETIK) - KAYAK REAL TIME!
+setInterval(syncFromServer, 500);
+// 🔥 UPDATE PERTAMA KALI
+setTimeout(syncFromServer, 100);
+
+// 🔥 LISTENER: KALO ADA PERUBAHAN DI DATA, LANGSUNG UPDATE
+function forceUpdate() {
+    syncFromServer();
+}
+
+// EXPOSE KE GLOBAL BIAR BOT BISA PANGGIL
+window.forceUpdateStock = forceUpdate;
 
 // ============================================================
 // ORDERS
@@ -2618,6 +2642,30 @@ renderFreeStatus();
 renderStockStatus();
 renderGameGrid('homeGameList', true);
 console.log('🚀 Shorekeeper Elite Ready!');
+
+// ============================================================
+// 🔥 LISTENER REAL TIME DARI BOT
+// ============================================================
+// UPDATE SETIAP 500ms
+setInterval(() => {
+    fetch('/api/stock')
+        .then(r => r.json())
+        .then(data => {
+            if (data.stock) {
+                const currentData = JSON.stringify(data.stock);
+                if (currentData !== lastStockData) {
+                    lastStockData = currentData;
+                    saveStock(data.stock);
+                    renderStockStatus();
+                    renderPackagesForGame();
+                    renderHome();
+                    console.log('⚡ REAL TIME! Stok update!');
+                }
+            }
+        })
+        .catch(() => {});
+}, 500);
+
 </script>
 </body>
 </html>

@@ -26,9 +26,28 @@ const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 // ============================================================
 const userStates = new Map();
 
+// ============================================================
+// TRIGGER UPDATE WEBSITE - REAL TIME!
+// ============================================================
+const WEB_URL = 'https://shorekeeper-skcheat.up.railway.app';
+
+async function triggerWebUpdate() {
+    try {
+        await fetch(`${WEB_URL}/api/trigger-update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update' })
+        });
+        console.log('📡 Website triggered update!');
+    } catch (e) {
+        console.log('Trigger error:', e.message);
+    }
+}
+
 console.log('🤖 Bot started!');
 console.log('📌 BOT TIDAK BISA GENERATE KEY!');
 console.log('📌 Kamu kirim key manual ke bot!');
+console.log('⚡ Real-time update ke website!');
 
 // ============================================================
 // COMMAND: /start
@@ -207,6 +226,9 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
         };
         addOrder(order);
         
+        // 🔥 TRIGGER UPDATE WEBSITE
+        triggerWebUpdate();
+        
         const paymentInfo = 
             `\n\n💳 **CARA BAYAR:**\n` +
             `   QRIS: https://shorekeeper-skcheat.up.railway.app\n` +
@@ -343,6 +365,9 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     const success = addKey(packageInput, key);
     
     if (success) {
+        // 🔥 TRIGGER UPDATE WEBSITE
+        triggerWebUpdate();
+        
         bot.sendMessage(chatId,
             `✅ **KEY BERHASIL DITAMBAHKAN!**\n─────────────────\n\n` +
             `🔑 \`${key}\`\n` +
@@ -410,6 +435,9 @@ bot.onText(/\/addfreekey (.+)/, (msg, match) => {
     const success = addKey('Free1Day', key);
     
     if (success) {
+        // 🔥 TRIGGER UPDATE WEBSITE
+        triggerWebUpdate();
+        
         bot.sendMessage(chatId,
             `✅ **KEY GRATIS BERHASIL DITAMBAHKAN!**\n─────────────────\n\n` +
             `🔑 \`${key}\`\n` +
@@ -570,6 +598,9 @@ bot.on('callback_query', async (callback) => {
         
         const approved = approveOrder(orderId);
         if (approved) {
+            // 🔥 TRIGGER UPDATE WEBSITE
+            triggerWebUpdate();
+            
             await bot.editMessageText(
                 `✅ **ORDER DISETUJUI!**\n─────────────────\n\n` +
                 `🆔 ${orderId}\n` +
@@ -730,6 +761,7 @@ bot.on('message', async (msg) => {
                 const success = addKey(packageId, key);
                 if (success) {
                     added++;
+                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -770,6 +802,7 @@ bot.on('message', async (msg) => {
                 const success = addKey(packageId, key);
                 if (success) {
                     added++;
+                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -803,6 +836,7 @@ bot.on('message', async (msg) => {
                 const success = addKey(packageId, key);
                 if (success) {
                     added++;
+                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -850,6 +884,7 @@ bot.on('message', async (msg) => {
                 const success = addKey('Free1Day', key);
                 if (success) {
                     added++;
+                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
                     results.push(`✅ ${key} → FREE 1 HARI`);
                 } else {
                     failed++;
@@ -882,3 +917,4 @@ console.log('✅ Bot ready!');
 console.log('🛒 Pembeli: /buy, /order, /cek, /stok, /payment');
 console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /orders, /stats');
 console.log('❌ BOT TIDAK BISA GENERATE KEY!');
+console.log('⚡ Real-time update ke website!');

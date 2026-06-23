@@ -37,10 +37,44 @@ function saveData(data) {
 
 let data = loadData();
 
+// ✅ UBAH LABEL DI SINI!
+const LABEL_MAP = {
+    '2JAM': '2Jam',
+    '2 JAM': '2Jam',
+    '5JAM': '5Jam',
+    '5 JAM': '5Jam',
+    '1HARI': '1Day',
+    '1 HARI': '1Day',
+    '1DAY': '1Day',
+    '3HARI': '3Day',
+    '3 HARI': '3Day',
+    '3DAY': '3Day',
+    '7HARI': '7Day',
+    '7 HARI': '7Day',
+    '7DAY': '7Day',
+    '14HARI': '14Day',
+    '14 HARI': '14Day',
+    '14DAY': '14Day',
+    '30HARI': '30Day',
+    '30 HARI': '30Day',
+    '30DAY': '30Day',
+    '60HARI': '60Day',
+    '60 HARI': '60Day',
+    '60DAY': '60Day',
+    'FREE': 'Free1Day',
+    'FREE1DAY': 'Free1Day',
+    'FREE 1 HARI': 'Free1Day'
+};
+
 function addKey(label, key) {
-    if (!data.stock[label]) data.stock[label] = [];
-    if (!data.stock[label].includes(key)) {
-        data.stock[label].push(key);
+    // Normalisasi label
+    const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
+    
+    if (!data.stock[normalizedLabel]) {
+        data.stock[normalizedLabel] = [];
+    }
+    if (!data.stock[normalizedLabel].includes(key)) {
+        data.stock[normalizedLabel].push(key);
         saveData(data);
         return true;
     }
@@ -48,8 +82,9 @@ function addKey(label, key) {
 }
 
 function getStockCount(label) {
-    if (!data.stock[label]) return 0;
-    return data.stock[label].length;
+    const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
+    if (!data.stock[normalizedLabel]) return 0;
+    return data.stock[normalizedLabel].length;
 }
 
 function getTotalStock() {
@@ -61,8 +96,9 @@ function getTotalStock() {
 }
 
 function reserveKey(label) {
-    if (!data.stock[label] || data.stock[label].length === 0) return null;
-    const key = data.stock[label].shift();
+    const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
+    if (!data.stock[normalizedLabel] || data.stock[normalizedLabel].length === 0) return null;
+    const key = data.stock[normalizedLabel].shift();
     saveData(data);
     return key;
 }
@@ -158,5 +194,6 @@ module.exports = {
     addPendingOrder,
     approveOrder,
     rejectOrder,
-    PKG_LIST
+    PKG_LIST,
+    LABEL_MAP
 };
