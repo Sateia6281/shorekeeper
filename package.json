@@ -1,10 +1,11 @@
 {
   "name": "shorekeeper-bot",
   "version": "1.0.0",
-  "description": "Shorekeeper Bot + Server Gabung",
+  "description": "Shorekeeper Elite - Bot Telegram + Website Server",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "node app.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -14,5 +15,14 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "keywords": [
+    "telegram-bot",
+    "shorekeeper",
+    "blood-strike",
+    "cheat",
+    "key-system"
+  ],
+  "author": "Shorekeeper Elite",
+  "license": "ISC"
 }

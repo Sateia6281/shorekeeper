@@ -39,10 +39,9 @@ const PORT = process.env.PORT || 3000;
 // ============================================================
 process.on('uncaughtException', (err) => {
     console.error('💥 Uncaught Exception:', err.message);
-    console.error(err.stack);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason) => {
     console.error('💥 Unhandled Rejection:', reason);
 });
 
@@ -57,13 +56,8 @@ app.use(express.static(__dirname));
 // ============================================================
 // TELEGRAM BOT
 // ============================================================
-let bot = null;
-try {
-    bot = new TelegramBot(BOT_TOKEN, { polling: true });
-    console.log('🤖 Bot Telegram connected!');
-} catch (e) {
-    console.error('❌ Gagal connect bot:', e.message);
-}
+const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+console.log('🤖 Bot Telegram connected!');
 
 // State untuk addkeys
 const userStates = new Map();
@@ -85,7 +79,6 @@ function refreshData() {
 // ============================================================
 async function triggerWebUpdate() {
     try {
-        // Panggil API sendiri pake localhost
         const url = `http://localhost:${PORT}/api/trigger-update`;
         const response = await fetch(url, {
             method: 'POST',
@@ -96,8 +89,7 @@ async function triggerWebUpdate() {
             console.log('📡 Website triggered update!');
         }
     } catch (e) {
-        // Skip error - ini cuma warning
-        // console.log('⚠️ Trigger update skipped:', e.message);
+        // Skip error
     }
 }
 
@@ -113,7 +105,6 @@ app.get('/api/stock', (req, res) => {
             return res.status(500).json({ success: false, message: 'Data error' });
         }
         
-        // Hitung total stok
         let total = 0;
         for (const label in fresh.stock) {
             total += fresh.stock[label].length;
@@ -165,7 +156,6 @@ app.post('/api/order/create', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Package not found' });
         }
         
-        // Cek stok
         const stock = getStockCount(normalizedPkgId);
         if (stock === 0) {
             return res.status(400).json({ success: false, message: 'Stok habis!' });
@@ -191,10 +181,9 @@ app.post('/api/order/create', async (req, res) => {
         };
         
         addPendingOrder(order);
-        refreshData(); // 🔥 REFRESH!
+        refreshData();
         
-        // Kirim notifikasi ke admin via bot
-        if (proofImage && bot) {
+        if (proofImage) {
             try {
                 await notifyAdmin(orderId, pkg.name, pkg.price, email, phone, proofImage, username);
             } catch (e) {
@@ -202,7 +191,6 @@ app.post('/api/order/create', async (req, res) => {
             }
         }
         
-        // Trigger update website
         await triggerWebUpdate();
         
         res.json({ success: true, orderId: orderId, status: 'pending' });
@@ -236,7 +224,6 @@ app.post('/api/free/request', (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
         
-        // Cek stok free
         const stock = getStockCount('Free1Day');
         if (stock === 0) {
             return res.status(400).json({ success: false, message: 'Stok gratis habis!' });
@@ -257,8 +244,8 @@ app.post('/api/free/request', (req, res) => {
         };
         
         addOrder(order);
-        refreshData(); // 🔥 REFRESH!
-        triggerWebUpdate(); // 🔥 UPDATE WEBSITE
+        refreshData();
+        triggerWebUpdate();
         
         res.json({ success: true, orderId: orderId, key: key });
     } catch (e) {
@@ -270,7 +257,7 @@ app.post('/api/free/request', (req, res) => {
 app.post('/api/validate', (req, res) => {
     try {
         const fresh = refreshData();
-        const { user_key, serial, challenge } = req.body;
+        const { user_key } = req.body;
         
         if (!user_key) {
             return res.json({ status: false, reason: 'Key tidak boleh kosong' });
@@ -279,7 +266,6 @@ app.post('/api/validate', (req, res) => {
         let foundKey = null;
         let foundPkg = null;
         
-        // Cek di stock
         for (const label in fresh.stock) {
             if (fresh.stock[label].includes(user_key)) {
                 foundKey = user_key;
@@ -288,7 +274,6 @@ app.post('/api/validate', (req, res) => {
             }
         }
         
-        // Cek di orders
         if (!foundKey) {
             const order = fresh.orders.find(o => o.key === user_key && o.status === 'approved');
             if (order) {
@@ -298,7 +283,7 @@ app.post('/api/validate', (req, res) => {
         }
         
         if (!foundKey) {
-            return res.json({ status: false, reason: 'Key tidak valid! Pastikan key benar.' });
+            return res.json({ status: false, reason: 'Key tidak valid!' });
         }
         
         const now = Math.floor(Date.now() / 1000);
@@ -489,8 +474,6 @@ async function notifyAdmin(orderId, packageName, price, email, phone, proofImage
 // 🤖 TELEGRAM BOT HANDLERS
 // ============================================================
 
-if (bot) {
-
 // ===== START =====
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
@@ -507,7 +490,7 @@ bot.onText(/\/start/, (msg) => {
     if (isAdmin) {
         text += '🔑 **ADMIN:**\n';
         text += '   /addkey [paket] [key] - Tambah 1 key\n';
-        text += '   /addkeys - Tambah banyak key (semua paket)\n';
+        text += '   /addkeys - Tambah banyak key (support format panel!)\n';
         text += '   /addfreekey [key] - Tambah 1 key gratis\n';
         text += '   /addfreekeys - Tambah banyak key gratis\n';
         text += '   /orders - Lihat semua order\n';
@@ -537,7 +520,8 @@ bot.onText(/\/help/, (msg) => {
     if (isAdmin) {
         text += '🔑 **ADMIN:**\n';
         text += '   /addkey [paket] [key] - Tambah 1 key\n';
-        text += '   /addkeys - Tambah banyak key (semua paket)\n';
+        text += '      Contoh: /addkey 1Day BS-ABC123\n';
+        text += '   /addkeys - Tambah banyak key (support format panel!)\n';
         text += '   /addfreekey [key] - Tambah 1 key gratis\n';
         text += '   /addfreekeys - Tambah banyak key gratis\n';
         text += '   /orders - Lihat semua order\n';
@@ -566,8 +550,7 @@ bot.onText(/\/buy/, (msg) => {
     
     text += '─────────────────\n';
     text += '📝 Cara order: /order [paket]\n';
-    text += 'Contoh: /order 1HARI\n';
-    text += '💳 /payment - Lihat cara bayar';
+    text += 'Contoh: /order 1HARI';
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
@@ -588,7 +571,7 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     
     if (!pkg) {
         bot.sendMessage(chatId, 
-            `❌ Paket *${packageInput}* tidak ditemukan!\n📋 /buy - Lihat daftar paket`,
+            `❌ Paket *${packageInput}* tidak ditemukan!`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -597,7 +580,7 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     const stock = getStockCount(pkg.id);
     if (stock === 0) {
         bot.sendMessage(chatId, 
-            `❌ Maaf, stok *${pkg.name}* habis!\n📊 /stok - Cek stok lain`,
+            `❌ Stok *${pkg.name}* habis!`,
             { parse_mode: 'Markdown' }
         );
         return;
@@ -611,7 +594,7 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     try {
         const key = reserveKey(pkg.id);
         if (!key) {
-            bot.sendMessage(chatId, '❌ Stok habis! Coba paket lain.');
+            bot.sendMessage(chatId, '❌ Stok habis!');
             return;
         }
         
@@ -631,9 +614,8 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
             type: 'direct'
         };
         addOrder(order);
-        refreshData(); // 🔥 REFRESH!
+        refreshData();
         
-        // 🔥 TRIGGER UPDATE WEBSITE
         await triggerWebUpdate();
         
         bot.sendMessage(chatId,
@@ -641,14 +623,13 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
             `🔑 **KEY:** \`${key}\`\n` +
             `📦 Paket: ${pkg.name}\n` +
             `💰 Harga: Rp ${pkg.price.toLocaleString()}\n` +
-            `🆔 Order ID: \`${orderId}\`\n\n` +
-            `📌 Simpan Order ID untuk cek nanti:\n/cek ${orderId}`,
+            `🆔 Order ID: \`${orderId}\``,
             { parse_mode: 'Markdown' }
         );
         
         bot.sendMessage(ADMIN_ID,
             `🛒 **ORDER BARU!**\n─────────────────\n\n` +
-            `👤 ${username} (ID: ${userId})\n` +
+            `👤 ${username}\n` +
             `📦 ${pkg.name}\n` +
             `💰 Rp ${pkg.price.toLocaleString()}\n` +
             `🔑 \`${key}\`\n` +
@@ -700,7 +681,6 @@ bot.onText(/\/cek (.+)/, (msg, match) => {
     
     if (order.key && order.status === 'approved') {
         text += `\n🔑 **KEY:** \`${order.key}\``;
-        text += `\n\n💡 Key sudah aktif!`;
     }
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -724,7 +704,6 @@ bot.onText(/\/stok/, (msg) => {
     
     const total = getTotalStock();
     text += `\n─────────────────\n📦 Total: ${total} key`;
-    text += `\n\n🛒 /buy - Lihat paket & order`;
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
@@ -735,18 +714,15 @@ bot.onText(/\/payment/, async (msg) => {
     
     let text = '💳 **METODE PEMBAYARAN**\n─────────────────\n\n';
     text += '💰 **QRIS:**\n';
-    text += '   Scan QRIS di website atau minta ke admin\n';
-    text += '   📱 https://shorekeeper-skcheat.up.railway.app\n\n';
+    text += '   Scan QRIS di website\n\n';
     text += '💰 **DANA / OVO / GOPAY:**\n';
     text += '   📞 0895401347006\n';
     text += '   👤 A/N SHOREKEEPER\n\n';
     text += '💰 **GIFT CARD:**\n';
-    text += '   Kirim ke @Zelewin atau @Yuangme\n';
-    text += '   (Google Play / App Store / Steam)\n\n';
+    text += '   Kirim ke @Zelewin atau @Yuangme\n\n';
     text += '👤 **ADMIN:**\n';
     text += '   @Zelewin\n';
-    text += '   @Yuangme\n\n';
-    text += '📌 Setelah transfer, kirim bukti ke admin!';
+    text += '   @Yuangme';
     
     try {
         await bot.sendPhoto(chatId, 'qris.jpg', {
@@ -792,10 +768,10 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     }
     
     const success = addKey(packageInput, key);
-    refreshData(); // 🔥 REFRESH!
+    refreshData();
     
     if (success) {
-        triggerWebUpdate(); // 🔥 UPDATE WEBSITE
+        triggerWebUpdate();
         
         bot.sendMessage(chatId,
             `✅ **KEY BERHASIL DITAMBAHKAN!**\n─────────────────\n\n` +
@@ -812,7 +788,7 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     }
 });
 
-// ===== ADDKEYS =====
+// ===== ADDKEYS - SUPPORT FORMAT PANEL! =====
 bot.onText(/\/addkeys/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -822,14 +798,14 @@ bot.onText(/\/addkeys/, (msg) => {
     }
 
     bot.sendMessage(chatId,
-        '📝 **TAMBAH BANYAK KEY SEKALIGUS**\n─────────────────\n\n' +
-        'Kirim daftar key (support semua format!):\n\n' +
-        '📌 Format 1 (dari panel):\n' +
+        '📝 **TAMBAH BANYAK KEY**\n─────────────────\n\n' +
+        'Kirim daftar key (SUPPORT FORMAT PANEL!):\n\n' +
+        '📌 Format Panel (LANGSUNG COPY PASTE):\n' +
         '`1313  BS  BS-ADF0P1TT  0/1  1 Day  (not started yet)`\n\n' +
-        '📌 Format 2:\n' +
-        '`BS-ABC123 0/1 1HARI`\n\n' +
-        '📌 Format 3:\n' +
-        '`1Day|BS-ABC123`\n\n' +
+        '📌 Format Simple:\n' +
+        '`BS-ABC123 0/1 1Day`\n\n' +
+        '📌 Format Minimal:\n' +
+        '`BS-ABC123`\n\n' +
         '📌 Kirim dalam 1 pesan, bisa banyak baris!\n' +
         '📌 Paket: 2Jam, 5Jam, 1Day, 3Day, 7Day, 14Day, 30Day, 60Day',
         { parse_mode: 'Markdown' }
@@ -851,17 +827,17 @@ bot.onText(/\/addfreekey (.+)/, (msg, match) => {
     
     if (!key.startsWith('BS-')) {
         bot.sendMessage(chatId, 
-            `❌ Format key salah! Harus diawali *BS-*\nContoh: BS-ABC123XYZ`,
+            `❌ Format key salah! Harus diawali *BS-*`,
             { parse_mode: 'Markdown' }
         );
         return;
     }
     
     const success = addKey('Free1Day', key);
-    refreshData(); // 🔥 REFRESH!
+    refreshData();
     
     if (success) {
-        triggerWebUpdate(); // 🔥 UPDATE WEBSITE
+        triggerWebUpdate();
         
         bot.sendMessage(chatId,
             `✅ **KEY GRATIS BERHASIL DITAMBAHKAN!**\n─────────────────\n\n` +
@@ -890,12 +866,8 @@ bot.onText(/\/addfreekeys/, (msg) => {
     bot.sendMessage(chatId,
         '🎁 **TAMBAH BANYAK KEY GRATIS**\n─────────────────\n\n' +
         'Kirim daftar key gratis:\n\n' +
-        '📌 Format 1:\n' +
-        '`BS-ABC123`\n\n' +
-        '📌 Format 2:\n' +
-        '`BS-ABC123 0/1 FREE`\n\n' +
-        '📌 Kirim dalam 1 pesan, bisa banyak baris!\n' +
-        '📌 Semua key akan masuk ke stok FREE 1 HARI',
+        'Format: `BS-ABC123`\n\n' +
+        'Semua key masuk ke stok FREE 1 HARI',
         { parse_mode: 'Markdown' }
     );
     
@@ -951,6 +923,7 @@ bot.onText(/\/stats/, (msg) => {
     }
     
     refreshData();
+    const data = loadData();
     const orders = getOrders();
     const pending = getPendingOrders();
     const totalStock = getTotalStock();
@@ -959,8 +932,8 @@ bot.onText(/\/stats/, (msg) => {
     text += `📦 Total Stok: ${totalStock}\n`;
     text += `📋 Total Order: ${orders.length}\n`;
     text += `⏳ Pending: ${pending.length}\n`;
-    text += `💰 Revenue: Rp ${(data?.totalRevenue || 0).toLocaleString()}\n`;
-    text += `📈 Terjual: ${data?.totalSold || 0}\n`;
+    text += `💰 Revenue: Rp ${(data.totalRevenue || 0).toLocaleString()}\n`;
+    text += `📈 Terjual: ${data.totalSold || 0}\n`;
     text += `\n🕐 ${new Date().toLocaleString('id-ID')}`;
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -1019,10 +992,10 @@ bot.on('callback_query', async (callback) => {
         }
         
         const approved = approveOrder(orderId);
-        refreshData(); // 🔥 REFRESH!
+        refreshData();
         
         if (approved) {
-            await triggerWebUpdate(); // 🔥 UPDATE WEBSITE
+            await triggerWebUpdate();
             
             await bot.editMessageText(
                 `✅ **ORDER DISETUJUI!**\n─────────────────\n\n` +
@@ -1064,7 +1037,7 @@ bot.on('callback_query', async (callback) => {
         }
         
         const rejected = rejectOrder(orderId);
-        refreshData(); // 🔥 REFRESH!
+        refreshData();
         
         if (rejected) {
             await bot.editMessageText(
@@ -1105,33 +1078,27 @@ bot.on('message', async (msg) => {
     const state = userStates.get(chatId);
     if (!state) return;
     
-    // ===== ADDKEYS =====
+    // ============================================================
+    // 🔥 HANDLE ADDKEYS - SUPPORT FORMAT PANEL!
+    // ============================================================
     if (state.step === 'waiting_keys') {
         const lines = text.split('\n').filter(line => line.trim().length > 0);
         let added = 0;
         let skipped = 0;
         let failed = 0;
         let results = [];
-        
-        const packageMap = {
-            '1JAM': '2Jam', '2JAM': '2Jam', '5JAM': '5Jam',
-            '1HARI': '1Day', '1DAY': '1Day',
-            '3HARI': '3Day', '3DAY': '3Day',
-            '7HARI': '7Day', '7DAY': '7Day',
-            '14HARI': '14Day', '14DAY': '14Day',
-            '30HARI': '30Day', '30DAY': '30Day',
-            '60HARI': '60Day', '60DAY': '60Day'
-        };
-        
+
         for (const line of lines) {
             const trimmed = line.trim();
             
-            // Format: BS-ABC123 0/1 1HARI
-            const match = trimmed.match(/^(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([A-Z0-9 ]+)$/i);
-            if (match) {
-                const key = match[1].toUpperCase();
-                const status = match[2];
-                const packageRaw = match[3].toUpperCase().trim();
+            // ============================================================
+            // 🔥 FORMAT PANEL: 1313  BS  BS-ADF0P1TT  0/1  1 Day  (not started yet)
+            // ============================================================
+            const panelMatch = trimmed.match(/^\d+\s+BS\s+(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([\d]+\s+(?:Day|Days|Hari|JAM|Jam))/i);
+            if (panelMatch) {
+                const key = panelMatch[1].toUpperCase();
+                const status = panelMatch[2];
+                const packageRaw = panelMatch[3].trim();
                 
                 if (status.startsWith('1/')) {
                     skipped++;
@@ -1139,27 +1106,35 @@ bot.on('message', async (msg) => {
                     continue;
                 }
                 
-                let packageId = packageMap[packageRaw.replace(/\s+/g, '')];
-                if (!packageId) {
-                    const found = PKG_LIST.find(p => 
-                        packageRaw.includes(p.id.toUpperCase()) || 
-                        p.id.toUpperCase().includes(packageRaw)
-                    );
-                    if (found) packageId = found.id;
-                }
-                
-                if (!packageId) {
+                let packageId = '';
+                const daysMatch = packageRaw.match(/(\d+)/);
+                if (daysMatch) {
+                    const days = parseInt(daysMatch[1]);
+                    if (days === 1) packageId = '1Day';
+                    else if (days === 2) packageId = '2Jam';
+                    else if (days === 3) packageId = '3Day';
+                    else if (days === 5) packageId = '5Jam';
+                    else if (days === 7) packageId = '7Day';
+                    else if (days === 14) packageId = '14Day';
+                    else if (days === 30) packageId = '30Day';
+                    else if (days === 60) packageId = '60Day';
+                    else {
+                        failed++;
+                        results.push(`❌ ${key} - Hari tidak dikenal: ${days}`);
+                        continue;
+                    }
+                } else {
                     failed++;
-                    results.push(`❌ ${key} - Paket tidak dikenal: ${packageRaw}`);
+                    results.push(`❌ ${key} - Tidak bisa detect paket`);
                     continue;
                 }
                 
                 const success = addKey(packageId, key);
-                refreshData(); // 🔥 REFRESH!
+                refreshData();
                 
                 if (success) {
                     added++;
-                    await triggerWebUpdate(); // 🔥 UPDATE WEBSITE
+                    await triggerWebUpdate();
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -1169,11 +1144,30 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
-            // Format: PAKET|KEY
-            const match2 = trimmed.match(/^(.+)\|(BS-[A-Z0-9-]+)$/i);
+            // ============================================================
+            // FORMAT 2: BS-ABC123 0/1 1HARI
+            // ============================================================
+            const match2 = trimmed.match(/^(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([A-Z0-9 ]+)$/i);
             if (match2) {
-                const packageRaw = match2[1].trim().toUpperCase();
-                const key = match2[2].trim().toUpperCase();
+                const key = match2[1].toUpperCase();
+                const status = match2[2];
+                const packageRaw = match2[3].toUpperCase().trim();
+                
+                if (status.startsWith('1/')) {
+                    skipped++;
+                    results.push(`⏭️ ${key} - SUDAH DIPAKAI (skip)`);
+                    continue;
+                }
+                
+                const packageMap = {
+                    '1JAM': '2Jam', '2JAM': '2Jam', '5JAM': '5Jam',
+                    '1HARI': '1Day', '1DAY': '1Day',
+                    '3HARI': '3Day', '3DAY': '3Day',
+                    '7HARI': '7Day', '7DAY': '7Day',
+                    '14HARI': '14Day', '14DAY': '14Day',
+                    '30HARI': '30Day', '30DAY': '30Day',
+                    '60HARI': '60Day', '60DAY': '60Day'
+                };
                 
                 let packageId = packageMap[packageRaw.replace(/\s+/g, '')];
                 if (!packageId) {
@@ -1191,11 +1185,11 @@ bot.on('message', async (msg) => {
                 }
                 
                 const success = addKey(packageId, key);
-                refreshData(); // 🔥 REFRESH!
+                refreshData();
                 
                 if (success) {
                     added++;
-                    await triggerWebUpdate(); // 🔥 UPDATE WEBSITE
+                    await triggerWebUpdate();
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -1205,8 +1199,83 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
+            // ============================================================
+            // FORMAT 3: PAKET|KEY
+            // ============================================================
+            const match3 = trimmed.match(/^(.+)\|(BS-[A-Z0-9-]+)$/i);
+            if (match3) {
+                const packageRaw = match3[1].trim().toUpperCase();
+                const key = match3[2].trim().toUpperCase();
+                
+                const packageMap = {
+                    '1JAM': '2Jam', '2JAM': '2Jam', '5JAM': '5Jam',
+                    '1HARI': '1Day', '1DAY': '1Day',
+                    '3HARI': '3Day', '3DAY': '3Day',
+                    '7HARI': '7Day', '7DAY': '7Day',
+                    '14HARI': '14Day', '14DAY': '14Day',
+                    '30HARI': '30Day', '30DAY': '30Day',
+                    '60HARI': '60Day', '60DAY': '60Day'
+                };
+                
+                let packageId = packageMap[packageRaw.replace(/\s+/g, '')];
+                if (!packageId) {
+                    const found = PKG_LIST.find(p => 
+                        packageRaw.includes(p.id.toUpperCase()) || 
+                        p.id.toUpperCase().includes(packageRaw)
+                    );
+                    if (found) packageId = found.id;
+                }
+                
+                if (!packageId) {
+                    failed++;
+                    results.push(`❌ ${key} - Paket tidak dikenal: ${packageRaw}`);
+                    continue;
+                }
+                
+                const success = addKey(packageId, key);
+                refreshData();
+                
+                if (success) {
+                    added++;
+                    await triggerWebUpdate();
+                    const pkg = PKG_LIST.find(p => p.id === packageId);
+                    results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
+                } else {
+                    failed++;
+                    results.push(`⚠️ ${key} - Sudah ada di stok`);
+                }
+                continue;
+            }
+            
+            // ============================================================
+            // FORMAT 4: HANYA KEY (BS-ABC123) - coba detect dari key?
+            // ============================================================
+            const keyOnly = trimmed.match(/^(BS-[A-Z0-9-]+)$/i);
+            if (keyOnly) {
+                const key = keyOnly[1].toUpperCase();
+                
+                // Coba cari di stock apakah sudah ada?
+                const fresh = loadData();
+                let found = false;
+                for (const label in fresh.stock) {
+                    if (fresh.stock[label].includes(key)) {
+                        found = true;
+                        results.push(`⏭️ ${key} - SUDAH ADA di stok (skip)`);
+                        break;
+                    }
+                }
+                if (!found) {
+                    failed++;
+                    results.push(`❌ ${key} - Harus sertakan paket! Contoh: /addkey 1Day ${key}`);
+                }
+                continue;
+            }
+            
+            // ============================================================
+            // FORMAT TIDAK DIKENAL
+            // ============================================================
             failed++;
-            results.push(`❌ Format salah: ${trimmed.substring(0, 50)}...`);
+            results.push(`❌ Format salah: ${trimmed.substring(0, 60)}...`);
         }
         
         let reply = '📊 **HASIL TAMBAH KEY**\n─────────────────\n\n';
@@ -1225,7 +1294,9 @@ bot.on('message', async (msg) => {
         return;
     }
     
-    // ===== ADDFREEKEYS =====
+    // ============================================================
+    // HANDLE ADDFREEKEYS
+    // ============================================================
     if (state.step === 'waiting_free_keys') {
         const lines = text.split('\n').filter(line => line.trim().length > 0);
         let added = 0;
@@ -1239,11 +1310,11 @@ bot.on('message', async (msg) => {
             if (match) {
                 const key = match[1].toUpperCase();
                 const success = addKey('Free1Day', key);
-                refreshData(); // 🔥 REFRESH!
+                refreshData();
                 
                 if (success) {
                     added++;
-                    await triggerWebUpdate(); // 🔥 UPDATE WEBSITE
+                    await triggerWebUpdate();
                     results.push(`✅ ${key} → FREE 1 HARI`);
                 } else {
                     failed++;
@@ -1272,8 +1343,6 @@ bot.on('message', async (msg) => {
     }
 });
 
-} // end if (bot)
-
 // ============================================================
 // 🚀 START SERVER
 // ============================================================
@@ -1292,4 +1361,4 @@ app.listen(PORT, '0.0.0.0', () => {
 console.log('✅ Server + Bot siap!');
 console.log('🛒 Pembeli: /buy, /order, /cek, /stok, /payment');
 console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /orders, /stats');
-console.log('⚡ Data selalu sinkron!');
+console.log('⚡ Support format panel!');
