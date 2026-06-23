@@ -334,3 +334,4 @@ bot.onText(/\/pkg/, (msg) => {
 console.log('✅ Bot ready! Commands:');
 console.log('   /start, /genkey, /stok, /orders, /stats, /pkg, /help');
 console.log('⚡ Setiap generate = AKUN BARU + REFERRAL PxHzfV!');
+console.log('⚡ SSL Certificate: DISABLED (bypass expired cert)');

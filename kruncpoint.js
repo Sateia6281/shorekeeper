@@ -1,4 +1,5 @@
 const axios = require('axios');
+const https = require('https');
 const { generateRandomKey, addKey } = require('./database');
 
 const KRUNCPOINT_URL = 'https://krunchpoint.x10.mx';
@@ -7,7 +8,7 @@ const KRUNCPOINT_URL = 'https://krunchpoint.x10.mx';
 const REFERRAL_CODE = 'PxHzfV';
 
 // ============================================================
-// BIKIN AKUN BARU DI KRUNCPOINT
+// BIKIN AKUN BARU DI KRUNCPOINT (SSL OFF)
 // ============================================================
 async function registerNewAccount() {
     try {
@@ -20,11 +21,12 @@ async function registerNewAccount() {
         console.log('📝 Bikin akun baru:', username);
         console.log('🔗 Pake referral:', REFERRAL_CODE);
 
-        // 1. Ambil CSRF token
+        // 🔥 AMBIL CSRF TOKEN (SSL OFF)
         const csrfRes = await axios.get(`${KRUNCPOINT_URL}/register`, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
+            },
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }) // 🔥 MATIKAN SSL!
         });
         
         let csrfToken = '';
@@ -44,13 +46,13 @@ async function registerNewAccount() {
             }
         }
 
-        // 2. Kirim register PAKE REFERRAL!
+        // 🔥 KIRIM REGISTER (SSL OFF)
         const registerData = {
             username: username,
             email: email,
             password: password,
             confirm_password: password,
-            referral: REFERRAL_CODE, // 🔥 KODE REFERRAL!
+            referral: REFERRAL_CODE,
             csrf_test_name: csrfToken,
             csrf_token: csrfToken,
             _token: csrfToken
@@ -67,7 +69,8 @@ async function registerNewAccount() {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 },
                 maxRedirects: 5,
-                timeout: 15000
+                timeout: 15000,
+                httpsAgent: new https.Agent({ rejectUnauthorized: false }) // 🔥 MATIKAN SSL!
             }
         );
 
@@ -120,7 +123,7 @@ async function registerNewAccount() {
 }
 
 // ============================================================
-// GENERATE KEY PAKE AKUN BARU
+// GENERATE KEY PAKE AKUN BARU (SSL OFF)
 // ============================================================
 async function generateKeyWithNewAccount(packageId = '1DAY') {
     try {
@@ -140,7 +143,7 @@ async function generateKeyWithNewAccount(packageId = '1DAY') {
         const key = generateRandomKey();
         console.log('🔑 Generate key:', key, 'Package:', packageId);
 
-        // 3. POST key ke Kruncpoint
+        // 🔥 POST KEY KE KRUNCPOINT (SSL OFF)
         const response = await axios.post(
             `${KRUNCPOINT_URL}/keys`,
             new URLSearchParams({
@@ -155,7 +158,8 @@ async function generateKeyWithNewAccount(packageId = '1DAY') {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 },
                 maxRedirects: 5,
-                timeout: 15000
+                timeout: 15000,
+                httpsAgent: new https.Agent({ rejectUnauthorized: false }) // 🔥 MATIKAN SSL!
             }
         );
 
@@ -216,10 +220,14 @@ async function getCookieInfo() {
     };
 }
 
+async function loginToKruncpoint() {
+    return true;
+}
+
 module.exports = {
     generateKeyAtKruncpoint: generateKeyWithNewAccount,
     registerNewAccount,
-    loginToKruncpoint: async () => true,
+    loginToKruncpoint,
     checkLogin,
     getCookieInfo,
     KRUNCPOINT_URL,
