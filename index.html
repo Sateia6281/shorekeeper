@@ -1052,28 +1052,12 @@
 <!-- APP CONTAINER -->
 <div class="app-container" id="appContainer">
 
-    <!-- TOPBAR -->
-    <div class="topbar">
-        <div class="topbar-left">
-            <div class="topbar-icon">
-                <img src="icon.jpg" alt="SK" onerror="this.style.display='none'">
-            </div>
-            <div>
-                <div class="topbar-title">Shorekeeper</div>
-                <div class="topbar-sub">Elite Tool</div>
-            </div>
-        </div>
-        <div class="topbar-right">
-            <button class="topbar-icon" onclick="location.reload()" style="font-size:0.8rem;display:flex;align-items:center;justify-content:center;background:var(--bg-input);border:0.5px solid var(--border);border-radius:8px;width:32px;height:32px;">🔄</button>
-        </div>
-    </div>
-
 <!-- ===== PAGE HOME ===== -->
 <div class="page-wrapper active" id="page-home" data-page="home">
     <div class="page-content">
 
         <!-- BRAND BANNER - FIXED -->
-        <div class="brand-banner" style="position:relative;overflow:hidden;background:#000;border-radius:14px;height:190px;margin-bottom:14px;">
+        <div class="brand-banner" style="position:relative;overflow:hidden;background:#000;border-radius:14px;height:190px;margin-bottom:12px;">
             <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;">
                 <source src="baner-video.mp4" type="video/mp4">
             </video>
@@ -1086,6 +1070,20 @@
                     ⚡ BLOOD STRIKE • NO ROOT • UNDETECTED
                 </div>
             </div>
+        </div>
+
+        <!-- ===== TOPBAR PINDAH KE SINI (DI BAWAH VIDEO) ===== -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 10px 0;margin-bottom:10px;border-bottom:0.5px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:32px;height:32px;border-radius:8px;overflow:hidden;border:0.5px solid var(--border);">
+                    <img src="icon.jpg" alt="SK" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+                </div>
+                <div>
+                    <div style="font-size:0.75rem;font-weight:700;color:var(--text);">Shorekeeper</div>
+                    <div style="font-size:0.35rem;color:var(--text3);letter-spacing:1px;text-transform:uppercase;">Elite Tool</div>
+                </div>
+            </div>
+            <button onclick="location.reload()" style="width:28px;height:28px;border-radius:50%;background:var(--bg-input);border:0.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.7rem;cursor:pointer;color:var(--text);">🔄</button>
         </div>
 
         <!-- GAME SELECTOR -->
@@ -1103,126 +1101,127 @@
             <button class="hero-btn" onclick="navigateTo('game')">✨ Lihat Semua Game</button>
         </div>
 
-            <!-- STATS -->
-            <div class="stats">
-                <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">Online</div><div class="stat-t">Live</div></div>
-                <div class="stat"><div class="stat-n" id="ratingCnt">4.8</div><div class="stat-l">Rating</div><div class="stat-t">★★★★★</div></div>
-                <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">Terjual</div><div class="stat-t">Minggu Ini</div></div>
-            </div>
+        <!-- STATS -->
+        <div class="stats">
+            <div class="stat"><div class="stat-n" id="visCnt">187</div><div class="stat-l">Online</div><div class="stat-t">Live</div></div>
+            <div class="stat"><div class="stat-n" id="ratingCnt">4.8</div><div class="stat-l">Rating</div><div class="stat-t">★★★★★</div></div>
+            <div class="stat"><div class="stat-n" id="terjualCnt">0</div><div class="stat-l">Terjual</div><div class="stat-t">Minggu Ini</div></div>
+        </div>
 
-            <!-- STOK -->
-            <div style="margin-bottom:12px;">
-                <div class="sec-title">📦 Stok Terbaru</div>
-                <div class="sec-sub">Update stok key setiap hari</div>
-                <div class="stock-status" id="stockStatusHome"></div>
-            </div>
+        <!-- STOK -->
+        <div style="margin-bottom:12px;">
+            <div class="sec-title">📦 Stok Terbaru</div>
+            <div class="sec-sub">Update stok key setiap hari</div>
+            <div class="stock-status" id="stockStatusHome"></div>
+        </div>
 
-            <!-- FEATS -->
-            <div class="feats">
-                <div class="feat"><div class="feat-ic">🎯</div>Aim Assist</div>
-                <div class="feat"><div class="feat-ic">👁️</div>ESP Wallhack</div>
-                <div class="feat"><div class="feat-ic">🔫</div>No Recoil</div>
-                <div class="feat"><div class="feat-ic">🛡️</div>Undetected</div>
-                <div class="feat"><div class="feat-ic">📱</div>No Root</div>
-                <div class="feat"><div class="feat-ic">♾️</div>Lifetime</div>
-            </div>
+        <!-- FEATS -->
+        <div class="feats">
+            <div class="feat"><div class="feat-ic">🎯</div>Aim Assist</div>
+            <div class="feat"><div class="feat-ic">👁️</div>ESP Wallhack</div>
+            <div class="feat"><div class="feat-ic">🔫</div>No Recoil</div>
+            <div class="feat"><div class="feat-ic">🛡️</div>Undetected</div>
+            <div class="feat"><div class="feat-ic">📱</div>No Root</div>
+            <div class="feat"><div class="feat-ic">♾️</div>Lifetime</div>
+        </div>
 
-            <!-- VIDEO -->
-            <div style="margin-bottom:14px;">
-                <div class="sec-title">📹 Video Tutorial</div>
-                <div class="sec-sub">Cara install & aktifkan key</div>
-                <div class="video-wrap">
-                    <iframe src="https://www.youtube.com/embed/e8YfaXtIqEU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-            </div>
-
-            <!-- PAYMENT -->
-            <div class="card">
-                <div style="font-size:0.52rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">💳 Metode Pembayaran</div>
-                <div class="pay-row">
-                    <span class="pay-tag">QRIS</span>
-                    <span class="pay-tag">DANA/OVO</span>
-                    <span class="pay-tag">BINANCE</span>
-                    <span class="pay-tag">GIFT CARD</span>
-                </div>
-            </div>
-
-            <!-- FREE KEY -->
-            <div class="free-hero">
-                <div class="hero-tag">🎁 Gratis</div>
-                <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">Dapatkan Key Gratis 1 Hari</div>
-                <div style="font-size:0.7rem;color:var(--text2);line-height:1.6;margin-bottom:12px;">Share ke 3 grup Telegram + upload bukti. Key langsung aktif!</div>
-                <button class="hero-btn" onclick="navigateTo('freekey')">🎁 Ambil Sekarang</button>
-            </div>
-
-            <!-- FAQ -->
-            <div style="margin-bottom:12px;">
-                <div class="sec-title">❓ Pertanyaan Umum</div>
-                <div class="sec-sub">Yang sering ditanyakan</div>
-
-                <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-q"><span class="faq-q-text">🔒 Apakah aman dari ban?</span><span class="faq-arrow">▼</span></div>
-                    <div class="faq-a"><div class="faq-a-text">Tool kami bypass anti-cheat dengan metode injeksi terbaru. Update setiap minggu sesuai patch game. Ribuan user pakai tanpa kena ban.</div></div>
-                </div>
-
-                <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-q"><span class="faq-q-text">📱 Perlu root HP?</span><span class="faq-arrow">▼</span></div>
-                    <div class="faq-a"><div class="faq-a-text">Tidak perlu root. Cukup install APK, masukkan key, langsung jalan. Compatible Android 8.0+</div></div>
-                </div>
-
-                <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-q"><span class="faq-q-text">⏳ Key aktif berapa lama?</span><span class="faq-arrow">▼</span></div>
-                    <div class="faq-a"><div class="faq-a-text">Key diaktifkan manual admin dalam 5-15 menit setelah bukti bayar diterima. Jam aktif admin 08.00-24.00 WIB.</div></div>
-                </div>
-
-                <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-q"><span class="faq-q-text">💰 Ada refund?</span><span class="faq-arrow">▼</span></div>
-                    <div class="faq-a"><div class="faq-a-text">Garansi 7 hari. Jika tool tidak bisa jalan setelah dicoba dengan bantuan admin, kami refund atau extend.</div></div>
-                </div>
-            </div>
-
-            <!-- TERMS -->
-            <div class="card" style="margin-bottom:12px;">
-                <div class="sec-title" style="font-size:0.8rem;">📋 Syarat & Ketentuan</div>
-                <div class="terms-text">
-                    <ul>
-                        <li>Key tidak bisa direfund setelah diaktifkan</li>
-                        <li>Garansi 7 hari untuk masalah teknis</li>
-                        <li>1 key untuk 1 device</li>
-                        <li>Dilarang share key ke orang lain</li>
-                        <li>Admin berhak membatalkan order jika terindikasi penipuan</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- KONTAK -->
-            <div style="margin-bottom:12px;">
-                <div class="sec-title" style="margin-bottom:10px;">📞 Hubungi Kami</div>
-
-                <a href="https://t.me/Keyskidbot" target="_blank" class="kontak-item">
-                    <div class="kontak-ic">📨</div>
-                    <div><div class="kontak-name">Telegram Bot</div><div class="kontak-sub">@Keyskidbot • Respon cepat</div></div>
-                    <span style="margin-left:auto;color:var(--text3);">→</span>
-                </a>
-
-                <a href="https://t.me/ShorekeeperID" target="_blank" class="kontak-item">
-                    <div class="kontak-ic">📢</div>
-                    <div><div class="kontak-name">Saluran Channel</div><div class="kontak-sub">@ShorekeeperID • Update & promo</div></div>
-                    <span style="margin-left:auto;color:var(--text3);">→</span>
-                </a>
-
-                <a href="https://www.youtube.com/@ZelewinGaming" target="_blank" class="kontak-item">
-                    <div class="kontak-ic">▶️</div>
-                    <div><div class="kontak-name">YouTube</div><div class="kontak-sub">Tutorial & review tool</div></div>
-                    <span style="margin-left:auto;color:var(--text3);">→</span>
-                </a>
-            </div>
-
-            <div class="card" style="text-align:center;">
-                <div style="font-size:0.55rem;color:var(--text3);">Garansi 7 Hari • Key via Web • No Root</div>
+        <!-- VIDEO -->
+        <div style="margin-bottom:14px;">
+            <div class="sec-title">📹 Video Tutorial</div>
+            <div class="sec-sub">Cara install & aktifkan key</div>
+            <div class="video-wrap">
+                <iframe src="https://www.youtube.com/embed/e8YfaXtIqEU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </div>
+
+        <!-- PAYMENT -->
+        <div class="card">
+            <div style="font-size:0.52rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">💳 Metode Pembayaran</div>
+            <div class="pay-row">
+                <span class="pay-tag">QRIS</span>
+                <span class="pay-tag">DANA/OVO</span>
+                <span class="pay-tag">BINANCE</span>
+                <span class="pay-tag">GIFT CARD</span>
+            </div>
+        </div>
+
+        <!-- FREE KEY -->
+        <div class="free-hero">
+            <div class="hero-tag">🎁 Gratis</div>
+            <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">Dapatkan Key Gratis 1 Hari</div>
+            <div style="font-size:0.7rem;color:var(--text2);line-height:1.6;margin-bottom:12px;">Share ke 3 grup Telegram + upload bukti. Key langsung aktif!</div>
+            <button class="hero-btn" onclick="navigateTo('freekey')">🎁 Ambil Sekarang</button>
+        </div>
+
+        <!-- FAQ -->
+        <div style="margin-bottom:12px;">
+            <div class="sec-title">❓ Pertanyaan Umum</div>
+            <div class="sec-sub">Yang sering ditanyakan</div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-q"><span class="faq-q-text">🔒 Apakah aman dari ban?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">Tool kami bypass anti-cheat dengan metode injeksi terbaru. Update setiap minggu sesuai patch game. Ribuan user pakai tanpa kena ban.</div></div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-q"><span class="faq-q-text">📱 Perlu root HP?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">Tidak perlu root. Cukup install APK, masukkan key, langsung jalan. Compatible Android 8.0+</div></div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-q"><span class="faq-q-text">⏳ Key aktif berapa lama?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">Key diaktifkan manual admin dalam 5-15 menit setelah bukti bayar diterima. Jam aktif admin 08.00-24.00 WIB.</div></div>
+            </div>
+
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-q"><span class="faq-q-text">💰 Ada refund?</span><span class="faq-arrow">▼</span></div>
+                <div class="faq-a"><div class="faq-a-text">Garansi 7 hari. Jika tool tidak bisa jalan setelah dicoba dengan bantuan admin, kami refund atau extend.</div></div>
+            </div>
+        </div>
+
+        <!-- TERMS -->
+        <div class="card" style="margin-bottom:12px;">
+            <div class="sec-title" style="font-size:0.8rem;">📋 Syarat & Ketentuan</div>
+            <div class="terms-text">
+                <ul>
+                    <li>Key tidak bisa direfund setelah diaktifkan</li>
+                    <li>Garansi 7 hari untuk masalah teknis</li>
+                    <li>1 key untuk 1 device</li>
+                    <li>Dilarang share key ke orang lain</li>
+                    <li>Admin berhak membatalkan order jika terindikasi penipuan</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- KONTAK -->
+        <div style="margin-bottom:12px;">
+            <div class="sec-title" style="margin-bottom:10px;">📞 Hubungi Kami</div>
+
+            <a href="https://t.me/Keyskidbot" target="_blank" class="kontak-item">
+                <div class="kontak-ic">📨</div>
+                <div><div class="kontak-name">Telegram Bot</div><div class="kontak-sub">@Keyskidbot • Respon cepat</div></div>
+                <span style="margin-left:auto;color:var(--text3);">→</span>
+            </a>
+
+            <a href="https://t.me/ShorekeeperID" target="_blank" class="kontak-item">
+                <div class="kontak-ic">📢</div>
+                <div><div class="kontak-name">Saluran Channel</div><div class="kontak-sub">@ShorekeeperID • Update & promo</div></div>
+                <span style="margin-left:auto;color:var(--text3);">→</span>
+            </a>
+
+            <a href="https://youtube.com/@shorekeepermodsofficial?si=Ssx-PGeivQq9n6ZG" target="_blank" class="kontak-item">
+                <div class="kontak-ic">▶️</div>
+                <div><div class="kontak-name">YouTube</div><div class="kontak-sub">Tutorial & review tool</div></div>
+                <span style="margin-left:auto;color:var(--text3);">→</span>
+            </a>
+        </div>
+
+        <div class="card" style="text-align:center;">
+            <div style="font-size:0.55rem;color:var(--text3);">Garansi 7 Hari • Key via Web • No Root</div>
+        </div>
+
     </div>
+</div>
 
     <!-- ===== PAGE GAME (sebelumnya PAKET) ===== -->
     <div class="page-wrapper" id="page-game" data-page="game">
