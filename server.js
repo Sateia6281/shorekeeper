@@ -185,89 +185,6 @@ const PKG_LIST = [
     { id: 'Lifetime', name: 'LIFETIME', price: 300000 },
 ];
 
-// ============================================================
-// ANTI SPAM - PER USER (BENER)
-// ============================================================
-const userMessageCount = new Map();
-const userWarnings = new Map();
-const KICKED_USERS = new Set();
-
-const WINDOW_MS = 60000;
-const MAX_MESSAGES = 5;
-const MAX_WARNINGS = 3;
-
-function isSpam(chatId) {
-    if (String(chatId) === String(ADMIN_ID)) {
-        return { blocked: false };
-    }
-
-    if (KICKED_USERS.has(chatId)) {
-        return { 
-            blocked: true, 
-            reason: '⛔ Anda DI-KICK karena spam! Hubungi admin.' 
-        };
-    }
-
-    const now = Date.now();
-    
-    if (!userMessageCount.has(chatId)) {
-        userMessageCount.set(chatId, []);
-    }
-    
-    let timestamps = userMessageCount.get(chatId);
-    timestamps = timestamps.filter(t => now - t < WINDOW_MS);
-    timestamps.push(now);
-    userMessageCount.set(chatId, timestamps);
-    
-    if (timestamps.length > MAX_MESSAGES) {
-        const warnings = (userWarnings.get(chatId) || 0) + 1;
-        userWarnings.set(chatId, warnings);
-        userMessageCount.set(chatId, [now]);
-        
-        if (warnings >= MAX_WARNINGS) {
-            KICKED_USERS.add(chatId);
-            userWarnings.delete(chatId);
-            userMessageCount.delete(chatId);
-            return { 
-                blocked: true, 
-                reason: '🚫 ANDA DI-KICK KARENA SPAM! (3x peringatan)\nHubungi admin untuk di-unban.' 
-            };
-        }
-        
-        return { 
-            blocked: true, 
-            reason: `⚠️ Jangan spam! Peringatan ${warnings}/${MAX_WARNINGS}` 
-        };
-    }
-    
-    return { blocked: false };
-}
-
-setInterval(() => {
-    userWarnings.clear();
-    userMessageCount.clear();
-    console.log('🔄 Anti-spam warning reset!');
-}, 3600000);
-
-const BLACKLIST_WORDS = [
-    'kontol', 'memek', 'ngentot', 'bangsat', 'goblok', 'anjing', 'babi',
-    'tolol', 'idiot', 'bego', 'kampret', 'setan', 'jancuk', 'asw', 'asu',
-    'dajjal', 'fuck', 'shit', 'bitch', 'asshole', 'ngocok', 'coli', 'peler'
-];
-
-function isBadWord(text) {
-    const lower = text.toLowerCase();
-    return BLACKLIST_WORDS.some(word => lower.includes(word));
-}
-
-function isLink(text) {
-    const urlPattern = /(https?:\/\/[^\s]+|t\.me\/[^\s]+|telegram\.me\/[^\s]+|\.com|\.xyz|\.net|\.org|\.io|\.top|\.live|\.club|\.online)/i;
-    return urlPattern.test(text);
-}
-
-// ============================================================
-// BOT - WEBHOOK
-// ============================================================
 console.log('🤖 Starting bot with webhook...');
 let bot = null;
 const userTransactions = new Map();
@@ -295,19 +212,10 @@ try {
         }
     });
 
-    // ============================================================
-    // COMMANDS
-    // ============================================================
     bot.onText(/\/start/, (msg) => {
         const chatId = msg.chat.id;
         const name = msg.from.first_name || 'User';
         const isAdmin = String(chatId) === String(ADMIN_ID);
-
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
 
         const keyboard = {
             reply_markup: {
@@ -334,13 +242,6 @@ try {
 
     bot.onText(/\/menu/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-
         bot.sendMessage(chatId, '📋 Menu Utama', {
             reply_markup: {
                 keyboard: [
@@ -354,12 +255,6 @@ try {
 
     bot.onText(/🛒 Beli Key/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
         
         let text = '📦 **DAFTAR PAKET**\n━━━━━━━━━━━━━━━\n\n';
         const keyboard = { reply_markup: { inline_keyboard: [] } };
@@ -383,13 +278,6 @@ try {
 
     bot.onText(/📊 Cek Stok/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
         let text = '📊 **STOK KEY**\n━━━━━━━━━━━━━━━\n\n';
         let total = 0;
         PKG_LIST.forEach(pkg => {
@@ -404,13 +292,6 @@ try {
 
     bot.onText(/🎁 Key Gratis/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
         bot.sendMessage(chatId,
             '🎁 **KEY GRATIS 1 HARI**\n━━━━━━━━━━━━━━━\n\n' +
             'Cara mendapatkan:\n' +
@@ -426,12 +307,6 @@ try {
     bot.onText(/❓ Bantuan/, (msg) => {
         const chatId = msg.chat.id;
         const isAdmin = String(chatId) === String(ADMIN_ID);
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
         
         let text = '❓ **BANTUAN**\n━━━━━━━━━━━━━━━\n\n';
         text += '/start - Menu utama\n';
@@ -456,8 +331,6 @@ try {
             text += '/search [keyword] - Cari order\n';
             text += '/broadcast [pesan] - Kirim ke semua user\n';
             text += '/resetstock - Reset semua stok\n';
-            text += '/unban [user_id] - Unban user\n';
-            text += '/banned - Lihat user di-ban\n';
         }
         
         text += '\n🌐 https://shorekeeper-skcheat.up.railway.app';
@@ -465,26 +338,11 @@ try {
     });
 
     bot.onText(/\/help/, (msg) => {
-        const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
-        bot.sendMessage(chatId, '❓ Ketik /start untuk menu utama');
+        bot.sendMessage(msg.chat.id, '❓ Ketik /start untuk menu utama');
     });
 
     bot.onText(/\/stok/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
         let text = '📊 **STOK KEY**\n━━━━━━━━━━━━━━━\n\n';
         let total = 0;
         PKG_LIST.forEach(pkg => {
@@ -499,13 +357,6 @@ try {
 
     bot.onText(/\/buy/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
         let text = '📦 **DAFTAR PAKET**\n━━━━━━━━━━━━━━━\n\n';
         PKG_LIST.forEach(pkg => {
             const count = getStockCount(pkg.id);
@@ -518,13 +369,6 @@ try {
 
     bot.onText(/\/free/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
         bot.sendMessage(chatId,
             '🎁 **KEY GRATIS 1 HARI**\n━━━━━━━━━━━━━━━\n\n' +
             '1️⃣ Share link ke 3 grup Telegram\n' +
@@ -538,13 +382,6 @@ try {
 
     bot.onText(/\/tutorial/, (msg) => {
         const chatId = msg.chat.id;
-        
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
         bot.sendMessage(chatId,
             '📖 **TUTORIAL**\n━━━━━━━━━━━━━━━\n\n' +
             '1️⃣ Download APK di website\n' +
@@ -571,13 +408,7 @@ try {
 
     bot.onText(/\/genkey/, (msg) => {
         const chatId = msg.chat.id;
-        
         if (String(chatId) !== String(ADMIN_ID)) {
-            const spamCheck = isSpam(chatId);
-            if (spamCheck.blocked) {
-                bot.sendMessage(chatId, spamCheck.reason);
-                return;
-            }
             bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
             return;
         }
@@ -961,79 +792,15 @@ try {
         );
     });
 
-    // ============================================================
-    // UNBAN & BANNED (ADMIN)
-    // ============================================================
-    bot.onText(/\/unban (.+)/, (msg, match) => {
-        const chatId = msg.chat.id;
-        
-        if (String(chatId) !== String(ADMIN_ID)) {
-            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
-            return;
-        }
-        
-        const userId = match[1].trim();
-        if (KICKED_USERS.has(Number(userId))) {
-            KICKED_USERS.delete(Number(userId));
-            userWarnings.delete(Number(userId));
-            userMessageCount.delete(Number(userId));
-            bot.sendMessage(chatId, `✅ User ${userId} berhasil di-unban!`);
-            try {
-                bot.sendMessage(Number(userId), '✅ Anda telah di-unban oleh admin. Silahkan lanjutkan menggunakan bot.');
-            } catch (e) {}
-        } else {
-            bot.sendMessage(chatId, `❌ User ${userId} tidak ada di daftar banned.`);
-        }
-    });
-
-    bot.onText(/\/banned/, (msg) => {
-        const chatId = msg.chat.id;
-        
-        if (String(chatId) !== String(ADMIN_ID)) {
-            bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
-            return;
-        }
-        
-        if (KICKED_USERS.size === 0) {
-            bot.sendMessage(chatId, '📋 Tidak ada user yang di-kick.');
-            return;
-        }
-        
-        let text = '🚫 **DAFTAR USER DI-KICK**\n━━━━━━━━━━━━━━━\n\n';
-        KICKED_USERS.forEach(id => {
-            text += `🆔 ${id}\n`;
-        });
-        text += `\n📊 Total: ${KICKED_USERS.size} user`;
-        text += `\n\n🔓 /unban [user_id] - Untuk unban`;
-        
-        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
-    });
-
-    // ============================================================
-    // CALLBACK QUERY
-    // ============================================================
     bot.on('callback_query', async (callback) => {
         try {
             const chatId = callback.message.chat.id;
             const data_cb = callback.data;
             const isAdmin = String(chatId) === String(ADMIN_ID);
 
-            if (!isAdmin) {
-                const spamCheck = isSpam(chatId);
-                if (spamCheck.blocked) {
-                    await bot.answerCallbackQuery(callback.id, { 
-                        text: spamCheck.reason,
-                        show_alert: true 
-                    });
-                    return;
-                }
-            }
-
             await bot.answerCallbackQuery(callback.id);
-
             console.log('📩 Callback received:', data_cb);
 
-            // GENERATE KEY
             if (data_cb.startsWith('gen_')) {
                 if (!isAdmin) {
                     await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
@@ -1070,7 +837,6 @@ try {
                 return;
             }
 
-            // GENKEY AGAIN
             if (data_cb === 'genkey_again') {
                 if (!isAdmin) {
                     await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
@@ -1096,14 +862,12 @@ try {
                 return;
             }
 
-            // COPY KEY
             if (data_cb.startsWith('copy_')) {
                 const key = data_cb.replace('copy_', '');
                 await bot.sendMessage(chatId, `📋 Key: \`${key}\``, { parse_mode: 'Markdown' });
                 return;
             }
 
-            // RESET STOCK
             if (data_cb === 'resetstock_confirm') {
                 if (!isAdmin) {
                     await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
@@ -1123,7 +887,6 @@ try {
                 return;
             }
 
-            // BELI KEY
             if (data_cb.startsWith('buy_')) {
                 console.log('🛒 Buy key triggered:', data_cb);
                 
@@ -1197,14 +960,12 @@ try {
                 return;
             }
 
-            // BATAL BELI
             if (data_cb === 'cancel_buy') {
                 userTransactions.delete(chatId);
                 await bot.sendMessage(chatId, '❌ Transaksi dibatalkan.');
                 return;
             }
 
-            // APPROVE ORDER
             if (data_cb.startsWith('approve_')) {
                 if (!isAdmin) {
                     await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
@@ -1280,7 +1041,6 @@ try {
                 return;
             }
 
-            // REJECT ORDER
             if (data_cb.startsWith('reject_')) {
                 if (!isAdmin) {
                     await bot.sendMessage(chatId, '⛔ Hanya untuk admin!');
@@ -1326,9 +1086,6 @@ try {
         }
     });
 
-    // ============================================================
-    // HANDLE PHOTO (BUKTI TRANSFER)
-    // ============================================================
     bot.on('photo', async (msg) => {
         const chatId = msg.chat.id;
         const trans = userTransactions.get(chatId);
@@ -1380,38 +1137,12 @@ try {
         userTransactions.set(chatId, trans);
     });
 
-    // ============================================================
-    // MESSAGE HANDLER - ANTI LINK + ANTI KASAR + SPAM + AUTO REPLY
-    // ============================================================
     bot.on('message', (msg) => {
         const chatId = msg.chat.id;
         const text = msg.text || '';
         
         if (text.startsWith('/')) return;
-        
-        // CEK SPAM - PER USER!
-        const spamCheck = isSpam(chatId);
-        if (spamCheck.blocked) {
-            try { bot.deleteMessage(chatId, msg.message_id); } catch (e) {}
-            bot.sendMessage(chatId, spamCheck.reason);
-            return;
-        }
-        
-        // ANTI LINK
-        if (isLink(text)) {
-            try { bot.deleteMessage(chatId, msg.message_id); } catch (e) {}
-            bot.sendMessage(chatId, '🚫 **DILARANG KIRIM LINK!**\n━━━━━━━━━━━━━━━\n\nPesan Anda telah dihapus.');
-            return;
-        }
-        
-        // ANTI KATA KASAR
-        if (isBadWord(text)) {
-            try { bot.deleteMessage(chatId, msg.message_id); } catch (e) {}
-            bot.sendMessage(chatId, '🚫 **DILARANG BAHASA KASAR!**\n━━━━━━━━━━━━━━━\n\nPesan Anda telah dihapus.');
-            return;
-        }
 
-        // BATCH IMPORT HANDLER
         if (userStates.has(chatId) && userStates.get(chatId).step === 'batch_import') {
             const state = userStates.get(chatId);
             const parsed = parseBatchText(text, state.defaultLabel);
@@ -1445,7 +1176,6 @@ try {
 
         if (msg.photo) return;
 
-        // AUTO REPLY
         const lower = text.toLowerCase();
         let reply = null;
 
@@ -1639,9 +1369,6 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-// ============================================================
-// JNI ENDPOINTS
-// ============================================================
 app.post('/krunchpoint/connect', (req, res) => {
     const { user_key, serial, challenge } = req.body;
     

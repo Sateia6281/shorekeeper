@@ -983,7 +983,162 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* MODAL */
+                /* ===== BUTTON STYLE ===== */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            border: none;
+            text-align: center;
+            transition: var(--transition-spring);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-p {
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+        .btn-p:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-o {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text2);
+        }
+        .btn-o:hover {
+            background: var(--bg-input);
+        }
+        .btn-g {
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            color: var(--text2);
+        }
+        .btn-g:hover {
+            background: var(--border);
+        }
+
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-spring);
+            font-family: var(--font);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+        .hero-btn:active {
+            transform: scale(0.95);
+        }
+
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 12px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            width: 100%;
+            justify-content: center;
+            font-family: var(--font);
+            transition: var(--transition-spring);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+        .share-btn:active {
+            transform: scale(0.97);
+        }
+
+        .splash-btn {
+            margin-top: 24px;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 12px 40px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: var(--transition-spring);
+            box-shadow: 0 8px 30px rgba(0, 122, 255, 0.3);
+        }
+        .splash-btn:active {
+            transform: scale(0.95);
+        }
+
+        .search-btn {
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: var(--transition-spring);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2);
+        }
+        .search-btn:active {
+            transform: scale(0.95);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            background: var(--bg-input);
+            transition: var(--transition);
+        }
+        .upload-area:active {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+
+        .metode-btn {
+            background: var(--bg-input);
+            border: 0.5px solid var(--border);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.58rem;
+            color: var(--text2);
+            cursor: pointer;
+            font-family: var(--font);
+            transition: var(--transition);
+        }
+        .metode-btn.active {
+            background: var(--blue);
+            color: #fff;
+            border-color: var(--blue);
+        }
+        .metode-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== MODAL ===== */
         .modal {
             display: none;
             position: fixed;
