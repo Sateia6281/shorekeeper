@@ -1068,32 +1068,40 @@
         </div>
     </div>
 
-    <!-- ===== PAGE HOME ===== -->
-    <div class="page-wrapper active" id="page-home" data-page="home">
-        <div class="page-content">
+<!-- ===== PAGE HOME ===== -->
+<div class="page-wrapper active" id="page-home" data-page="home">
+    <div class="page-content">
 
-            <!-- BRAND BANNER -->
-            <div class="brand-banner">
-                <video autoplay muted loop playsinline>
-                    <source src="baner-video.mp4" type="video/mp4">
-                </video>
-                <div class="brand-banner-text">SELAMAT DATANG PARA PELANGGAN</div>
+        <!-- BRAND BANNER - FIXED -->
+        <div class="brand-banner" style="position:relative;overflow:hidden;background:#000;border-radius:14px;height:190px;margin-bottom:14px;">
+            <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;">
+                <source src="baner-video.mp4" type="video/mp4">
+            </video>
+            <div style="position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0) 100%);z-index:1;"></div>
+            <div style="position:absolute;bottom:14px;left:18px;right:18px;z-index:2;text-align:left;">
+                <div style="color:#fff;font-size:0.9rem;font-weight:800;letter-spacing:0.5px;text-shadow:0 2px 10px rgba(0,0,0,0.9);">
+                    SHOREKEEPER ELITE
+                </div>
+                <div style="color:rgba(255,255,255,0.75);font-size:0.5rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,0.9);margin-top:2px;">
+                    ⚡ BLOOD STRIKE • NO ROOT • UNDETECTED
+                </div>
             </div>
+        </div>
 
-            <!-- GAME SELECTOR -->
-            <div style="margin-bottom:14px;">
-                <div class="sec-title">🎮 Pilih Game</div>
-                <div class="sec-sub">Klik game untuk lihat paket</div>
-                <div id="homeGameList" class="game-grid"></div>
-            </div>
+        <!-- GAME SELECTOR -->
+        <div style="margin-bottom:14px;">
+            <div class="sec-title">🎮 Pilih Game</div>
+            <div class="sec-sub">Klik game untuk lihat paket</div>
+            <div id="homeGameList" class="game-grid"></div>
+        </div>
 
-            <!-- HERO -->
-            <div class="hero">
-                <div class="hero-tag">⚡ Blood Strike • No Root</div>
-                <div class="hero-title">Tool <span style="color:var(--blue)">#1 Indonesia</span></div>
-                <div class="hero-sub">Aim Assist, ESP, No Recoil. Undetected. Key aktif setelah admin verifikasi.</div>
-                <button class="hero-btn" onclick="navigateTo('game')">✨ Lihat Semua Game</button>
-            </div>
+        <!-- HERO -->
+        <div class="hero">
+            <div class="hero-tag">⚡ Blood Strike • No Root</div>
+            <div class="hero-title">Tool <span style="color:var(--blue)">#1 Indonesia</span></div>
+            <div class="hero-sub">Aim Assist, ESP, No Recoil. Undetected. Key aktif setelah admin verifikasi.</div>
+            <button class="hero-btn" onclick="navigateTo('game')">✨ Lihat Semua Game</button>
+        </div>
 
             <!-- STATS -->
             <div class="stats">
