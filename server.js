@@ -6,7 +6,6 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Import database
 const { 
     data,
     getStockCount,
@@ -20,7 +19,8 @@ const {
     rejectOrder,
     reserveKey,
     addKey,
-    PKG_LIST
+    PKG_LIST,
+    saveData
 } = require('./database');
 
 app.use(cors());
@@ -62,7 +62,6 @@ app.post('/api/stock/update', (req, res) => {
             data.stock[label] = stock[label];
         }
     }
-    const { saveData } = require('./database');
     saveData(data);
     res.json({ success: true, total: getTotalStock() });
 });
@@ -71,7 +70,7 @@ app.post('/api/stock/update', (req, res) => {
 // API ORDER
 // ============================================================
 app.post('/api/order/create', (req, res) => {
-    const { packageId, email, phone, key, method, proofImage, userChatId } = req.body;
+    const { packageId, email, phone, key, method, proofImage, userChatId, username } = req.body;
     if (!packageId || !email || !phone || !key) {
         return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
@@ -91,6 +90,7 @@ app.post('/api/order/create', (req, res) => {
         key: key,
         email: email,
         phone: phone,
+        username: username || 'Customer',
         method: method || 'qris',
         status: 'pending',
         createdAt: new Date().toISOString(),
@@ -136,7 +136,6 @@ app.post('/api/free/request', (req, res) => {
         type: 'free'
     };
     
-    const { addOrder } = require('./database');
     addOrder(order);
     
     res.json({ success: true, orderId: orderId, key: key });
@@ -162,7 +161,6 @@ app.post('/api/reviews', (req, res) => {
         text: text,
         time: 'BARU SAJA'
     });
-    const { saveData } = require('./database');
     saveData(data);
     res.json({ success: true, reviews: data.reviews });
 });
@@ -186,7 +184,6 @@ app.post('/api/chat/:chatId', (req, res) => {
         text: text,
         time: new Date().toISOString()
     });
-    const { saveData } = require('./database');
     saveData(data);
     res.json({ success: true });
 });
@@ -220,7 +217,6 @@ app.post('/api/validate', (req, res) => {
         });
     }
     
-    // Cek di stok
     let foundKey = null;
     let foundPkg = null;
     
@@ -232,7 +228,6 @@ app.post('/api/validate', (req, res) => {
         }
     }
     
-    // Cek di orders yang sudah approved
     if (!foundKey) {
         const order = data.orders.find(o => o.key === user_key && o.status === 'approved');
         if (order) {
@@ -248,15 +243,17 @@ app.post('/api/validate', (req, res) => {
         });
     }
     
-    // Key valid!
     const now = Math.floor(Date.now() / 1000);
     const token = 'SK-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 6).toUpperCase();
     
     const pkg = PKG_LIST.find(p => p.id === foundPkg);
     const pkgName = pkg ? pkg.name : foundPkg;
     
-    // Hitung expired (Lifetime = 3650 hari, lainnya 30 hari)
-    const expDays = foundPkg === 'Lifetime' ? 3650 : 30;
+    const daysMap = {
+        '2Jam': 0.08, '5Jam': 0.2, '1Day': 1, '3Day': 3,
+        '7Day': 7, '14Day': 14, '30Day': 30, '60Day': 60
+    };
+    const expDays = daysMap[foundPkg] || 30;
     const expDate = new Date();
     expDate.setDate(expDate.getDate() + expDays);
     const expStr = expDate.toISOString().split('T')[0];

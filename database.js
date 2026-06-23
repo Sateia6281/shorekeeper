@@ -11,14 +11,14 @@ function loadData() {
     } catch (e) {}
     return {
         stock: {
-            "1Jam": [],
+            "2Jam": [],
             "5Jam": [],
             "1Day": [],
             "3Day": [],
             "7Day": [],
-            "15Day": [],
+            "14Day": [],
             "30Day": [],
-            "Lifetime": [],
+            "60Day": [],
             "Free1Day": []
         },
         orders: [],
@@ -79,7 +79,7 @@ function reserveKey(label) {
 function addOrder(order) {
     data.orders.push(order);
     data.totalSold = (data.totalSold || 0) + 1;
-    data.totalRevenue = (data.totalRevenue || 0) + (order.price || 0);
+    data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
     saveData(data);
 }
 
@@ -122,7 +122,7 @@ function approveOrder(orderId) {
     order.confirmedAt = new Date().toISOString();
     data.orders.push(order);
     data.totalSold = (data.totalSold || 0) + 1;
-    data.totalRevenue = (data.totalRevenue || 0) + (order.price || 0);
+    data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
     saveData(data);
     return order;
 }
@@ -133,7 +133,6 @@ function rejectOrder(orderId) {
     if (index === -1) return null;
     const order = pending[index];
     data.pendingOrders.splice(index, 1);
-    // Kembalikan key ke stok
     if (order.key && order.packageId) {
         addKey(order.packageId, order.key);
     }
@@ -142,14 +141,14 @@ function rejectOrder(orderId) {
 }
 
 const PKG_LIST = [
-    { id: '1JAM', name: '1 JAM', price: 5000 },
-    { id: '5JAM', name: '5 JAM', price: 10000 },
-    { id: '1DAY', name: '1 HARI', price: 20000 },
-    { id: '3DAY', name: '3 HARI', price: 50000 },
-    { id: '7DAY', name: '7 HARI', price: 100000 },
-    { id: '15DAY', name: '15 HARI', price: 150000 },
-    { id: '30DAY', name: '30 HARI', price: 200000 },
-    { id: 'Lifetime', name: 'LIFETIME', price: 300000 },
+    { id: '2Jam', name: '2 JAM', price: 5000 },
+    { id: '5Jam', name: '5 JAM', price: 10000 },
+    { id: '1Day', name: '1 HARI', price: 20000 },
+    { id: '3Day', name: '3 HARI', price: 50000 },
+    { id: '7Day', name: '7 HARI', price: 100000 },
+    { id: '14Day', name: '14 HARI', price: 150000 },
+    { id: '30Day', name: '30 HARI', price: 250000 },
+    { id: '60Day', name: '60 HARI', price: 400000 },
 ];
 
 module.exports = {
