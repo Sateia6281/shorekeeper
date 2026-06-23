@@ -3,12 +3,19 @@ const path = require('path');
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 
+// ============================================================
+// LOAD & SAVE DATA
+// ============================================================
 function loadData() {
     try {
         if (fs.existsSync(DATA_FILE)) {
-            return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+            const raw = fs.readFileSync(DATA_FILE, 'utf8');
+            return JSON.parse(raw);
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error('❌ Error loading data.json:', e.message);
+    }
+    // DEFAULT DATA
     return {
         stock: {
             "2Jam": [],
@@ -32,13 +39,16 @@ function loadData() {
 }
 
 function saveData(data) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    try {
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    } catch (e) {
+        console.error('❌ Error saving data.json:', e.message);
+    }
 }
 
-// 🔥 JANGAN CACHE! Setiap function akan reload fresh
-let data = null;
-
-// ✅ UBAH LABEL DI SINI!
+// ============================================================
+// LABEL MAP
+// ============================================================
 const LABEL_MAP = {
     '2JAM': '2Jam',
     '2 JAM': '2Jam',
@@ -67,11 +77,13 @@ const LABEL_MAP = {
     'FREE 1 HARI': 'Free1Day'
 };
 
+// ============================================================
+// 🔥 FUNGSI STOK
+// ============================================================
+
+// 🔥 TAMBAH KEY KE STOK
 function addKey(label, key) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
-    // Normalisasi label
+    const data = loadData();
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
     
     if (!data.stock[normalizedLabel]) {
@@ -80,24 +92,24 @@ function addKey(label, key) {
     if (!data.stock[normalizedLabel].includes(key)) {
         data.stock[normalizedLabel].push(key);
         saveData(data);
+        console.log(`✅ Key ${key} ditambahkan ke ${normalizedLabel}`);
         return true;
     }
+    console.log(`⚠️ Key ${key} sudah ada di ${normalizedLabel}`);
     return false;
 }
 
+// 🔥 CEK JUMLAH STOK
 function getStockCount(label) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
     if (!data.stock[normalizedLabel]) return 0;
     return data.stock[normalizedLabel].length;
 }
 
+// 🔥 TOTAL SEMUA STOK
 function getTotalStock() {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     let total = 0;
     for (const label in data.stock) {
         total += data.stock[label].length;
@@ -105,43 +117,50 @@ function getTotalStock() {
     return total;
 }
 
+// 🔥 RESERVE KEY - HAPUS KEY DARI STOK!
 function reserveKey(label) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
-    if (!data.stock[normalizedLabel] || data.stock[normalizedLabel].length === 0) return null;
+    
+    if (!data.stock[normalizedLabel] || data.stock[normalizedLabel].length === 0) {
+        console.log(`❌ Stok ${normalizedLabel} kosong!`);
+        return null;
+    }
+    
+    // 🔥 HAPUS KEY PERTAMA DARI ARRAY
     const key = data.stock[normalizedLabel].shift();
     saveData(data);
+    
+    console.log(`🗑️ reserveKey: ${key} dihapus dari ${normalizedLabel}`);
+    console.log(`📊 Stok ${normalizedLabel} sekarang: ${data.stock[normalizedLabel].length} key`);
     return key;
 }
 
+// ============================================================
+// 🔥 FUNGSI ORDER
+// ============================================================
+
 function addOrder(order) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     data.orders.push(order);
     data.totalSold = (data.totalSold || 0) + 1;
     data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
     saveData(data);
+    console.log(`✅ Order ${order.orderId} ditambahkan`);
 }
 
 function getOrders() {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
+    const data = loadData();
     return data.orders || [];
 }
 
 function getPendingOrders() {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
+    const data = loadData();
     return data.pendingOrders || [];
 }
 
 function getOrderById(orderId) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     const pending = data.pendingOrders || [];
     const found = pending.find(o => o.orderId === orderId);
     if (found) return found;
@@ -150,31 +169,28 @@ function getOrderById(orderId) {
 }
 
 function generateOrderId() {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     data.lastOrderId = (data.lastOrderId || 0) + 1;
     saveData(data);
     return 'ORD' + Date.now().toString(36).toUpperCase() + String(data.lastOrderId).padStart(4, '0');
 }
 
 function addPendingOrder(order) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     if (!data.pendingOrders) data.pendingOrders = [];
     data.pendingOrders.push(order);
     saveData(data);
+    console.log(`⏳ Order ${order.orderId} ditambahkan ke pending`);
     return order;
 }
 
+// 🔥 APPROVE ORDER - KEY SUDAH DIHAPUS DARI STOK SEBELUMNYA!
 function approveOrder(orderId) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     const pending = data.pendingOrders || [];
     const index = pending.findIndex(o => o.orderId === orderId);
     if (index === -1) return null;
+    
     const order = pending[index];
     data.pendingOrders.splice(index, 1);
     order.status = 'approved';
@@ -183,25 +199,38 @@ function approveOrder(orderId) {
     data.totalSold = (data.totalSold || 0) + 1;
     data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
     saveData(data);
+    
+    console.log(`✅ Order ${orderId} DISETUJUI! Key: ${order.key}`);
     return order;
 }
 
+// 🔥 REJECT ORDER - KEMBALIKAN KEY KE STOK!
 function rejectOrder(orderId) {
-    // 🔥 RELOAD FRESH DARI FILE!
-    data = loadData();
-    
+    const data = loadData();
     const pending = data.pendingOrders || [];
     const index = pending.findIndex(o => o.orderId === orderId);
     if (index === -1) return null;
+    
     const order = pending[index];
     data.pendingOrders.splice(index, 1);
+    
+    // 🔥 KEMBALIKAN KEY KE STOK
     if (order.key && order.packageId) {
-        addKey(order.packageId, order.key);
+        if (!data.stock[order.packageId]) {
+            data.stock[order.packageId] = [];
+        }
+        data.stock[order.packageId].push(order.key);
+        console.log(`↩️ Key ${order.key} dikembalikan ke stok ${order.packageId}`);
     }
     saveData(data);
+    
+    console.log(`❌ Order ${orderId} DITOLAK!`);
     return order;
 }
 
+// ============================================================
+// 🔥 PAKET LIST
+// ============================================================
 const PKG_LIST = [
     { id: '2Jam', name: '2 JAM', price: 5000 },
     { id: '5Jam', name: '5 JAM', price: 10000 },
@@ -213,8 +242,10 @@ const PKG_LIST = [
     { id: '60Day', name: '60 HARI', price: 400000 },
 ];
 
+// ============================================================
+// 🔥 EXPORT
+// ============================================================
 module.exports = {
-    data,
     loadData,
     saveData,
     addKey,
