@@ -1,19 +1,21 @@
 {
-  "name": "shorekeeper-backend",
+  "name": "shorekeeper-bot",
   "version": "1.0.0",
-  "description": "Shorekeeper Elite - Backend Server",
+  "description": "Shorekeeper Bot + API + Kruncpoint",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server.js & node bot.js",
+    "server": "node server.js",
+    "bot": "node bot.js",
+    "dev": "nodemon server.js & nodemon bot.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "node-telegram-bot-api": "^0.66.0",
-    "dotenv": "^16.4.5"
+    "node-telegram-bot-api": "^0.64.0",
+    "axios": "^1.6.0"
   },
-  "devDependencies": {
-    "nodemon": "^2.0.22"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
