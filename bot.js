@@ -1,5 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
-const { generateKeyAtKruncpoint, checkCookieValid } = require('./kruncpoint');
+const { 
+    generateKeyAtKruncpoint, 
+    checkLogin, 
+    loginToKruncpoint,
+    getCookieInfo 
+} = require('./kruncpoint');
 const { 
     data,
     getStockCount, 
@@ -27,12 +32,13 @@ bot.onText(/\/start/, (msg) => {
     bot.sendMessage(chatId, 
         '👋 **SHOREKEEPER BOT**\n' +
         '─────────────────\n\n' +
+        '🔑 /login - Login ke Kruncpoint\n' +
         '🔑 /genkey - Generate key di Kruncpoint\n' +
         '📊 /stok - Cek stok key\n' +
         '📋 /orders - Lihat semua order\n' +
         '📊 /stats - Statistik\n' +
         '📦 /pkg - Lihat daftar paket\n' +
-        '✅ /check - Cek cookie Kruncpoint\n' +
+        '✅ /check - Cek status login\n' +
         '❓ /help - Bantuan',
         { parse_mode: 'Markdown' }
     );
@@ -47,43 +53,77 @@ bot.onText(/\/help/, (msg) => {
         '❓ **BANTUAN**\n' +
         '─────────────────\n\n' +
         '/start - Menu utama\n' +
+        '/login - Login ke Kruncpoint (admin only)\n' +
         '/genkey - Generate key baru (admin only)\n' +
         '/stok - Cek stok key\n' +
         '/orders - Lihat semua order (admin only)\n' +
         '/stats - Statistik (admin only)\n' +
         '/pkg - Lihat daftar paket\n' +
-        '/check - Cek cookie Kruncpoint\n' +
+        '/check - Cek status login Kruncpoint\n' +
         '/help - Bantuan ini',
         { parse_mode: 'Markdown' }
     );
 });
 
 // ============================================================
-// COMMAND: /check - Cek cookie
+// COMMAND: /login
 // ============================================================
-bot.onText(/\/check/, async (msg) => {
+bot.onText(/\/login/, async (msg) => {
     const chatId = msg.chat.id;
-    await bot.sendMessage(chatId, '⏳ Mengecek cookie Kruncpoint...');
     
-    const valid = await checkCookieValid();
+    if (String(chatId) !== String(ADMIN_ID)) {
+        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        return;
+    }
     
-    if (valid) {
-        bot.sendMessage(chatId, 
-            '✅ **Cookie VALID!**\n' +
+    await bot.sendMessage(chatId, '⏳ Login ke Kruncpoint...');
+    
+    const cookie = await loginToKruncpoint();
+    
+    if (cookie) {
+        bot.sendMessage(chatId,
+            '✅ **LOGIN BERHASIL!**\n' +
             '─────────────────\n\n' +
-            '🍪 Cookie masih aktif.\n' +
-            'Bot bisa generate key di Kruncpoint.',
+            `🍪 Cookie: \`${cookie.substring(0, 50)}...\`\n\n` +
+            '💡 Bot sekarang bisa generate key di Kruncpoint!',
             { parse_mode: 'Markdown' }
         );
     } else {
         bot.sendMessage(chatId,
-            '❌ **Cookie INVALID/EXPIRED!**\n' +
+            '❌ **LOGIN GAGAL!**\n' +
             '─────────────────\n\n' +
-            '⚠️ Cookie Kruncpoint sudah expired.\n\n' +
-            '📌 Cara update:\n' +
-            '1. Login ke Kruncpoint di browser\n' +
-            '2. Copy cookie baru\n' +
-            '3. Update di file kruncpoint.js',
+            '⚠️ Cek:\n' +
+            '• Username/password benar?\n' +
+            '• Ada captcha?\n' +
+            '• Website Kruncpoint bisa diakses?',
+            { parse_mode: 'Markdown' }
+        );
+    }
+});
+
+// ============================================================
+// COMMAND: /check - Cek status login
+// ============================================================
+bot.onText(/\/check/, async (msg) => {
+    const chatId = msg.chat.id;
+    await bot.sendMessage(chatId, '⏳ Mengecek status login...');
+    
+    const info = await getCookieInfo();
+    
+    if (info.valid) {
+        bot.sendMessage(chatId, 
+            '✅ **LOGIN VALID!**\n' +
+            '─────────────────\n\n' +
+            `🍪 Cookie: \`${info.cookie.substring(0, 50)}...\`\n` +
+            `⏰ Expiry: ${info.expiry}\n\n` +
+            '💡 Bot bisa generate key di Kruncpoint.',
+            { parse_mode: 'Markdown' }
+        );
+    } else {
+        bot.sendMessage(chatId,
+            '❌ **BELUM LOGIN / EXPIRED!**\n' +
+            '─────────────────\n\n' +
+            '⚠️ Ketik /login dulu ya!',
             { parse_mode: 'Markdown' }
         );
     }
@@ -132,7 +172,6 @@ bot.on('callback_query', async (callback) => {
     const chatId = callback.message.chat.id;
     const dataCb = callback.data;
     const messageId = callback.message.message_id;
-    const messageText = callback.message.text;
     
     await bot.answerCallbackQuery(callback.id);
     
@@ -147,17 +186,13 @@ bot.on('callback_query', async (callback) => {
             return;
         }
 
-        // Cek cookie dulu
-        const valid = await checkCookieValid();
-        if (!valid) {
+        // Cek login dulu
+        const isLoggedIn = await checkLogin();
+        if (!isLoggedIn) {
             await bot.editMessageText(
-                '❌ **COOKIE KRUNCPOINT EXPIRED!**\n' +
+                '❌ **BELUM LOGIN KE KRUNCPOINT!**\n' +
                 '─────────────────\n\n' +
-                '⚠️ Update cookie di file kruncpoint.js\n\n' +
-                '📌 Cara:\n' +
-                '1. Login ke Kruncpoint\n' +
-                '2. Copy cookie baru\n' +
-                '3. Update di kruncpoint.js',
+                '⚠️ Ketik /login dulu ya!',
                 {
                     chat_id: chatId,
                     message_id: messageId,
@@ -210,10 +245,10 @@ bot.on('callback_query', async (callback) => {
                 `❌ **GAGAL GENERATE KEY!**\n` +
                 `─────────────────\n\n` +
                 `⚠️ Kemungkinan:\n` +
-                `• Cookie Kruncpoint expired\n` +
-                `• Website Kruncpoint down\n` +
-                `• Format request salah\n\n` +
-                `🔄 Coba /check dulu untuk cek cookie.`,
+                `• Belum login (ketik /login)\n` +
+                `• Cookie expired (ketik /login)\n` +
+                `• Website Kruncpoint down\n\n` +
+                `🔄 Coba /login dulu ya!`,
                 {
                     chat_id: chatId,
                     message_id: messageId,
@@ -234,7 +269,6 @@ bot.on('callback_query', async (callback) => {
 
     // Generate lagi
     if (dataCb === 'genkey_again') {
-        // Kirim ulang menu genkey
         const keyboard = {
             reply_markup: {
                 inline_keyboard: [
@@ -362,4 +396,4 @@ bot.onText(/\/pkg/, (msg) => {
 });
 
 console.log('✅ Bot ready! Commands:');
-console.log('   /start, /genkey, /stok, /orders, /stats, /pkg, /check, /help');
+console.log('   /start, /login, /genkey, /stok, /orders, /stats, /pkg, /check, /help');
