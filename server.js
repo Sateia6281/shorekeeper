@@ -186,14 +186,14 @@ const PKG_LIST = [
 ];
 
 // ============================================================
-// ANTI SPAM WINDOW 1 MENIT
+// ANTI SPAM - PER USER (BENER)
 // ============================================================
-const userMessages = new Map();
+const userMessageCount = new Map();
 const userWarnings = new Map();
 const KICKED_USERS = new Set();
 
-const MAX_MESSAGES = 5;
 const WINDOW_MS = 60000;
+const MAX_MESSAGES = 5;
 const MAX_WARNINGS = 3;
 
 function isSpam(chatId) {
@@ -202,29 +202,32 @@ function isSpam(chatId) {
     }
 
     if (KICKED_USERS.has(chatId)) {
-        return { blocked: true, reason: '⛔ Anda DI-KICK karena spam! Hubungi admin.' };
+        return { 
+            blocked: true, 
+            reason: '⛔ Anda DI-KICK karena spam! Hubungi admin.' 
+        };
     }
 
     const now = Date.now();
     
-    if (!userMessages.has(chatId)) {
-        userMessages.set(chatId, []);
+    if (!userMessageCount.has(chatId)) {
+        userMessageCount.set(chatId, []);
     }
     
-    let timestamps = userMessages.get(chatId);
+    let timestamps = userMessageCount.get(chatId);
     timestamps = timestamps.filter(t => now - t < WINDOW_MS);
     timestamps.push(now);
-    userMessages.set(chatId, timestamps);
+    userMessageCount.set(chatId, timestamps);
     
     if (timestamps.length > MAX_MESSAGES) {
         const warnings = (userWarnings.get(chatId) || 0) + 1;
         userWarnings.set(chatId, warnings);
-        userMessages.set(chatId, [now]);
+        userMessageCount.set(chatId, [now]);
         
         if (warnings >= MAX_WARNINGS) {
             KICKED_USERS.add(chatId);
             userWarnings.delete(chatId);
-            userMessages.delete(chatId);
+            userMessageCount.delete(chatId);
             return { 
                 blocked: true, 
                 reason: '🚫 ANDA DI-KICK KARENA SPAM! (3x peringatan)\nHubungi admin untuk di-unban.' 
@@ -242,7 +245,7 @@ function isSpam(chatId) {
 
 setInterval(() => {
     userWarnings.clear();
-    userMessages.clear();
+    userMessageCount.clear();
     console.log('🔄 Anti-spam warning reset!');
 }, 3600000);
 
@@ -973,7 +976,7 @@ try {
         if (KICKED_USERS.has(Number(userId))) {
             KICKED_USERS.delete(Number(userId));
             userWarnings.delete(Number(userId));
-            userMessages.delete(Number(userId));
+            userMessageCount.delete(Number(userId));
             bot.sendMessage(chatId, `✅ User ${userId} berhasil di-unban!`);
             try {
                 bot.sendMessage(Number(userId), '✅ Anda telah di-unban oleh admin. Silahkan lanjutkan menggunakan bot.');
@@ -1386,7 +1389,7 @@ try {
         
         if (text.startsWith('/')) return;
         
-        // CEK SPAM
+        // CEK SPAM - PER USER!
         const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             try { bot.deleteMessage(chatId, msg.message_id); } catch (e) {}
