@@ -28,9 +28,9 @@ const {
 } = require('./database');
 
 // ============================================================
-// KONFIGURASI
+// 🔥 KONFIGURASI - PAKAI TOKEN BARU!
 // ============================================================
-const BOT_TOKEN = '8950107483:AAE-GLbaL0SgsT9nzvh-LZCPPXw0vAVZ_yM';
+const BOT_TOKEN = '8950107483:AAGdp4njIQSCmesk5-22p1bRODNMm6YqIaw';
 const ADMIN_ID = '6284402885';
 const PORT = process.env.PORT || 3000;
 
@@ -54,10 +54,10 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.static(__dirname));
 
 // ============================================================
-// TELEGRAM BOT
+// TELEGRAM BOT - PAKAI TOKEN BARU!
 // ============================================================
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
-console.log('🤖 Bot Telegram connected!');
+console.log('🤖 Bot @Keyskidbot connected!');
 
 // State untuk addkeys
 const userStates = new Map();
@@ -75,7 +75,7 @@ function refreshData() {
 }
 
 // ============================================================
-// 🔥 TRIGGER UPDATE KE WEBSITE (REAL TIME)
+// 🔥 TRIGGER UPDATE KE WEBSITE
 // ============================================================
 async function triggerWebUpdate() {
     try {
@@ -89,7 +89,7 @@ async function triggerWebUpdate() {
             console.log('📡 Website triggered update!');
         }
     } catch (e) {
-        // Skip error
+        // Skip
     }
 }
 
@@ -140,9 +140,12 @@ app.post('/api/trigger-update', (req, res) => {
     }
 });
 
-// ===== ORDER CREATE =====
+// ============================================================
+// 🔥 ORDER CREATE - DENGAN NOTIFIKASI YANG PASTI JALAN!
+// ============================================================
 app.post('/api/order/create', async (req, res) => {
     try {
+        console.log('📩 Order request received!');
         const { packageId, email, phone, key, method, proofImage, userChatId, username } = req.body;
         
         if (!packageId || !email || !phone || !key) {
@@ -182,13 +185,22 @@ app.post('/api/order/create', async (req, res) => {
         
         addPendingOrder(order);
         refreshData();
+        console.log('✅ Order saved, ID:', orderId);
         
+        // ============================================================
+        // 🔥 KIRIM NOTIFIKASI KE ADMIN - PASTI JALAN!
+        // ============================================================
         if (proofImage) {
+            console.log('📤 Sending notification to admin...');
             try {
                 await notifyAdmin(orderId, pkg.name, pkg.price, email, phone, proofImage, username);
+                console.log('✅ Notification sent successfully!');
             } catch (e) {
-                console.log('⚠️ Gagal kirim notifikasi:', e.message);
+                console.error('❌ Gagal kirim notifikasi:', e.message);
+                // TAPI ORDER TETAP BERHASIL!
             }
+        } else {
+            console.log('⚠️ No proof image, skipping notification');
         }
         
         await triggerWebUpdate();
@@ -414,10 +426,14 @@ app.use((err, req, res, next) => {
 });
 
 // ============================================================
-// 🔥 FUNGSI NOTIFIKASI ADMIN
+// 🔥 NOTIFIKASI ADMIN - PAKAI BOT @Keyskidbot!
 // ============================================================
 async function notifyAdmin(orderId, packageName, price, email, phone, proofImage, username) {
     try {
+        console.log('📤 Sending notification...');
+        console.log('📸 Proof image length:', proofImage ? proofImage.length : 0);
+        
+        // Kirim foto ke admin
         const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
         
         const formData = new FormData();
@@ -435,18 +451,23 @@ async function notifyAdmin(orderId, packageName, price, email, phone, proofImage
         );
         formData.append('parse_mode', 'Markdown');
         
+        console.log('📤 Sending photo to Telegram...');
         const response = await fetch(botUrl, {
             method: 'POST',
             body: formData
         });
         
         const result = await response.json();
+        console.log('📸 Response:', JSON.stringify(result).substring(0, 200));
         
         if (result.ok) {
+            console.log('✅ Photo sent!');
+            
+            // Kirim tombol verifikasi
             const keyboardUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
             const keyboardData = {
                 chat_id: ADMIN_ID,
-                text: `🔑 **Verifikasi Order:** ${orderId}`,
+                text: `🔑 **Verifikasi Order:** ${orderId}\n\nKlik tombol di bawah:`,
                 reply_markup: {
                     inline_keyboard: [
                         [
@@ -458,20 +479,33 @@ async function notifyAdmin(orderId, packageName, price, email, phone, proofImage
                 parse_mode: 'Markdown'
             };
             
-            await fetch(keyboardUrl, {
+            console.log('⌨️ Sending keyboard...');
+            const kbResponse = await fetch(keyboardUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(keyboardData)
             });
+            
+            const kbResult = await kbResponse.json();
+            console.log('⌨️ Keyboard response:', JSON.stringify(kbResult).substring(0, 200));
+            
+            if (kbResult.ok) {
+                console.log('✅ Keyboard sent!');
+            } else {
+                console.log('❌ Keyboard failed:', kbResult);
+            }
+        } else {
+            console.log('❌ Photo failed:', result);
         }
+        
     } catch (e) {
         console.error('❌ Notify error:', e.message);
-        throw e;
+        console.error(e.stack);
     }
 }
 
 // ============================================================
-// 🤖 TELEGRAM BOT HANDLERS
+// 🤖 TELEGRAM BOT HANDLERS - @Keyskidbot
 // ============================================================
 
 // ===== START =====
@@ -479,7 +513,7 @@ bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     const isAdmin = String(chatId) === String(ADMIN_ID);
     
-    let text = '👋 **SHOREKEEPER BOT**\n─────────────────\n\n';
+    let text = '👋 **KEY SKID BOT**\n─────────────────\n\n';
     text += '🛒 **PEMBELI:**\n';
     text += '   /buy - Lihat paket & harga\n';
     text += '   /order [paket] - Order key\n';
@@ -490,7 +524,7 @@ bot.onText(/\/start/, (msg) => {
     if (isAdmin) {
         text += '🔑 **ADMIN:**\n';
         text += '   /addkey [paket] [key] - Tambah 1 key\n';
-        text += '   /addkeys - Tambah banyak key (support format panel!)\n';
+        text += '   /addkeys - Tambah banyak key\n';
         text += '   /addfreekey [key] - Tambah 1 key gratis\n';
         text += '   /addfreekeys - Tambah banyak key gratis\n';
         text += '   /orders - Lihat semua order\n';
@@ -512,7 +546,6 @@ bot.onText(/\/help/, (msg) => {
     text += '🛒 **PEMBELI:**\n';
     text += '   /buy - Lihat paket & harga\n';
     text += '   /order [paket] - Order key\n';
-    text += '      Contoh: /order 1HARI\n';
     text += '   /cek [order_id] - Cek status key\n';
     text += '   /stok - Cek stok key\n';
     text += '   /payment - Cara pembayaran\n\n';
@@ -520,8 +553,7 @@ bot.onText(/\/help/, (msg) => {
     if (isAdmin) {
         text += '🔑 **ADMIN:**\n';
         text += '   /addkey [paket] [key] - Tambah 1 key\n';
-        text += '      Contoh: /addkey 1Day BS-ABC123\n';
-        text += '   /addkeys - Tambah banyak key (support format panel!)\n';
+        text += '   /addkeys - Tambah banyak key\n';
         text += '   /addfreekey [key] - Tambah 1 key gratis\n';
         text += '   /addfreekeys - Tambah banyak key gratis\n';
         text += '   /orders - Lihat semua order\n';
@@ -788,7 +820,7 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     }
 });
 
-// ===== ADDKEYS - SUPPORT FORMAT PANEL! =====
+// ===== ADDKEYS =====
 bot.onText(/\/addkeys/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -800,14 +832,13 @@ bot.onText(/\/addkeys/, (msg) => {
     bot.sendMessage(chatId,
         '📝 **TAMBAH BANYAK KEY**\n─────────────────\n\n' +
         'Kirim daftar key (SUPPORT FORMAT PANEL!):\n\n' +
-        '📌 Format Panel (LANGSUNG COPY PASTE):\n' +
+        '📌 Format Panel:\n' +
         '`1313  BS  BS-ADF0P1TT  0/1  1 Day  (not started yet)`\n\n' +
         '📌 Format Simple:\n' +
         '`BS-ABC123 0/1 1Day`\n\n' +
         '📌 Format Minimal:\n' +
         '`BS-ABC123`\n\n' +
-        '📌 Kirim dalam 1 pesan, bisa banyak baris!\n' +
-        '📌 Paket: 2Jam, 5Jam, 1Day, 3Day, 7Day, 14Day, 30Day, 60Day',
+        '📌 Kirim dalam 1 pesan, bisa banyak baris!',
         { parse_mode: 'Markdown' }
     );
     
@@ -967,19 +998,26 @@ bot.onText(/\/pkg/, (msg) => {
 // CALLBACK: SETUJU / TOLAK ORDER
 // ============================================================
 bot.on('callback_query', async (callback) => {
+    console.log('📩 Callback received:', callback.data);
+    
     const chatId = callback.message.chat.id;
     const data = callback.data;
     const messageId = callback.message.message_id;
     
     if (String(chatId) !== String(ADMIN_ID)) {
-        await bot.answerCallbackQuery(callback.id, { text: '⛔ Hanya admin!', show_alert: true });
+        await bot.answerCallbackQuery(callback.id, { 
+            text: '⛔ Hanya admin!', 
+            show_alert: true 
+        });
         return;
     }
     
     await bot.answerCallbackQuery(callback.id);
+    console.log('✅ Admin verified');
     
     if (data.startsWith('approve_')) {
         const orderId = data.replace('approve_', '');
+        console.log('✅ Approving order:', orderId);
         refreshData();
         
         const order = getOrderById(orderId);
@@ -1025,6 +1063,7 @@ bot.on('callback_query', async (callback) => {
     
     if (data.startsWith('reject_')) {
         const orderId = data.replace('reject_', '');
+        console.log('❌ Rejecting order:', orderId);
         refreshData();
         
         const order = getOrderById(orderId);
@@ -1078,9 +1117,7 @@ bot.on('message', async (msg) => {
     const state = userStates.get(chatId);
     if (!state) return;
     
-    // ============================================================
-    // 🔥 HANDLE ADDKEYS - SUPPORT FORMAT PANEL!
-    // ============================================================
+    // ===== ADDKEYS =====
     if (state.step === 'waiting_keys') {
         const lines = text.split('\n').filter(line => line.trim().length > 0);
         let added = 0;
@@ -1091,9 +1128,7 @@ bot.on('message', async (msg) => {
         for (const line of lines) {
             const trimmed = line.trim();
             
-            // ============================================================
-            // 🔥 FORMAT PANEL: 1313  BS  BS-ADF0P1TT  0/1  1 Day  (not started yet)
-            // ============================================================
+            // Format Panel
             const panelMatch = trimmed.match(/^\d+\s+BS\s+(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([\d]+\s+(?:Day|Days|Hari|JAM|Jam))/i);
             if (panelMatch) {
                 const key = panelMatch[1].toUpperCase();
@@ -1144,9 +1179,7 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
-            // ============================================================
-            // FORMAT 2: BS-ABC123 0/1 1HARI
-            // ============================================================
+            // Format: BS-ABC123 0/1 1HARI
             const match2 = trimmed.match(/^(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([A-Z0-9 ]+)$/i);
             if (match2) {
                 const key = match2[1].toUpperCase();
@@ -1199,9 +1232,7 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
-            // ============================================================
-            // FORMAT 3: PAKET|KEY
-            // ============================================================
+            // Format: PAKET|KEY
             const match3 = trimmed.match(/^(.+)\|(BS-[A-Z0-9-]+)$/i);
             if (match3) {
                 const packageRaw = match3[1].trim().toUpperCase();
@@ -1247,14 +1278,10 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
-            // ============================================================
-            // FORMAT 4: HANYA KEY (BS-ABC123) - coba detect dari key?
-            // ============================================================
+            // Hanya key
             const keyOnly = trimmed.match(/^(BS-[A-Z0-9-]+)$/i);
             if (keyOnly) {
                 const key = keyOnly[1].toUpperCase();
-                
-                // Coba cari di stock apakah sudah ada?
                 const fresh = loadData();
                 let found = false;
                 for (const label in fresh.stock) {
@@ -1271,9 +1298,6 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
-            // ============================================================
-            // FORMAT TIDAK DIKENAL
-            // ============================================================
             failed++;
             results.push(`❌ Format salah: ${trimmed.substring(0, 60)}...`);
         }
@@ -1294,9 +1318,7 @@ bot.on('message', async (msg) => {
         return;
     }
     
-    // ============================================================
-    // HANDLE ADDFREEKEYS
-    // ============================================================
+    // ===== ADDFREEKEYS =====
     if (state.step === 'waiting_free_keys') {
         const lines = text.split('\n').filter(line => line.trim().length > 0);
         let added = 0;
@@ -1351,7 +1373,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SHOREKEEPER SERVER + BOT`);
     console.log(`${'='.repeat(50)}`);
     console.log(`🌐 Web: http://localhost:${PORT}`);
-    console.log(`🤖 Bot: @ShorekeeperBot`);
+    console.log(`🤖 Bot: @Keyskidbot`);
     console.log(`📊 Total stok: ${getTotalStock()} key`);
     console.log(`📋 Total orders: ${getOrders().length}`);
     console.log(`⏳ Pending: ${getPendingOrders().length}`);
@@ -1361,4 +1383,4 @@ app.listen(PORT, '0.0.0.0', () => {
 console.log('✅ Server + Bot siap!');
 console.log('🛒 Pembeli: /buy, /order, /cek, /stok, /payment');
 console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /orders, /stats');
-console.log('⚡ Support format panel!');
+console.log('⚡ Notifikasi akan dikirim ke admin!');
