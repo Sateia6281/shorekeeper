@@ -13,6 +13,7 @@ const ADMIN_ID = '6284402885';
 
 const { 
     data,
+    loadData,
     getStockCount,
     getTotalStock,
     getOrders,
@@ -77,7 +78,19 @@ app.post('/api/stock/update', (req, res) => {
 // API TRIGGER - PANGGIL DARI BOT BUAT UPDATE WEB (REAL TIME!)
 // ============================================================
 app.post('/api/trigger-update', (req, res) => {
-    res.json({ success: true, message: 'Web siap update', timestamp: new Date().toISOString() });
+    // 🔥 RELOAD DATA FRESH DARI FILE!
+    data = loadData();
+    
+    console.log('📡 Website update triggered!');
+    console.log('📊 Stok terbaru:', getTotalStock(), 'key');
+    
+    res.json({ 
+        success: true, 
+        message: 'Data reloaded', 
+        stock: data.stock,
+        total: getTotalStock(),
+        timestamp: new Date().toISOString() 
+    });
 });
 
 // ============================================================

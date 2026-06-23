@@ -2097,13 +2097,13 @@ const pkgs = [
 // ============================================================
 // RENDER PAKET UNTUK GAME YANG DIPILIH
 // ============================================================
-function renderPackagesForGame() {
+async function renderPackagesForGame() {
     const container = document.getElementById('gamePkgList');
     if (!container) return;
 
     // 🔥 PAKET SESUAI GAME YANG DIPILIH
     const packages = getPackagesForGame(selectedGameId);
-    const stock = getStock();
+    const stock = await getStock();
 
     let html = '';
     packages.forEach(pkg => {
@@ -2124,7 +2124,7 @@ function renderPackagesForGame() {
     });
     container.innerHTML = html;
 
-    const total = getTotalStock();
+    const total = await getTotalStock();
     const info = document.getElementById('pkgStockInfo');
     if (info) info.innerText = 'Total stok key: ' + total + ' | Klik paket untuk order';
 }
@@ -2132,7 +2132,7 @@ function renderPackagesForGame() {
 // ============================================================
 // RENDER PAKET DI HOME
 // ============================================================
-function renderHome() {
+async function renderHome() {
     const container = document.getElementById('homePkgList');
     if (!container) return;
 
@@ -2147,7 +2147,7 @@ function renderHome() {
         else break;
     }
 
-    const stock = getStock();
+    const stock = await getStock();
 
     let html = '';
     hotPackages.forEach(pkg => {
@@ -2168,29 +2168,52 @@ function renderHome() {
     });
     container.innerHTML = html;
     
-    renderStockStatus();
+    await renderStockStatus();
     renderGameGrid('homeGameList', true);
 }
 
 // ============================================================
 // STOK
 // ============================================================
-function getStock() {
-    try { return JSON.parse(localStorage.getItem('sk_stock')) || {}; }
-    catch(e) { return {}; }
+// 🔥 CACHE STOK LOCAL
+let cachedStock = null;
+let lastFetchTime = 0;
+const CACHE_TIME = 2000; // Cache 2 detik
+
+async function getStock() {
+    try {
+        const now = Date.now();
+        
+        // Kalau cache masih fresh (< 2 detik), pakai cache
+        if (cachedStock && (now - lastFetchTime) < CACHE_TIME) {
+            return cachedStock;
+        }
+        
+        // Fetch fresh dari server
+        const response = await fetch('/api/stock');
+        const data = await response.json();
+        
+        cachedStock = data.stock || {};
+        lastFetchTime = now;
+        
+        return cachedStock;
+    } catch (e) {
+        console.error('Error fetch stock:', e);
+        return cachedStock || {};
+    }
 }
 
 function saveStock(s) {
     localStorage.setItem('sk_stock', JSON.stringify(s));
 }
 
-function getStockCount(label) {
-    const s = getStock();
+async function getStockCount(label) {
+    const s = await getStock();
     return s[label] ? s[label].length : 0;
 }
 
-function getTotalStock() {
-    const s = getStock();
+async function getTotalStock() {
+    const s = await getStock();
     let total = 0;
     for (const label in s) {
         total += s[label].length;
@@ -2198,23 +2221,26 @@ function getTotalStock() {
     return total;
 }
 
-function renderStockStatus() {
+async function renderStockStatus() {
     const container = document.getElementById('stockStatusHome');
     if (!container) return;
-    const stock = getStock();
+    
+    const stock = await getStock();
     const labels = ['2Jam', '5Jam', '1Day', '3Day', '7Day', '14Day', '30Day', '60Day'];
     const names = ['2JAM', '5JAM', '1HARI', '3HARI', '7HARI', '14HARI', '30HARI', '60HARI'];
     let html = '';
+    
     labels.forEach((label, i) => {
         const count = stock[label] ? stock[label].length : 0;
         let cls = count === 0 ? 'empty' : count <= 3 ? 'low' : 'high';
         html += `<div class="stock-item"><span class="s-label">${names[i]}</span><span class="s-count ${cls}">${count}</span></div>`;
     });
+    
     container.innerHTML = html;
 }
 
 // ============================================================
-// SYNC - 0 DETIK! REAL TIME!
+// SYNC - REAL TIME UPDATE DARI SERVER!
 // ============================================================
 let lastStockData = '';
 let isUpdating = false;
@@ -2232,15 +2258,18 @@ async function syncFromServer() {
             const currentData = JSON.stringify(data.stock);
             if (currentData !== lastStockData) {
                 lastStockData = currentData;
-                saveStock(data.stock);
-                renderStockStatus();
-                renderPackagesForGame();
-                renderHome();
+                cachedStock = data.stock; // 🔥 UPDATE CACHE
+                
+                // Update semua display
+                await renderStockStatus();
+                await renderPackagesForGame();
+                await renderHome();
+                
                 const soldEl = document.getElementById('terjualCnt');
                 if (soldEl && data.totalSold !== undefined) {
                     soldEl.innerText = data.totalSold > 1000 ? (data.totalSold/1000).toFixed(1) + 'K' : data.totalSold;
                 }
-                console.log('⚡ REAL TIME! Stok langsung update!');
+                console.log('⚡ REAL TIME! Stok langsung update!', data.stock);
             }
         }
     } catch (e) {
@@ -2249,8 +2278,8 @@ async function syncFromServer() {
     isUpdating = false;
 }
 
-// 🔥 UPDATE SETIAP 500ms (0.5 DETIK) - KAYAK REAL TIME!
-setInterval(syncFromServer, 500);
+// 🔥 UPDATE SETIAP 1 DETIK - REAL TIME SYNC!
+setInterval(syncFromServer, 1000);
 // 🔥 UPDATE PERTAMA KALI
 setTimeout(syncFromServer, 100);
 
