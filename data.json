@@ -1,19 +1,20 @@
 {
   "stock": {
-    "1Jam": [],
+    "2Jam": [],
     "5Jam": [],
     "1Day": [],
     "3Day": [],
     "7Day": [],
-    "15Day": [],
+    "14Day": [],
     "30Day": [],
-    "Lifetime": [],
+    "60Day": [],
     "Free1Day": []
   },
   "orders": [],
-  "freeRequests": [],
+  "pendingOrders": [],
   "lastOrderId": 0,
   "totalSold": 0,
+  "totalRevenue": 0,
   "reviews": [
     {
       "name": "BUDI S.",
