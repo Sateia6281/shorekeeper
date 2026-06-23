@@ -186,55 +186,70 @@ const PKG_LIST = [
 ];
 
 // ============================================================
-// ANTI SPAM + ANTI LINK + AUTO DELETE
+// ANTI SPAM WINDOW 1 MENIT
 // ============================================================
-const userCooldown = new Map();
+const userMessages = new Map();
 const userWarnings = new Map();
 const KICKED_USERS = new Set();
 
-const COOLDOWN = {
-    default: 1000,
-    admin: 500,
-    buy: 2000,
-    genkey: 1500,
-    callback: 1000,
-};
+const MAX_MESSAGES = 5;
+const WINDOW_MS = 60000;
+const MAX_WARNINGS = 3;
 
-const MAX_WARNINGS = 5;
+function isSpam(chatId) {
+    if (String(chatId) === String(ADMIN_ID)) {
+        return { blocked: false };
+    }
 
-function isSpam(chatId, command = 'default') {
-    const now = Date.now();
-    const key = `${chatId}_${command}`;
-    
     if (KICKED_USERS.has(chatId)) {
         return { blocked: true, reason: '⛔ Anda DI-KICK karena spam! Hubungi admin.' };
     }
+
+    const now = Date.now();
     
-    const lastTime = userCooldown.get(key) || 0;
-    const cooldownTime = COOLDOWN[command] || COOLDOWN.default;
+    if (!userMessages.has(chatId)) {
+        userMessages.set(chatId, []);
+    }
     
-    if (now - lastTime < cooldownTime) {
+    let timestamps = userMessages.get(chatId);
+    timestamps = timestamps.filter(t => now - t < WINDOW_MS);
+    timestamps.push(now);
+    userMessages.set(chatId, timestamps);
+    
+    if (timestamps.length > MAX_MESSAGES) {
         const warnings = (userWarnings.get(chatId) || 0) + 1;
         userWarnings.set(chatId, warnings);
+        userMessages.set(chatId, [now]);
         
         if (warnings >= MAX_WARNINGS) {
             KICKED_USERS.add(chatId);
             userWarnings.delete(chatId);
-            return { blocked: true, reason: '🚫 ANDA DI-KICK KARENA SPAM! Hubungi admin.' };
+            userMessages.delete(chatId);
+            return { 
+                blocked: true, 
+                reason: '🚫 ANDA DI-KICK KARENA SPAM! (3x peringatan)\nHubungi admin untuk di-unban.' 
+            };
         }
         
-        return { blocked: true, reason: `⚠️ Jangan spam! Peringatan ${warnings}/${MAX_WARNINGS}` };
+        return { 
+            blocked: true, 
+            reason: `⚠️ Jangan spam! Peringatan ${warnings}/${MAX_WARNINGS}` 
+        };
     }
     
-    userWarnings.delete(chatId);
-    userCooldown.set(key, now);
     return { blocked: false };
 }
+
+setInterval(() => {
+    userWarnings.clear();
+    userMessages.clear();
+    console.log('🔄 Anti-spam warning reset!');
+}, 3600000);
 
 const BLACKLIST_WORDS = [
     'kontol', 'memek', 'ngentot', 'bangsat', 'goblok', 'anjing', 'babi',
     'tolol', 'idiot', 'bego', 'kampret', 'setan', 'jancuk', 'asw', 'asu',
-    'dajjal', 'fuck', 'shit', 'bitch', 'asshole', 'ngocok', 'coli'
+    'dajjal', 'fuck', 'shit', 'bitch', 'asshole', 'ngocok', 'coli', 'peler'
 ];
 
 function isBadWord(text) {
@@ -243,7 +258,7 @@ function isBadWord(text) {
 }
 
 function isLink(text) {
-    const urlPattern = /(https?:\/\/[^\s]+|t\.me\/[^\s]+|telegram\.me\/[^\s]+|\.com|\.xyz|\.net|\.org|\.io|\.top|\.live)/i;
+    const urlPattern = /(https?:\/\/[^\s]+|t\.me\/[^\s]+|telegram\.me\/[^\s]+|\.com|\.xyz|\.net|\.org|\.io|\.top|\.live|\.club|\.online)/i;
     return urlPattern.test(text);
 }
 
@@ -285,7 +300,7 @@ try {
         const name = msg.from.first_name || 'User';
         const isAdmin = String(chatId) === String(ADMIN_ID);
 
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -317,7 +332,7 @@ try {
     bot.onText(/\/menu/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -337,7 +352,7 @@ try {
     bot.onText(/🛒 Beli Key/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'buy');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -366,7 +381,7 @@ try {
     bot.onText(/📊 Cek Stok/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -387,7 +402,7 @@ try {
     bot.onText(/🎁 Key Gratis/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -409,7 +424,7 @@ try {
         const chatId = msg.chat.id;
         const isAdmin = String(chatId) === String(ADMIN_ID);
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -449,7 +464,7 @@ try {
     bot.onText(/\/help/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -461,7 +476,7 @@ try {
     bot.onText(/\/stok/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -482,7 +497,7 @@ try {
     bot.onText(/\/buy/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'buy');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -501,7 +516,7 @@ try {
     bot.onText(/\/free/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -521,7 +536,7 @@ try {
     bot.onText(/\/tutorial/, (msg) => {
         const chatId = msg.chat.id;
         
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             bot.sendMessage(chatId, spamCheck.reason);
             return;
@@ -555,7 +570,7 @@ try {
         const chatId = msg.chat.id;
         
         if (String(chatId) !== String(ADMIN_ID)) {
-            const spamCheck = isSpam(chatId, 'genkey');
+            const spamCheck = isSpam(chatId);
             if (spamCheck.blocked) {
                 bot.sendMessage(chatId, spamCheck.reason);
                 return;
@@ -958,6 +973,7 @@ try {
         if (KICKED_USERS.has(Number(userId))) {
             KICKED_USERS.delete(Number(userId));
             userWarnings.delete(Number(userId));
+            userMessages.delete(Number(userId));
             bot.sendMessage(chatId, `✅ User ${userId} berhasil di-unban!`);
             try {
                 bot.sendMessage(Number(userId), '✅ Anda telah di-unban oleh admin. Silahkan lanjutkan menggunakan bot.');
@@ -1000,7 +1016,7 @@ try {
             const isAdmin = String(chatId) === String(ADMIN_ID);
 
             if (!isAdmin) {
-                const spamCheck = isSpam(chatId, 'callback');
+                const spamCheck = isSpam(chatId);
                 if (spamCheck.blocked) {
                     await bot.answerCallbackQuery(callback.id, { 
                         text: spamCheck.reason,
@@ -1371,7 +1387,7 @@ try {
         if (text.startsWith('/')) return;
         
         // CEK SPAM
-        const spamCheck = isSpam(chatId, 'default');
+        const spamCheck = isSpam(chatId);
         if (spamCheck.blocked) {
             try { bot.deleteMessage(chatId, msg.message_id); } catch (e) {}
             bot.sendMessage(chatId, spamCheck.reason);
