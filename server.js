@@ -46,15 +46,16 @@ app.get('/', (req, res) => {
 });
 
 // ============================================================
-// API STOK
+// API STOK - RELOAD FRESH DARI FILE!
 // ============================================================
 app.get('/api/stock', (req, res) => {
+    const freshData = loadData();  // 🔥 RELOAD FRESH DARI FILE!
     res.json({
-        stock: data.stock,
+        stock: freshData.stock,
         total: getTotalStock(),
-        totalSold: data.totalSold || 0,
-        pending: (data.pendingOrders || []).length,
-        totalRevenue: data.totalRevenue || 0
+        totalSold: freshData.totalSold || 0,
+        pending: (freshData.pendingOrders || []).length,
+        totalRevenue: freshData.totalRevenue || 0
     });
 });
 
