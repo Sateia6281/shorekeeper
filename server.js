@@ -47,7 +47,7 @@ app.get('/', (req, res) => {
 });
 
 // ============================================================
-// API STOK - RELOAD FRESH DARI FILE!
+// API STOK
 // ============================================================
 app.get('/api/stock', (req, res) => {
     const freshData = loadData();
@@ -82,15 +82,9 @@ app.post('/api/trigger-update', (req, res) => {
 });
 
 // ============================================================
-// 🔥 NOTIFIKASI KE ADMIN
+// 🔥 KIRIM NOTIFIKASI KE ADMIN - LANGSUNG KE TELEGRAM!
 // ============================================================
-app.post('/api/notify-admin', async (req, res) => {
-    const { orderId, packageName, price, email, phone, proofImage, username } = req.body;
-    
-    if (!proofImage) {
-        return res.json({ success: false, message: 'No proof image' });
-    }
-    
+async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
     try {
         console.log('📤 Sending notification to admin...');
         
@@ -99,14 +93,14 @@ app.post('/api/notify-admin', async (req, res) => {
         formData.append('chat_id', ADMIN_ID);
         formData.append('photo', proofImage);
         formData.append('caption', 
-            `📸 NEW PAYMENT PROOF!\n─────────────────\n\n` +
+            `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
             `🆔 Order: ${orderId}\n` +
             `👤 User: ${username || 'Customer'}\n` +
             `📦 Package: ${packageName}\n` +
             `💰 Price: ${price}\n` +
             `📧 Email: ${email}\n` +
             `📱 WA: ${phone}\n\n` +
-            `📌 Click below to verify:`
+            `📌 Click button below to verify:`
         );
         formData.append('parse_mode', 'Markdown');
         
@@ -142,15 +136,15 @@ app.post('/api/notify-admin', async (req, res) => {
             console.log('⌨️ Keyboard sent:', kbResult.ok);
         }
         
-        res.json({ success: true });
+        return true;
     } catch (e) {
         console.error('❌ Notif error:', e.message);
-        res.json({ success: false, message: e.message });
+        return false;
     }
-});
+}
 
 // ============================================================
-// API ORDER CREATE - 🔥 RESPONSE CEPAT!
+// API ORDER CREATE - 🔥 RESPONSE CEPAT, NOTIF LANGSUNG!
 // ============================================================
 app.post('/api/order/create', async (req, res) => {
     const { packageId, email, phone, key, method, proofImage, userChatId, username } = req.body;
@@ -187,25 +181,21 @@ app.post('/api/order/create', async (req, res) => {
     
     addPendingOrder(order);
     
-    // 🔥 RESPONSE LANGSUNG KEMBALI - JANGAN TUNGGU NOTIFIKASI!
+    // 🔥 RESPONSE LANGSUNG KEMBALI - CEPAT!
     res.json({ success: true, orderId: orderId, status: 'pending' });
     
-    // 🔥 KIRIM NOTIFIKASI DI BACKGROUND
+    // 🔥 KIRIM NOTIFIKASI LANGSUNG KE TELEGRAM - TANPA TUNGGU!
     if (proofImage) {
-        console.log('📤 Sending notification in background...');
-        fetch(`http://localhost:${PORT}/api/notify-admin`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                orderId: orderId,
-                packageName: pkg.name,
-                price: 'Rp ' + pkg.price.toLocaleString(),
-                email: email,
-                phone: phone,
-                proofImage: proofImage,
-                username: username || 'Customer'
-            })
-        }).catch(e => console.log('⚠️ Notif error:', e.message));
+        console.log('📤 Sending notification directly to Telegram...');
+        sendNotificationToAdmin(
+            orderId,
+            pkg.name,
+            'Rp ' + pkg.price.toLocaleString(),
+            email,
+            phone,
+            proofImage,
+            username || 'Customer'
+        ).catch(e => console.log('⚠️ Notif error:', e.message));
     }
 });
 
