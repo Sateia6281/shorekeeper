@@ -293,6 +293,14 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
 
 app.get('/api/stock', (req, res) => {
     try {
+        // 🔥 NO CACHE — selalu fresh dari file
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
+        });
+
         const fresh = refreshData();
         if (!fresh) {
             return res.status(500).json({ success: false, message: 'Data error' });
@@ -1259,6 +1267,8 @@ bot.on('callback_query', async (callback) => {
         refreshData();
         
         if (rejected) {
+            await triggerWebUpdate(); // 🔥 trigger update ke frontend
+
             await bot.editMessageText(
                 `❌ **ORDER REJECTED!**\n─────────────────\n\n` +
                 `🆔 ${orderId}\n` +

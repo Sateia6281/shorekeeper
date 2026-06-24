@@ -1484,35 +1484,68 @@ function saveStock(s) {
 }
 
 // ============================================================
-// SYNC REAL TIME
+// SYNC REAL TIME - SINGLE CLEAN POLLING
 // ============================================================
 let lastStockData = '';
 let isUpdating = false;
+let stockInitialized = false;
 
 async function syncFromServer() {
     if (isUpdating) return;
     isUpdating = true;
-    
+
     try {
-        const res = await fetch(`/api/stock`);
+        const res = await fetch('/api/stock?t=' + Date.now(), {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        });
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
-        
+
         if (data.stock) {
             const currentData = JSON.stringify(data.stock);
             if (currentData !== lastStockData) {
+                // Deteksi perubahan stok untuk toast
+                if (stockInitialized && lastStockData) {
+                    try {
+                        const oldStock = JSON.parse(lastStockData);
+                        const newStock = data.stock;
+                        let changed = [];
+                        for (const label in newStock) {
+                            const oldCount = (oldStock[label] || []).length;
+                            const newCount = (newStock[label] || []).length;
+                            if (newCount < oldCount) {
+                                changed.push(`${label}: ${oldCount}→${newCount}`);
+                            } else if (newCount > oldCount) {
+                                changed.push(`${label} +${newCount - oldCount} key baru`);
+                            }
+                        }
+                        if (changed.length > 0) {
+                            const isRestock = changed.some(c => c.includes('+'));
+                            if (isRestock) {
+                                toast('⚡ Stok diupdate! ' + changed.join(', '), '#2ecc71');
+                            } else {
+                                toast('🔄 Stok terjual: ' + changed.join(', '), '#4361ee');
+                            }
+                        }
+                    } catch (e) {}
+                }
+
                 lastStockData = currentData;
                 cachedStock = data.stock;
-                
-                await renderStockStatus();
-                await renderPackagesForGame();
-                await renderHome();
-                
+                saveStock(data.stock);
+
+                renderStockStatus();
+                renderPackagesForGame();
+                renderHome();
+
                 const soldEl = document.getElementById('terjualCnt');
                 if (soldEl && data.totalSold !== undefined) {
                     soldEl.innerText = data.totalSold > 1000 ? (data.totalSold/1000).toFixed(1) + 'K' : data.totalSold;
                 }
-                console.log('⚡ Real-time stock updated!');
+
+                if (!stockInitialized) stockInitialized = true;
+                console.log('⚡ Stock synced from server');
             }
         }
     } catch (e) {
@@ -1521,8 +1554,9 @@ async function syncFromServer() {
     isUpdating = false;
 }
 
-setInterval(syncFromServer, 1000);
-setTimeout(syncFromServer, 100);
+// Jalankan sekali langsung, lalu tiap 2 detik
+syncFromServer();
+setInterval(syncFromServer, 2000);
 
 // ============================================================
 // FAQ
@@ -1585,26 +1619,8 @@ renderGameGrid('homeGameList', true);
 console.log('🚀 Shorekeeper Elite Ready!');
 
 // ============================================================
-// 🔥 UPDATE REAL TIME
+// 🔥 UPDATE REAL TIME — handled by syncFromServer above
 // ============================================================
-setInterval(() => {
-    fetch('/api/stock')
-        .then(r => r.json())
-        .then(data => {
-            if (data.stock) {
-                const currentData = JSON.stringify(data.stock);
-                if (currentData !== lastStockData) {
-                    lastStockData = currentData;
-                    saveStock(data.stock);
-                    renderStockStatus();
-                    renderPackagesForGame();
-                    renderHome();
-                    console.log('⚡ Real-time stock updated!');
-                }
-            }
-        })
-        .catch(() => {});
-}, 500);
 
 </script>
 </body>
