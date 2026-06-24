@@ -1218,23 +1218,9 @@ async function submitOrder() {
     btn.innerHTML = '⏳ Processing...';
 
     try {
-        // 🔥 CEK STOK KE SERVER
-        const stockRes = await fetch('/api/stock');
-        const stockData = await stockRes.json();
-        const stock = stockData.stock || {};
+        // ✅ Server yang akan mengambil key dari stok
+        // Kita hanya kirim data tanpa key
         
-        if (!stock[curPkg.label] || stock[curPkg.label].length === 0) {
-            toast('❌ Stock ' + curPkg.name + ' is empty!', '#e74c3c');
-            btn.disabled = false;
-            btn.innerText = 'Submit Order';
-            return;
-        }
-        
-        // 🔥 AMBIL KEY PERTAMA
-        const key = stock[curPkg.label][0];
-        console.log('🔑 Key yang diambil:', key);
-        
-        // 🔥 KIRIM ORDER KE SERVER - STATUS PENDING!
         const res = await fetch(`/api/order/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1242,7 +1228,7 @@ async function submitOrder() {
                 packageId: curPkg.id,
                 email: email,
                 phone: phone,
-                key: key,
+                // ❌ HAPUS: key: key,
                 method: selM,
                 proofImage: upImg,
                 username: 'Customer'
@@ -1251,12 +1237,10 @@ async function submitOrder() {
         const result = await res.json();
         
         if (result.success) {
-            // 🔥 HAPUS KEY DARI STOK LOKAL
-            stock[curPkg.label].shift();
-            cachedStock = stock;
-            lastFetchTime = Date.now();
+            // ✅ Server sudah menghapus key dari stok
+            // ✅ Refresh data dari server
+            await syncFromServer();
             
-            // UPDATE UI
             document.getElementById('s3pkg').innerText = curPkg.name;
             document.getElementById('s3price').innerText = curPkg.idr + ' (' + curPkg.usd + ')';
             document.getElementById('s3email').innerText = email;
@@ -1268,31 +1252,10 @@ async function submitOrder() {
             goMP(3);
             toast('✅ Order submitted! Waiting for admin verification.', '#f39c12');
             
-            // REFRESH UI - STOK LANGSUNG BERKURANG!
+            // ✅ REFRESH UI
             await renderPackagesForGame();
             await renderHome();
             await renderStockStatus();
-            
-            // 🔥 KIRIM NOTIFIKASI KE ADMIN VIA BOT
-            try {
-                const notifyRes = await fetch('/api/notify-admin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: result.orderId,
-                        packageName: curPkg.name,
-                        price: curPkg.idr,
-                        email: email,
-                        phone: phone,
-                        proofImage: upImg,
-                        username: 'Customer'
-                    })
-                });
-                const notifyResult = await notifyRes.json();
-                console.log('📤 Notifikasi ke admin:', notifyResult);
-            } catch (e) {
-                console.log('⚠️ Gagal kirim notifikasi:', e);
-            }
             
         } else {
             toast('❌ Failed: ' + (result.message || 'Try again'), '#e74c3c');

@@ -204,9 +204,10 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
 }
 
 app.post('/api/order/create', async (req, res) => {
-    const { packageId, email, phone, key, method, proofImage, userChatId, username } = req.body;
+    // ❌ HAPUS parameter 'key' dari body!
+    const { packageId, email, phone, method, proofImage, userChatId, username } = req.body;
     
-    if (!packageId || !email || !phone || !key) {
+    if (!packageId || !email || !phone) {
         return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
     
@@ -217,6 +218,12 @@ app.post('/api/order/create', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Package not found' });
     }
     
+    // ✅ AMBIL KEY DARI STOK MENGGUNAKAN reserveKey()
+    const key = reserveKey(normalizedPkgId);
+    if (!key) {
+        return res.status(400).json({ success: false, message: 'Stock is empty!' });
+    }
+    
     const orderId = generateOrderId();
     const order = {
         orderId: orderId,
@@ -224,7 +231,7 @@ app.post('/api/order/create', async (req, res) => {
         packageId: normalizedPkgId,
         price: 'Rp ' + pkg.price.toLocaleString(),
         priceNumber: pkg.price,
-        key: key,
+        key: key,  // ✅ Key dari server
         email: email,
         phone: phone,
         username: username || 'Customer',
@@ -238,7 +245,10 @@ app.post('/api/order/create', async (req, res) => {
     
     addPendingOrder(order);
     
-    res.json({ success: true, orderId: orderId, status: 'pending' });
+    // ✅ Pastikan data tersimpan
+    saveData(loadData());
+    
+    res.json({ success: true, orderId: orderId, status: 'pending', key: key });
     
     if (proofImage) {
         console.log('📤 Sending notification directly to Telegram...');
