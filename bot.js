@@ -1,6 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const { 
-    data,
+    loadData,
+    saveData,
     getStockCount, 
     getTotalStock,
     getOrders,
@@ -15,8 +16,8 @@ const {
     rejectOrder
 } = require('./database');
 
-// 🔥 GANTI INI!
-const BOT_TOKEN = '8950107483:AAGdp4njIQSCmesk5-22p1bRODNMm6YqIaw';
+// 🔥 TOKEN TERBARU!
+const BOT_TOKEN = '8950107483:AAGtvDaNSXEA-fULAPn86B6r5jCEn2fEM-A';
 const ADMIN_ID = '6284402885';
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
@@ -44,7 +45,7 @@ async function triggerWebUpdate() {
     }
 }
 
-console.log('🤖 Bot started!');
+console.log('🤖 Bot started with NEW TOKEN!');
 console.log('📌 BOT TIDAK BISA GENERATE KEY!');
 console.log('📌 Kamu kirim key manual ke bot!');
 console.log('⚡ Real-time update ke website!');
@@ -73,6 +74,7 @@ bot.onText(/\/start/, (msg) => {
         text += '   /orders - Lihat semua order\n';
         text += '   /stats - Statistik\n';
         text += '   /pkg - Daftar paket\n';
+        text += '   /addapk - Upload APK file\n';
     }
     
     text += '\n❓ /help - Bantuan';
@@ -125,7 +127,8 @@ bot.onText(/\/help/, (msg) => {
     text += '      Contoh: /order 1HARI\n';
     text += '   /cek [order_id] - Cek status key\n';
     text += '   /stok - Cek stok key\n';
-    text += '   /payment - Cara pembayaran\n\n';
+    text += '   /payment - Cara pembayaran\n';
+    text += '   /apk - Download APK\n\n';
     
     if (isAdmin) {
         text += '🔑 **ADMIN:**\n';
@@ -136,6 +139,7 @@ bot.onText(/\/help/, (msg) => {
         text += '   /orders - Lihat semua order\n';
         text += '   /stats - Statistik\n';
         text += '   /pkg - Daftar paket\n';
+        text += '   /addapk - Upload APK file\n';
     }
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -246,6 +250,17 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
             { parse_mode: 'Markdown' }
         );
         
+        // Kirim APK otomatis
+        try {
+            const data = loadData();
+            if (data.apkFile && data.apkFile.fileId) {
+                await bot.sendDocument(chatId, data.apkFile.fileId, {
+                    caption: `📦 **SHOREKEEPER ELITE APK**\n\n🔑 Key: \`${key}\`\n📦 Package: ${pkg.name}`,
+                    parse_mode: 'Markdown'
+                });
+            }
+        } catch (e) {}
+        
         const adminNotif = 
             `🛒 **ORDER BARU!**\n─────────────────\n\n` +
             `👤 ${username} (ID: ${userId})\n` +
@@ -304,6 +319,10 @@ bot.onText(/\/cek (.+)/, (msg, match) => {
         text += `\n\n💡 Key sudah aktif!`;
     }
     
+    if (order.status === 'pending') {
+        text += `\n\n⏳ Tunggu verifikasi admin.`;
+    }
+    
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
@@ -329,6 +348,51 @@ bot.onText(/\/stok/, (msg) => {
     text += `\n\n🛒 /buy - Lihat paket & order`;
     
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+});
+
+// ============================================================
+// COMMAND: /apk - DOWNLOAD APK (PUBLIC)
+// ============================================================
+bot.onText(/\/apk/, async (msg) => {
+    const chatId = msg.chat.id;
+    
+    const data = loadData();
+    const apkFile = data.apkFile;
+    
+    if (!apkFile || !apkFile.fileId) {
+        bot.sendMessage(chatId,
+            '❌ **APK belum tersedia!**\n─────────────────\n\n' +
+            'Hubungi admin untuk mendapatkan APK.\n' +
+            '📞 @Zelewin atau @Yuangme',
+            { parse_mode: 'Markdown' }
+        );
+        return;
+    }
+    
+    try {
+        await bot.sendDocument(chatId, apkFile.fileId, {
+            caption: 
+                `📦 **SHOREKEEPER ELITE APK**\n─────────────────\n\n` +
+                `🔑 Install APK, lalu masukkan key.\n` +
+                `📌 Key bisa didapat dari:\n` +
+                `   • /buy - Beli key\n` +
+                `   • /order [paket] - Order key\n` +
+                `   • /cek [order_id] - Cek key\n\n` +
+                `💡 Butuh bantuan? Hubungi admin:\n` +
+                `   @Zelewin / @Yuangme`,
+            parse_mode: 'Markdown'
+        });
+    } catch (e) {
+        console.error('❌ Error send APK:', e.message);
+        bot.sendMessage(chatId, `❌ Gagal mengirim APK: ${e.message}`);
+    }
+});
+
+// ============================================================
+// COMMAND: /download - SAMA DENGAN /apk
+// ============================================================
+bot.onText(/\/download/, (msg) => {
+    bot.emit('text', { ...msg, text: '/apk' });
 });
 
 // ============================================================
@@ -480,6 +544,27 @@ bot.onText(/\/addfreekeys/, (msg) => {
 });
 
 // ============================================================
+// 🔴 COMMAND: /addapk (ADMIN ONLY) - UPLOAD APK
+// ============================================================
+bot.onText(/\/addapk/, (msg) => {
+    const chatId = msg.chat.id;
+    
+    if (String(chatId) !== String(ADMIN_ID)) {
+        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        return;
+    }
+
+    bot.sendMessage(chatId,
+        '📦 **UPLOAD APK**\n─────────────────\n\n' +
+        'Kirim file APK sekarang!\n' +
+        'File akan disimpan dan dikirim ke pembeli.',
+        { parse_mode: 'Markdown' }
+    );
+    
+    userStates.set(chatId, { step: 'waiting_apk' });
+});
+
+// ============================================================
 // 🔴 COMMAND: /orders (ADMIN ONLY)
 // ============================================================
 bot.onText(/\/orders/, (msg) => {
@@ -530,6 +615,7 @@ bot.onText(/\/stats/, (msg) => {
         return;
     }
     
+    const data = loadData();
     const orders = getOrders();
     const pending = getPendingOrders();
     const totalStock = getTotalStock();
@@ -623,6 +709,17 @@ bot.on('callback_query', async (callback) => {
                     `💡 Key sudah aktif! Terima kasih!`,
                     { parse_mode: 'Markdown' }
                 );
+                
+                // Kirim APK otomatis ke user
+                try {
+                    const data = loadData();
+                    if (data.apkFile && data.apkFile.fileId) {
+                        await bot.sendDocument(order.userChatId, data.apkFile.fileId, {
+                            caption: `📦 **SHOREKEEPER ELITE APK**\n\n🔑 Key: \`${order.key}\`\n📦 Package: ${order.package}`,
+                            parse_mode: 'Markdown'
+                        });
+                    }
+                } catch (e) {}
             }
         }
     }
@@ -668,6 +765,55 @@ bot.on('callback_query', async (callback) => {
 });
 
 // ============================================================
+// HANDLE FILE APK DARI ADMIN
+// ============================================================
+bot.on('document', async (msg) => {
+    const chatId = msg.chat.id;
+    const state = userStates.get(chatId);
+    
+    if (!state || state.step !== 'waiting_apk') return;
+    
+    if (String(chatId) !== String(ADMIN_ID)) {
+        bot.sendMessage(chatId, '⛔ Hanya admin!');
+        return;
+    }
+    
+    const file = msg.document;
+    const fileName = file.file_name || 'Shorekeeper.apk';
+    
+    if (!fileName.endsWith('.apk')) {
+        bot.sendMessage(chatId, '❌ Harus file APK! (.apk)');
+        return;
+    }
+    
+    try {
+        const fileId = file.file_id;
+        const data = loadData();
+        if (!data.apkFile) data.apkFile = {};
+        data.apkFile.fileId = fileId;
+        data.apkFile.fileName = fileName;
+        data.apkFile.updatedAt = new Date().toISOString();
+        saveData(data);
+        
+        bot.sendMessage(chatId,
+            `✅ **APK BERHASIL DISIMPAN!**\n─────────────────\n\n` +
+            `📦 File: ${fileName}\n` +
+            `🕐 Diupdate: ${new Date().toLocaleString('id-ID')}\n\n` +
+            `📌 Pembeli bisa dapatkan dengan:\n` +
+            `   /apk - Download APK\n` +
+            `   /download - Download APK`,
+            { parse_mode: 'Markdown' }
+        );
+        
+        userStates.delete(chatId);
+        
+    } catch (e) {
+        console.error('❌ Error save APK:', e.message);
+        bot.sendMessage(chatId, `❌ Gagal menyimpan file: ${e.message}`);
+    }
+});
+
+// ============================================================
 // HANDLE PESAN DARI USER (BUAT ADDKEYS + ADDFREEKEYS)
 // ============================================================
 bot.on('message', async (msg) => {
@@ -675,6 +821,7 @@ bot.on('message', async (msg) => {
     const text = msg.text || '';
     
     if (text.startsWith('/')) return;
+    if (msg.document) return; // handled above
     
     const state = userStates.get(chatId);
     if (!state) return;
@@ -761,7 +908,7 @@ bot.on('message', async (msg) => {
                 const success = addKey(packageId, key);
                 if (success) {
                     added++;
-                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
+                    triggerWebUpdate();
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -802,7 +949,7 @@ bot.on('message', async (msg) => {
                 const success = addKey(packageId, key);
                 if (success) {
                     added++;
-                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
+                    triggerWebUpdate();
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -836,7 +983,7 @@ bot.on('message', async (msg) => {
                 const success = addKey(packageId, key);
                 if (success) {
                     added++;
-                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
+                    triggerWebUpdate();
                     const pkg = PKG_LIST.find(p => p.id === packageId);
                     results.push(`✅ ${key} → ${pkg ? pkg.name : packageId}`);
                 } else {
@@ -884,7 +1031,7 @@ bot.on('message', async (msg) => {
                 const success = addKey('Free1Day', key);
                 if (success) {
                     added++;
-                    triggerWebUpdate();  // 🔥 TRIGGER UPDATE
+                    triggerWebUpdate();
                     results.push(`✅ ${key} → FREE 1 HARI`);
                 } else {
                     failed++;
@@ -913,8 +1060,8 @@ bot.on('message', async (msg) => {
     }
 });
 
-console.log('✅ Bot ready!');
-console.log('🛒 Pembeli: /buy, /order, /cek, /stok, /payment');
-console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /orders, /stats');
+console.log('✅ Bot ready with NEW TOKEN!');
+console.log('🛒 Pembeli: /buy, /order, /cek, /stok, /payment, /apk');
+console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /addapk, /orders, /stats');
 console.log('❌ BOT TIDAK BISA GENERATE KEY!');
 console.log('⚡ Real-time update ke website!');

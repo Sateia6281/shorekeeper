@@ -7,8 +7,8 @@ const FormData = require('form-data');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔥 CONFIG BOT
-const BOT_TOKEN = '8950107483:AAGdp4njIQSCmesk5-22p1bRODNMm6YqIaw';
+// 🔥 CONFIG BOT - TOKEN TERBARU!
+const BOT_TOKEN = '8950107483:AAGtvDaNSXEA-fULAPn86B6r5jCEn2fEM-A';
 const ADMIN_ID = '6284402885';
 
 const { 
