@@ -101,21 +101,43 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
         console.log('📤 Sending notification to admin...');
         console.log('📸 Proof image length:', proofImage ? proofImage.length : 0);
         
-        // 🔥 CEK APAKAH PROOFIMAGE VALID
         if (!proofImage || proofImage.length < 100) {
-            console.log('❌ Proof image terlalu pendek / invalid!');
+            console.log('❌ Proof image too short / invalid!');
+            
+            // Kirim pesan tanpa foto
+            const fallbackUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const fallbackData = {
+                chat_id: ADMIN_ID,
+                text: `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
+                    `🆔 Order: ${orderId}\n` +
+                    `👤 User: ${username || 'Customer'}\n` +
+                    `📦 Package: ${packageName}\n` +
+                    `💰 Price: ${price}\n` +
+                    `📧 Email: ${email}\n` +
+                    `📱 WA: ${phone}\n\n` +
+                    `⚠️ GAGAL KIRIM FOTO! Silakan cek di web.\n` +
+                    `🔗 https://shorekeeper-skcheat.up.railway.app`,
+                parse_mode: 'Markdown'
+            };
+            
+            await fetch(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(fallbackData)
+            });
             return false;
         }
         
         // 🔥 KONVERSI BASE64 KE BUFFER
         let imageBuffer;
         let contentType = 'image/jpeg';
+        let extension = 'jpg';
         
         if (proofImage.startsWith('data:image')) {
-            // Format: data:image/jpeg;base64,xxxxx
             const matches = proofImage.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
             if (matches) {
                 contentType = `image/${matches[1]}`;
+                extension = matches[1];
                 imageBuffer = Buffer.from(matches[2], 'base64');
             } else {
                 imageBuffer = Buffer.from(proofImage, 'base64');
@@ -126,15 +148,33 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
         
         console.log('📸 Image buffer size:', imageBuffer.length);
         
-        // Kirim foto pakai buffer
+        // 🔥 KIRIM PAKAI MULTER ATAU STREAM
+        // Cara 1: Upload ke telegra.ph dulu (opsional)
+        // Cara 2: Kirim langsung pake form-data dengan stream
+        
         const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-        const formData = new FormData();
-        formData.append('chat_id', ADMIN_ID);
-        formData.append('photo', imageBuffer, {
-            filename: 'proof.jpg',
-            contentType: contentType
-        });
-        formData.append('caption', 
+        
+        // 🔥 PAKAI BOUNDARY MANUAL
+        const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+        const CRLF = '\r\n';
+        
+        let formData = '';
+        formData += '--' + boundary + CRLF;
+        formData += 'Content-Disposition: form-data; name="chat_id"' + CRLF + CRLF;
+        formData += ADMIN_ID + CRLF;
+        
+        formData += '--' + boundary + CRLF;
+        formData += `Content-Disposition: form-data; name="photo"; filename="proof.${extension}"` + CRLF;
+        formData += `Content-Type: ${contentType}` + CRLF + CRLF;
+        
+        // 🔥 BODY PART: formData (text) + buffer (image) + penutup
+        const bodyParts = [
+            Buffer.from(formData),
+            imageBuffer,
+            Buffer.from(CRLF + '--' + boundary + '--' + CRLF)
+        ];
+        
+        const caption = 
             `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
             `🆔 Order: ${orderId}\n` +
             `👤 User: ${username || 'Customer'}\n` +
@@ -142,15 +182,32 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
             `💰 Price: ${price}\n` +
             `📧 Email: ${email}\n` +
             `📱 WA: ${phone}\n\n` +
-            `📌 Click button below to verify:`
-        );
-        formData.append('parse_mode', 'Markdown');
+            `📌 Click button below to verify:`;
         
-        console.log('📤 Sending photo to Telegram...');
+        const captionPart = Buffer.from(
+            '--' + boundary + CRLF +
+            'Content-Disposition: form-data; name="caption"' + CRLF + CRLF +
+            caption + CRLF +
+            '--' + boundary + '--' + CRLF
+        );
+        
+        // Gabungkan semua
+        const finalBody = Buffer.concat([
+            Buffer.from(formData),
+            imageBuffer,
+            Buffer.from(CRLF),
+            captionPart
+        ]);
+        
         const response = await fetch(botUrl, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': `multipart/form-data; boundary=${boundary}`,
+                'Content-Length': finalBody.length
+            },
+            body: finalBody
         });
+        
         const result = await response.json();
         console.log('📸 Response:', JSON.stringify(result));
         
@@ -173,7 +230,6 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
                 parse_mode: 'Markdown'
             };
             
-            console.log('⌨️ Sending keyboard...');
             const kbResponse = await fetch(keyboardUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -198,8 +254,17 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
                     `📧 Email: ${email}\n` +
                     `📱 WA: ${phone}\n\n` +
                     `⚠️ GAGAL KIRIM FOTO! Silakan cek di web.\n` +
-                    `🔗 https://shorekeeper-skcheat.up.railway.app`,
-                parse_mode: 'Markdown'
+                    `🔗 https://shorekeeper-skcheat.up.railway.app` +
+                    `\n\n📌 Order ID: ${orderId}`,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '✅ APPROVE', callback_data: `approve_${orderId}` },
+                            { text: '❌ REJECT', callback_data: `reject_${orderId}` }
+                        ]
+                    ]
+                }
             };
             
             await fetch(fallbackUrl, {
@@ -213,6 +278,28 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
     } catch (e) {
         console.error('❌ Notif error:', e.message);
         console.error(e.stack);
+        
+        // 🔥 FALLBACK TERAKHIR
+        try {
+            const fallbackUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            await fetch(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: ADMIN_ID,
+                    text: `⚠️ **ORDER MASUK!**\n─────────────────\n\n` +
+                        `🆔 Order: ${orderId}\n` +
+                        `👤 User: ${username || 'Customer'}\n` +
+                        `📦 Package: ${packageName}\n` +
+                        `💰 Price: ${price}\n` +
+                        `📧 Email: ${email}\n` +
+                        `📱 WA: ${phone}\n\n` +
+                        `❌ GAGAL KIRIM FOTO! Cek web: https://shorekeeper-skcheat.up.railway.app`,
+                    parse_mode: 'Markdown'
+                })
+            });
+        } catch (e2) {}
+        
         return false;
     }
 }
