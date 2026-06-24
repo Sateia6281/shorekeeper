@@ -99,12 +99,41 @@ async function triggerWebUpdate() {
 async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
     try {
         console.log('📤 Sending notification to admin...');
+        console.log('📸 Proof image length:', proofImage ? proofImage.length : 0);
         
-        // Kirim foto
+        // 🔥 CEK APAKAH PROOFIMAGE VALID
+        if (!proofImage || proofImage.length < 100) {
+            console.log('❌ Proof image terlalu pendek / invalid!');
+            return false;
+        }
+        
+        // 🔥 KONVERSI BASE64 KE BUFFER
+        let imageBuffer;
+        let contentType = 'image/jpeg';
+        
+        if (proofImage.startsWith('data:image')) {
+            // Format: data:image/jpeg;base64,xxxxx
+            const matches = proofImage.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
+            if (matches) {
+                contentType = `image/${matches[1]}`;
+                imageBuffer = Buffer.from(matches[2], 'base64');
+            } else {
+                imageBuffer = Buffer.from(proofImage, 'base64');
+            }
+        } else {
+            imageBuffer = Buffer.from(proofImage, 'base64');
+        }
+        
+        console.log('📸 Image buffer size:', imageBuffer.length);
+        
+        // Kirim foto pakai buffer
         const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
         const formData = new FormData();
         formData.append('chat_id', ADMIN_ID);
-        formData.append('photo', proofImage);
+        formData.append('photo', imageBuffer, {
+            filename: 'proof.jpg',
+            contentType: contentType
+        });
         formData.append('caption', 
             `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
             `🆔 Order: ${orderId}\n` +
@@ -117,14 +146,17 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
         );
         formData.append('parse_mode', 'Markdown');
         
+        console.log('📤 Sending photo to Telegram...');
         const response = await fetch(botUrl, {
             method: 'POST',
             body: formData
         });
         const result = await response.json();
-        console.log('📸 Photo sent:', result.ok);
+        console.log('📸 Response:', JSON.stringify(result));
         
         if (result.ok) {
+            console.log('✅ Photo sent!');
+            
             // Kirim tombol verifikasi
             const keyboardUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
             const keyboardData = {
@@ -141,6 +173,7 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
                 parse_mode: 'Markdown'
             };
             
+            console.log('⌨️ Sending keyboard...');
             const kbResponse = await fetch(keyboardUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -148,11 +181,38 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
             });
             const kbResult = await kbResponse.json();
             console.log('⌨️ Keyboard sent:', kbResult.ok);
+            
+            return true;
+        } else {
+            console.log('❌ Photo failed:', result);
+            
+            // 🔥 FALLBACK: KIRIM PESAN TANPA FOTO
+            const fallbackUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const fallbackData = {
+                chat_id: ADMIN_ID,
+                text: `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
+                    `🆔 Order: ${orderId}\n` +
+                    `👤 User: ${username || 'Customer'}\n` +
+                    `📦 Package: ${packageName}\n` +
+                    `💰 Price: ${price}\n` +
+                    `📧 Email: ${email}\n` +
+                    `📱 WA: ${phone}\n\n` +
+                    `⚠️ GAGAL KIRIM FOTO! Silakan cek di web.\n` +
+                    `🔗 https://shorekeeper-skcheat.up.railway.app`,
+                parse_mode: 'Markdown'
+            };
+            
+            await fetch(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(fallbackData)
+            });
+            
+            return false;
         }
-        
-        return true;
     } catch (e) {
         console.error('❌ Notif error:', e.message);
+        console.error(e.stack);
         return false;
     }
 }
