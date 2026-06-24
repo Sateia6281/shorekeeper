@@ -22,14 +22,8 @@ const ADMIN_ID = '6284402885';
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
-// ============================================================
-// STATE UNTUK ADDKEYS
-// ============================================================
 const userStates = new Map();
 
-// ============================================================
-// TRIGGER UPDATE WEBSITE - REAL TIME!
-// ============================================================
 const WEB_URL = 'https://shorekeeper-skcheat.up.railway.app';
 
 async function triggerWebUpdate() {
@@ -50,9 +44,6 @@ console.log('📌 BOT TIDAK BISA GENERATE KEY!');
 console.log('📌 Kamu kirim key manual ke bot!');
 console.log('⚡ Real-time update ke website!');
 
-// ============================================================
-// COMMAND: /start
-// ============================================================
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     const isAdmin = String(chatId) === String(ADMIN_ID);
@@ -82,9 +73,6 @@ bot.onText(/\/start/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// COMMAND: /payment (PUBLIC)
-// ============================================================
 bot.onText(/\/payment/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -113,9 +101,6 @@ bot.onText(/\/payment/, async (msg) => {
     }
 });
 
-// ============================================================
-// COMMAND: /help
-// ============================================================
 bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
     const isAdmin = String(chatId) === String(ADMIN_ID);
@@ -145,9 +130,6 @@ bot.onText(/\/help/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// COMMAND: /buy (PUBLIC)
-// ============================================================
 bot.onText(/\/buy/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -170,9 +152,6 @@ bot.onText(/\/buy/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// COMMAND: /order (PUBLIC)
-// ============================================================
 bot.onText(/\/order (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
@@ -230,7 +209,6 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
         };
         addOrder(order);
         
-        // 🔥 TRIGGER UPDATE WEBSITE
         triggerWebUpdate();
         
         const paymentInfo = 
@@ -250,7 +228,6 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
             { parse_mode: 'Markdown' }
         );
         
-        // Kirim APK otomatis
         try {
             const data = loadData();
             if (data.apkFile && data.apkFile.fileId) {
@@ -277,9 +254,6 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     }
 });
 
-// ============================================================
-// COMMAND: /cek (PUBLIC)
-// ============================================================
 bot.onText(/\/cek (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const orderId = match[1].trim();
@@ -326,9 +300,6 @@ bot.onText(/\/cek (.+)/, (msg, match) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// COMMAND: /stok (PUBLIC)
-// ============================================================
 bot.onText(/\/stok/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -350,9 +321,6 @@ bot.onText(/\/stok/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// COMMAND: /apk - DOWNLOAD APK (PUBLIC)
-// ============================================================
 bot.onText(/\/apk/, async (msg) => {
     const chatId = msg.chat.id;
     
@@ -388,16 +356,10 @@ bot.onText(/\/apk/, async (msg) => {
     }
 });
 
-// ============================================================
-// COMMAND: /download - SAMA DENGAN /apk
-// ============================================================
 bot.onText(/\/download/, (msg) => {
     bot.emit('text', { ...msg, text: '/apk' });
 });
 
-// ============================================================
-// 🔴 COMMAND: /addkey (ADMIN ONLY)
-// ============================================================
 bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     
@@ -429,7 +391,6 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     const success = addKey(packageInput, key);
     
     if (success) {
-        // 🔥 TRIGGER UPDATE WEBSITE
         triggerWebUpdate();
         
         bot.sendMessage(chatId,
@@ -447,9 +408,6 @@ bot.onText(/\/addkey (.+) (.+)/, (msg, match) => {
     }
 });
 
-// ============================================================
-// 🔴 COMMAND: /addkeys (ADMIN ONLY)
-// ============================================================
 bot.onText(/\/addkeys/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -475,9 +433,6 @@ bot.onText(/\/addkeys/, (msg) => {
     userStates.set(chatId, { step: 'waiting_keys' });
 });
 
-// ============================================================
-// 🔴 COMMAND: /addfreekey (ADMIN ONLY)
-// ============================================================
 bot.onText(/\/addfreekey (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     
@@ -499,7 +454,6 @@ bot.onText(/\/addfreekey (.+)/, (msg, match) => {
     const success = addKey('Free1Day', key);
     
     if (success) {
-        // 🔥 TRIGGER UPDATE WEBSITE
         triggerWebUpdate();
         
         bot.sendMessage(chatId,
@@ -517,9 +471,6 @@ bot.onText(/\/addfreekey (.+)/, (msg, match) => {
     }
 });
 
-// ============================================================
-// 🔴 COMMAND: /addfreekeys (ADMIN ONLY)
-// ============================================================
 bot.onText(/\/addfreekeys/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -543,9 +494,6 @@ bot.onText(/\/addfreekeys/, (msg) => {
     userStates.set(chatId, { step: 'waiting_free_keys' });
 });
 
-// ============================================================
-// 🔴 COMMAND: /addapk (ADMIN ONLY) - UPLOAD APK
-// ============================================================
 bot.onText(/\/addapk/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -564,9 +512,6 @@ bot.onText(/\/addapk/, (msg) => {
     userStates.set(chatId, { step: 'waiting_apk' });
 });
 
-// ============================================================
-// 🔴 COMMAND: /orders (ADMIN ONLY)
-// ============================================================
 bot.onText(/\/orders/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -604,9 +549,6 @@ bot.onText(/\/orders/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// 🔴 COMMAND: /stats (ADMIN ONLY)
-// ============================================================
 bot.onText(/\/stats/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -631,9 +573,6 @@ bot.onText(/\/stats/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// 🔴 COMMAND: /pkg (ADMIN ONLY)
-// ============================================================
 bot.onText(/\/pkg/, (msg) => {
     const chatId = msg.chat.id;
     
@@ -655,9 +594,6 @@ bot.onText(/\/pkg/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
-// ============================================================
-// CALLBACK: SETUJU / TOLAK ORDER DARI BUKTI
-// ============================================================
 bot.on('callback_query', async (callback) => {
     const chatId = callback.message.chat.id;
     const data = callback.data;
@@ -684,7 +620,6 @@ bot.on('callback_query', async (callback) => {
         
         const approved = approveOrder(orderId);
         if (approved) {
-            // 🔥 TRIGGER UPDATE WEBSITE
             triggerWebUpdate();
             
             await bot.editMessageText(
@@ -710,7 +645,6 @@ bot.on('callback_query', async (callback) => {
                     { parse_mode: 'Markdown' }
                 );
                 
-                // Kirim APK otomatis ke user
                 try {
                     const data = loadData();
                     if (data.apkFile && data.apkFile.fileId) {
@@ -764,9 +698,6 @@ bot.on('callback_query', async (callback) => {
     }
 });
 
-// ============================================================
-// HANDLE FILE APK DARI ADMIN
-// ============================================================
 bot.on('document', async (msg) => {
     const chatId = msg.chat.id;
     const state = userStates.get(chatId);
@@ -813,22 +744,16 @@ bot.on('document', async (msg) => {
     }
 });
 
-// ============================================================
-// HANDLE PESAN DARI USER (BUAT ADDKEYS + ADDFREEKEYS)
-// ============================================================
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text || '';
     
     if (text.startsWith('/')) return;
-    if (msg.document) return; // handled above
+    if (msg.document) return;
     
     const state = userStates.get(chatId);
     if (!state) return;
     
-    // ============================================================
-    // HANDLE /addkeys
-    // ============================================================
     if (state.step === 'waiting_keys') {
         const lines = text.split('\n').filter(line => line.trim().length > 0);
         let added = 0;
@@ -837,28 +762,18 @@ bot.on('message', async (msg) => {
         let results = [];
         
         const packageMap = {
-            '1JAM': '2Jam',
-            '2JAM': '2Jam',
-            '5JAM': '5Jam',
-            '1HARI': '1Day',
-            '1 DAY': '1Day',
-            '3HARI': '3Day',
-            '3 DAYS': '3Day',
-            '7HARI': '7Day',
-            '7 DAYS': '7Day',
-            '14HARI': '14Day',
-            '14 DAYS': '14Day',
-            '30HARI': '30Day',
-            '30 DAYS': '30Day',
-            '60HARI': '60Day',
-            '60 DAYS': '60Day',
-            'LIFETIME': 'Lifetime'
+            '1JAM': '2Jam', '2JAM': '2Jam', '5JAM': '5Jam',
+            '1HARI': '1Day', '1DAY': '1Day',
+            '3HARI': '3Day', '3DAY': '3Day',
+            '7HARI': '7Day', '7DAY': '7Day',
+            '14HARI': '14Day', '14DAY': '14Day',
+            '30HARI': '30Day', '30DAY': '30Day',
+            '60HARI': '60Day', '60DAY': '60Day'
         };
         
         for (const line of lines) {
             const trimmed = line.trim();
             
-            // FORMAT 1: 1313  BS  BS-ADF0P1TT  0/1  1 Day
             const match1 = trimmed.match(/^\d+\s+BS\s+(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([\d]+\s+(?:Day|Days|Hari|JAM|Jam))/i);
             if (match1) {
                 const key = match1[1].toUpperCase();
@@ -918,7 +833,6 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
-            // FORMAT 2: BS-ABC123 0/1 1HARI
             const match2 = trimmed.match(/^(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([A-Z0-9 ]+)$/i);
             if (match2) {
                 const key = match2[1].toUpperCase();
@@ -959,7 +873,6 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
-            // FORMAT 3: PAKET|KEY
             const match3 = trimmed.match(/^(.+)\|(BS-[A-Z0-9-]+)$/i);
             if (match3) {
                 const packageRaw = match3[1].trim().toUpperCase();
@@ -1013,9 +926,6 @@ bot.on('message', async (msg) => {
         return;
     }
     
-    // ============================================================
-    // HANDLE /addfreekeys
-    // ============================================================
     if (state.step === 'waiting_free_keys') {
         const lines = text.split('\n').filter(line => line.trim().length > 0);
         let added = 0;

@@ -15,21 +15,7 @@
   "lastOrderId": 0,
   "totalSold": 0,
   "totalRevenue": 0,
-  "reviews": [
-    {
-      "name": "BUDI S.",
-      "city": "JAKARTA",
-      "rating": 5,
-      "text": "MANTAP BRO LANGSUNG AKTIF! KEY DIKIRIM CEPET BANGET.",
-      "time": "2 HARI LALU"
-    },
-    {
-      "name": "CITRA R.",
-      "city": "BANDUNG",
-      "rating": 5,
-      "text": "UDAH BELI 3X GAK PERNAH KECEWA. UNDETECTED BENERAN AMAN.",
-      "time": "5 HARI LALU"
-    }
-  ],
-  "chatMessages": {}
+  "reviews": [],
+  "chatMessages": {},
+  "apkFile": null
 }

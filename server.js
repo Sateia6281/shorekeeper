@@ -34,9 +34,6 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(__dirname));
 
-// ============================================================
-// SERVE INDEX.HTML
-// ============================================================
 app.get('/', (req, res) => {
     const indexPath = path.join(__dirname, 'index.html');
     if (fs.existsSync(indexPath)) {
@@ -46,9 +43,6 @@ app.get('/', (req, res) => {
     }
 });
 
-// ============================================================
-// API STOK
-// ============================================================
 app.get('/api/stock', (req, res) => {
     const freshData = loadData();
     let total = 0;
@@ -64,9 +58,6 @@ app.get('/api/stock', (req, res) => {
     });
 });
 
-// ============================================================
-// API TRIGGER UPDATE
-// ============================================================
 app.post('/api/trigger-update', (req, res) => {
     const freshData = loadData();
     let total = 0;
@@ -81,18 +72,65 @@ app.post('/api/trigger-update', (req, res) => {
     });
 });
 
-// ============================================================
-// 🔥 KIRIM NOTIFIKASI KE ADMIN - LANGSUNG KE TELEGRAM!
-// ============================================================
 async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
     try {
         console.log('📤 Sending notification to admin...');
         
+        if (!proofImage || proofImage.length < 100) {
+            console.log('❌ Proof image too short / invalid!');
+            const fallbackUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            await fetch(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: ADMIN_ID,
+                    text: `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
+                        `🆔 Order: ${orderId}\n` +
+                        `👤 User: ${username || 'Customer'}\n` +
+                        `📦 Package: ${packageName}\n` +
+                        `💰 Price: ${price}\n` +
+                        `📧 Email: ${email}\n` +
+                        `📱 WA: ${phone}\n\n` +
+                        `⚠️ GAGAL KIRIM FOTO! Cek web.`,
+                    parse_mode: 'Markdown'
+                })
+            });
+            return false;
+        }
+        
+        let imageBuffer;
+        let contentType = 'image/jpeg';
+        let extension = 'jpg';
+        
+        if (proofImage.startsWith('data:image')) {
+            const matches = proofImage.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
+            if (matches) {
+                contentType = `image/${matches[1]}`;
+                extension = matches[1];
+                imageBuffer = Buffer.from(matches[2], 'base64');
+            } else {
+                imageBuffer = Buffer.from(proofImage, 'base64');
+            }
+        } else {
+            imageBuffer = Buffer.from(proofImage, 'base64');
+        }
+        
+        console.log('📸 Image buffer size:', imageBuffer.length);
+        
         const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-        const formData = new FormData();
-        formData.append('chat_id', ADMIN_ID);
-        formData.append('photo', proofImage);
-        formData.append('caption', 
+        const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+        const CRLF = '\r\n';
+        
+        let formData = '';
+        formData += '--' + boundary + CRLF;
+        formData += 'Content-Disposition: form-data; name="chat_id"' + CRLF + CRLF;
+        formData += ADMIN_ID + CRLF;
+        
+        formData += '--' + boundary + CRLF;
+        formData += `Content-Disposition: form-data; name="photo"; filename="proof.${extension}"` + CRLF;
+        formData += `Content-Type: ${contentType}` + CRLF + CRLF;
+        
+        const caption = 
             `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
             `🆔 Order: ${orderId}\n` +
             `👤 User: ${username || 'Customer'}\n` +
@@ -100,18 +138,37 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
             `💰 Price: ${price}\n` +
             `📧 Email: ${email}\n` +
             `📱 WA: ${phone}\n\n` +
-            `📌 Click button below to verify:`
+            `📌 Click button below to verify:`;
+        
+        const captionPart = Buffer.from(
+            '--' + boundary + CRLF +
+            'Content-Disposition: form-data; name="caption"' + CRLF + CRLF +
+            caption + CRLF +
+            '--' + boundary + '--' + CRLF
         );
-        formData.append('parse_mode', 'Markdown');
+        
+        const finalBody = Buffer.concat([
+            Buffer.from(formData),
+            imageBuffer,
+            Buffer.from(CRLF),
+            captionPart
+        ]);
         
         const response = await fetch(botUrl, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': `multipart/form-data; boundary=${boundary}`,
+                'Content-Length': finalBody.length
+            },
+            body: finalBody
         });
+        
         const result = await response.json();
-        console.log('📸 Photo sent:', result.ok);
+        console.log('📸 Response:', JSON.stringify(result));
         
         if (result.ok) {
+            console.log('✅ Photo sent!');
+            
             const keyboardUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
             const keyboardData = {
                 chat_id: ADMIN_ID,
@@ -134,18 +191,18 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
             });
             const kbResult = await kbResponse.json();
             console.log('⌨️ Keyboard sent:', kbResult.ok);
+            
+            return true;
+        } else {
+            console.log('❌ Photo failed:', result);
+            return false;
         }
-        
-        return true;
     } catch (e) {
         console.error('❌ Notif error:', e.message);
         return false;
     }
 }
 
-// ============================================================
-// API ORDER CREATE - 🔥 RESPONSE CEPAT, NOTIF LANGSUNG!
-// ============================================================
 app.post('/api/order/create', async (req, res) => {
     const { packageId, email, phone, key, method, proofImage, userChatId, username } = req.body;
     
@@ -181,10 +238,8 @@ app.post('/api/order/create', async (req, res) => {
     
     addPendingOrder(order);
     
-    // 🔥 RESPONSE LANGSUNG KEMBALI - CEPAT!
     res.json({ success: true, orderId: orderId, status: 'pending' });
     
-    // 🔥 KIRIM NOTIFIKASI LANGSUNG KE TELEGRAM - TANPA TUNGGU!
     if (proofImage) {
         console.log('📤 Sending notification directly to Telegram...');
         sendNotificationToAdmin(
@@ -199,15 +254,11 @@ app.post('/api/order/create', async (req, res) => {
     }
 });
 
-// ============================================================
-// API CEK ORDER - 🔥 KEY HIDDEN JIKA PENDING!
-// ============================================================
 app.get('/api/order/:orderId', (req, res) => {
     const { orderId } = req.params;
     const order = getOrderById(orderId);
     
     if (order) {
-        // 🔥 JANGAN KIRIM KEY KALAU STATUS PENDING!
         const result = { ...order };
         if (order.status === 'pending') {
             result.key = null;
@@ -218,9 +269,6 @@ app.get('/api/order/:orderId', (req, res) => {
     res.json({ success: false, message: 'Order not found' });
 });
 
-// ============================================================
-// API FREE KEY
-// ============================================================
 app.post('/api/free/request', (req, res) => {
     const { userId, key } = req.body;
     if (!userId || !key) {
@@ -246,9 +294,6 @@ app.post('/api/free/request', (req, res) => {
     res.json({ success: true, orderId: orderId, key: key });
 });
 
-// ============================================================
-// API VALIDATE (JNI)
-// ============================================================
 app.post('/api/validate', (req, res) => {
     const data = loadData();
     const { user_key } = req.body;
@@ -314,10 +359,6 @@ app.post('/api/validate', (req, res) => {
     });
 });
 
-// ============================================================
-// API LAINNYA
-// ============================================================
-
 app.get('/api/payment', (req, res) => {
     res.json({
         qris: { image: 'qris.jpg', nominal: 'Sesuai paket yang dipilih' },
@@ -382,9 +423,6 @@ app.post('/api/reviews', (req, res) => {
     res.json({ success: true, reviews: data.reviews });
 });
 
-// ============================================================
-// START SERVER
-// ============================================================
 app.listen(PORT, () => {
     const data = loadData();
     let total = 0;

@@ -34,7 +34,8 @@ function loadData() {
         totalSold: 0,
         totalRevenue: 0,
         reviews: [],
-        chatMessages: {}
+        chatMessages: {},
+        apkFile: null
     };
 }
 
@@ -81,7 +82,6 @@ const LABEL_MAP = {
 // 🔥 FUNGSI STOK
 // ============================================================
 
-// 🔥 TAMBAH KEY KE STOK
 function addKey(label, key) {
     const data = loadData();
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
@@ -99,7 +99,6 @@ function addKey(label, key) {
     return false;
 }
 
-// 🔥 CEK JUMLAH STOK
 function getStockCount(label) {
     const data = loadData();
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
@@ -107,7 +106,6 @@ function getStockCount(label) {
     return data.stock[normalizedLabel].length;
 }
 
-// 🔥 TOTAL SEMUA STOK
 function getTotalStock() {
     const data = loadData();
     let total = 0;
@@ -117,7 +115,6 @@ function getTotalStock() {
     return total;
 }
 
-// 🔥 RESERVE KEY - HAPUS KEY DARI STOK!
 function reserveKey(label) {
     const data = loadData();
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
@@ -127,7 +124,6 @@ function reserveKey(label) {
         return null;
     }
     
-    // 🔥 HAPUS KEY PERTAMA DARI ARRAY
     const key = data.stock[normalizedLabel].shift();
     saveData(data);
     
@@ -184,7 +180,6 @@ function addPendingOrder(order) {
     return order;
 }
 
-// 🔥 APPROVE ORDER - KEY SUDAH DIHAPUS DARI STOK SEBELUMNYA!
 function approveOrder(orderId) {
     const data = loadData();
     const pending = data.pendingOrders || [];
@@ -201,10 +196,10 @@ function approveOrder(orderId) {
     saveData(data);
     
     console.log(`✅ Order ${orderId} DISETUJUI! Key: ${order.key}`);
+    console.log(`📊 Stok ${order.packageId} sekarang: ${data.stock[order.packageId]?.length || 0} key`);
     return order;
 }
 
-// 🔥 REJECT ORDER - KEMBALIKAN KEY KE STOK!
 function rejectOrder(orderId) {
     const data = loadData();
     const pending = data.pendingOrders || [];
@@ -214,7 +209,6 @@ function rejectOrder(orderId) {
     const order = pending[index];
     data.pendingOrders.splice(index, 1);
     
-    // 🔥 KEMBALIKAN KEY KE STOK
     if (order.key && order.packageId) {
         if (!data.stock[order.packageId]) {
             data.stock[order.packageId] = [];
