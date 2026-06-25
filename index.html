@@ -1202,22 +1202,68 @@ function showPI(m) {
 
 function handleUpload(e) {
     const f = e.target.files[0];
-    if (!f || !f.type.match('image.*')) return;
-    const r = new FileReader();
-    r.onload = ev => {
-        upImg = ev.target.result;
-        const img = document.getElementById('prevImg');
-        img.src = upImg;
-        img.style.display = 'block';
-        document.getElementById('uploadMsg').innerText = '✅ Proof ready';
-        const btn = document.getElementById('btnSend');
-        btn.disabled = false;
-        btn.innerText = 'Submit Order';
-        btn.className = 'btn btn-p';
+    if (!f || !f.type.match('image.*')) {
+        toast('❌ Please upload an image file!', '#e74c3c');
+        return;
+    }
+    
+    // Tampilkan loading
+    document.getElementById('uploadMsg').innerHTML = '⏳ Compressing image...';
+    
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const img = new Image();
+        img.onload = function() {
+            // 🔥 COMPRESS GAMBAR
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Max 800px (cukup untuk bukti transfer)
+            const MAX_SIZE = 800;
+            if (width > height) {
+                if (width > MAX_SIZE) {
+                    height = Math.round(height * MAX_SIZE / width);
+                    width = MAX_SIZE;
+                }
+            } else {
+                if (height > MAX_SIZE) {
+                    width = Math.round(width * MAX_SIZE / height);
+                    height = MAX_SIZE;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 🔥 KOMPRES KE JPEG 70% (kualitas bagus, ukuran kecil)
+            const compressed = canvas.toDataURL('image/jpeg', 0.7);
+            upImg = compressed;
+            
+            // Tampilkan preview
+            const imgEl = document.getElementById('prevImg');
+            imgEl.src = compressed;
+            imgEl.style.display = 'block';
+            
+            // Hitung ukuran
+            const sizeKB = Math.round(compressed.length / 1024);
+            const sizeMB = (compressed.length / 1024 / 1024).toFixed(2);
+            document.getElementById('uploadMsg').innerHTML = `✅ Proof ready (${sizeKB}KB / ${sizeMB}MB)`;
+            
+            // Enable tombol submit
+            const btn = document.getElementById('btnSend');
+            btn.disabled = false;
+            btn.innerText = 'Submit Order';
+            btn.className = 'btn btn-p';
+            
+            toast(`✅ Image compressed to ${sizeKB}KB!`, '#2ecc71');
+        };
+        img.src = ev.target.result;
     };
-    r.readAsDataURL(f);
+    reader.readAsDataURL(f);
 }
-
 // ============================================================
 // SUBMIT ORDER - KEY LANGSUNG DIHAPUS, STATUS PENDING!
 // ============================================================
