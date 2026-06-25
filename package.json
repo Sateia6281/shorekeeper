@@ -1,11 +1,12 @@
 {
-  "name": "shorekeeper-bot",
-  "version": "1.0.0",
-  "description": "Shorekeeper Elite - Bot Telegram + Website Server",
+  "name": "shorekeeper-elite",
+  "version": "2.0.0",
+  "description": "Shorekeeper Elite - Bot Telegram + Website Server + AutoFeed",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "node app.js"
+    "dev": "node app.js",
+    "bot": "node bot.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -15,14 +16,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "keywords": [
-    "telegram-bot",
-    "shorekeeper",
-    "blood-strike",
-    "cheat",
-    "key-system"
-  ],
-  "author": "Shorekeeper Elite",
-  "license": "ISC"
+  }
 }

@@ -24,23 +24,23 @@ const {
     approveOrder,
     rejectOrder,
     PKG_LIST,
-    LABEL_MAP
+    LABEL_MAP,
+    markKeyAsUsed
 } = require('./database');
 
 // ============================================================
-// 🔥 KONFIGURASI - TOKEN TERBARU!
+// KONFIGURASI
 // ============================================================
 const BOT_TOKEN = '8950107483:AAGtvDaNSXEA-fULAPn86B6r5jCEn2fEM-A';
 const ADMIN_ID = '6284402885';
 const PORT = process.env.PORT || 3000;
 
 // ============================================================
-// 🔥 ERROR HANDLER GLOBAL
+// ERROR HANDLER
 // ============================================================
 process.on('uncaughtException', (err) => {
     console.error('💥 Uncaught Exception:', err.message);
 });
-
 process.on('unhandledRejection', (reason) => {
     console.error('💥 Unhandled Rejection:', reason);
 });
@@ -59,83 +59,83 @@ app.use(express.static(__dirname));
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 console.log('🤖 Bot @Keyskidbot connected!');
 
-// State untuk addkeys
 const userStates = new Map();
 
 // ============================================================
-// 🔥 FUNGSI REFRESH DATA
+// HELPER: SEND TELEGRAM MESSAGE
 // ============================================================
-function refreshData() {
+async function sendTelegramMessage(chatId, text, options = {}) {
     try {
-        return loadData();
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        const payload = {
+            chat_id: chatId,
+            text: text,
+            parse_mode: 'Markdown'
+        };
+        
+        if (options.keyboard && options.approveBtn) {
+            payload.reply_markup = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ APPROVE', callback_data: `approve_${options.approveBtn}` },
+                        { text: '❌ REJECT', callback_data: `reject_${options.approveBtn}` }
+                    ]
+                ]
+            };
+        } else if (options.approveBtn) {
+            payload.reply_markup = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ APPROVE', callback_data: `approve_${options.approveBtn}` },
+                        { text: '❌ REJECT', callback_data: `reject_${options.approveBtn}` }
+                    ]
+                ]
+            };
+        }
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        return await response.json();
     } catch (e) {
-        console.error('❌ Error reload data:', e.message);
+        console.error('❌ sendTelegramMessage error:', e.message);
         return null;
     }
 }
 
 // ============================================================
-// 🔥 TRIGGER UPDATE KE WEBSITE
-// ============================================================
-async function triggerWebUpdate() {
-    try {
-        const url = `http://localhost:${PORT}/api/trigger-update`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'update' })
-        });
-        if (response.ok) {
-            console.log('📡 Website triggered update!');
-        }
-    } catch (e) {
-        // Skip
-    }
-}
-
-// ============================================================
-// 🔥 KIRIM NOTIFIKASI KE ADMIN - LANGSUNG KE TELEGRAM!
+// KIRIM NOTIFIKASI KE ADMIN - VERSI STABIL
 // ============================================================
 async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
     try {
         console.log('📤 Sending notification to admin...');
-        console.log('📸 Proof image length:', proofImage ? proofImage.length : 0);
         
         if (!proofImage || proofImage.length < 100) {
             console.log('❌ Proof image too short / invalid!');
-            
-            const fallbackUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            const fallbackData = {
-                chat_id: ADMIN_ID,
-                text: `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
-                    `🆔 Order: ${orderId}\n` +
-                    `👤 User: ${username || 'Customer'}\n` +
-                    `📦 Package: ${packageName}\n` +
-                    `💰 Price: ${price}\n` +
-                    `📧 Email: ${email}\n` +
-                    `📱 WA: ${phone}\n\n` +
-                    `⚠️ GAGAL KIRIM FOTO! Silakan cek di web.\n` +
-                    `🔗 https://shorekeeper-skcheat.up.railway.app`,
-                parse_mode: 'Markdown'
-            };
-            
-            await fetch(fallbackUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(fallbackData)
-            });
+            await sendTelegramMessage(
+                ADMIN_ID,
+                `📸 **PAYMENT PROOF RECEIVED!**\n─────────────────\n\n` +
+                `🆔 Order: ${orderId}\n` +
+                `👤 User: ${username || 'Customer'}\n` +
+                `📦 Package: ${packageName}\n` +
+                `💰 Price: ${price}\n` +
+                `📧 Email: ${email}\n` +
+                `📱 WA: ${phone}\n\n` +
+                `⚠️ GAMBAR TIDAK VALID! Silakan cek di web.\n` +
+                `🔗 https://shorekeeper-skcheat.up.railway.app`,
+                { approveBtn: orderId }
+            );
             return false;
         }
         
-        // 🔥 KONVERSI BASE64 KE BUFFER
         let imageBuffer;
-        let contentType = 'image/jpeg';
         let extension = 'jpg';
         
         if (proofImage.startsWith('data:image')) {
             const matches = proofImage.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
             if (matches) {
-                contentType = `image/${matches[1]}`;
                 extension = matches[1];
                 imageBuffer = Buffer.from(matches[2], 'base64');
             } else {
@@ -145,172 +145,155 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
             imageBuffer = Buffer.from(proofImage, 'base64');
         }
         
+        if (imageBuffer.length < 1000) {
+            console.log('❌ Image too small!');
+            await sendTelegramMessage(ADMIN_ID, `⚠️ Gambar terlalu kecil! Order: ${orderId}`);
+            return false;
+        }
+        
         console.log('📸 Image buffer size:', imageBuffer.length);
         
-        // 🔥 KIRIM PAKAI BOUNDARY MANUAL
-        const botUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-        const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
-        const CRLF = '\r\n';
-        
-        let formData = '';
-        formData += '--' + boundary + CRLF;
-        formData += 'Content-Disposition: form-data; name="chat_id"' + CRLF + CRLF;
-        formData += ADMIN_ID + CRLF;
-        
-        formData += '--' + boundary + CRLF;
-        formData += `Content-Disposition: form-data; name="photo"; filename="proof.${extension}"` + CRLF;
-        formData += `Content-Type: ${contentType}` + CRLF + CRLF;
+        // KIRIM FOTO PAKAI FORM-DATA
+        const formData = new FormData();
+        formData.append('chat_id', ADMIN_ID);
+        formData.append('photo', imageBuffer, {
+            filename: `proof_${orderId}.${extension}`,
+            contentType: `image/${extension}`
+        });
         
         const caption = 
-            `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
+            `📸 **PAYMENT PROOF!**\n─────────────────\n\n` +
             `🆔 Order: ${orderId}\n` +
             `👤 User: ${username || 'Customer'}\n` +
             `📦 Package: ${packageName}\n` +
             `💰 Price: ${price}\n` +
             `📧 Email: ${email}\n` +
-            `📱 WA: ${phone}\n\n` +
-            `📌 Click button below to verify:`;
+            `📱 WA: ${phone}`;
         
-        const captionPart = Buffer.from(
-            '--' + boundary + CRLF +
-            'Content-Disposition: form-data; name="caption"' + CRLF + CRLF +
-            caption + CRLF +
-            '--' + boundary + '--' + CRLF
-        );
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'Markdown');
         
-        const finalBody = Buffer.concat([
-            Buffer.from(formData),
-            imageBuffer,
-            Buffer.from(CRLF),
-            captionPart
-        ]);
-        
-        const response = await fetch(botUrl, {
+        const photoResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
             method: 'POST',
-            headers: {
-                'Content-Type': `multipart/form-data; boundary=${boundary}`,
-                'Content-Length': finalBody.length
-            },
-            body: finalBody
+            body: formData,
+            headers: formData.getHeaders()
         });
         
-        const result = await response.json();
-        console.log('📸 Response:', JSON.stringify(result));
+        const photoResult = await photoResponse.json();
+        console.log('📸 Photo response:', photoResult.ok ? '✅ OK' : '❌ FAILED');
         
-        if (result.ok) {
-            console.log('✅ Photo sent!');
-            
-            const keyboardUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            const keyboardData = {
-                chat_id: ADMIN_ID,
-                text: `🔑 **Verify Order:** ${orderId}\n\nClick button below:`,
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '✅ APPROVE', callback_data: `approve_${orderId}` },
-                            { text: '❌ REJECT', callback_data: `reject_${orderId}` }
-                        ]
-                    ]
-                },
-                parse_mode: 'Markdown'
-            };
-            
-            const kbResponse = await fetch(keyboardUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(keyboardData)
-            });
-            const kbResult = await kbResponse.json();
-            console.log('⌨️ Keyboard sent:', kbResult.ok);
-            
-            return true;
-        } else {
-            console.log('❌ Photo failed:', result);
-            
-            const fallbackUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            const fallbackData = {
-                chat_id: ADMIN_ID,
-                text: `📸 **NEW PAYMENT PROOF!**\n─────────────────\n\n` +
-                    `🆔 Order: ${orderId}\n` +
-                    `👤 User: ${username || 'Customer'}\n` +
-                    `📦 Package: ${packageName}\n` +
-                    `💰 Price: ${price}\n` +
-                    `📧 Email: ${email}\n` +
-                    `📱 WA: ${phone}\n\n` +
-                    `⚠️ GAGAL KIRIM FOTO! Silakan cek di web.\n` +
-                    `🔗 https://shorekeeper-skcheat.up.railway.app` +
-                    `\n\n📌 Order ID: ${orderId}`,
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '✅ APPROVE', callback_data: `approve_${orderId}` },
-                            { text: '❌ REJECT', callback_data: `reject_${orderId}` }
-                        ]
-                    ]
-                }
-            };
-            
-            await fetch(fallbackUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(fallbackData)
-            });
-            
+        if (!photoResult.ok) {
+            console.log('❌ Photo failed:', photoResult.description);
+            await sendTelegramMessage(
+                ADMIN_ID,
+                `📸 **PAYMENT PROOF!**\n─────────────────\n\n` +
+                `🆔 Order: ${orderId}\n` +
+                `👤 User: ${username || 'Customer'}\n` +
+                `📦 Package: ${packageName}\n` +
+                `💰 Price: ${price}\n` +
+                `📧 Email: ${email}\n` +
+                `📱 WA: ${phone}\n\n` +
+                `⚠️ GAGAL KIRIM FOTO! Silakan cek di web.`,
+                { approveBtn: orderId }
+            );
             return false;
         }
+        
+        // KIRIM TOMBOL APPROVE/REJECT
+        await sendTelegramMessage(
+            ADMIN_ID,
+            `🔑 **Verify Order:** ${orderId}\n\nClick button below:`,
+            { approveBtn: orderId, keyboard: true }
+        );
+        
+        console.log('✅ Notification sent successfully!');
+        return true;
+        
     } catch (e) {
         console.error('❌ Notif error:', e.message);
-        console.error(e.stack);
-        
         try {
-            const fallbackUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-            await fetch(fallbackUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: ADMIN_ID,
-                    text: `⚠️ **ORDER MASUK!**\n─────────────────\n\n` +
-                        `🆔 Order: ${orderId}\n` +
-                        `👤 User: ${username || 'Customer'}\n` +
-                        `📦 Package: ${packageName}\n` +
-                        `💰 Price: ${price}\n` +
-                        `📧 Email: ${email}\n` +
-                        `📱 WA: ${phone}\n\n` +
-                        `❌ GAGAL KIRIM FOTO! Cek web: https://shorekeeper-skcheat.up.railway.app`,
-                    parse_mode: 'Markdown'
-                })
-            });
+            await sendTelegramMessage(
+                ADMIN_ID,
+                `⚠️ **ORDER MASUK!**\n─────────────────\n\n` +
+                `🆔 Order: ${orderId}\n` +
+                `👤 User: ${username || 'Customer'}\n` +
+                `📦 Package: ${packageName}\n` +
+                `💰 Price: ${price}\n` +
+                `📧 Email: ${email}\n` +
+                `📱 WA: ${phone}\n\n` +
+                `❌ GAGAL KIRIM FOTO! Cek web.`,
+                { approveBtn: orderId }
+            );
         } catch (e2) {}
-        
         return false;
     }
 }
 
 // ============================================================
-// 🔥 API ENDPOINTS
+// KIRIM KEY KE USER
+// ============================================================
+async function sendKeyToUser(order) {
+    if (!order.userChatId) return;
+    
+    try {
+        await bot.sendMessage(order.userChatId,
+            `✅ **PAYMENT APPROVED!**\n─────────────────\n\n` +
+            `🔑 **KEY:** \`${order.key}\`\n` +
+            `📦 Package: ${order.package}\n` +
+            `💰 Price: ${order.price}\n\n` +
+            `💡 Key is now active! Thank you!`,
+            { parse_mode: 'Markdown' }
+        );
+        
+        const data = loadData();
+        if (data.apkFile && data.apkFile.fileId) {
+            await bot.sendDocument(order.userChatId, data.apkFile.fileId, {
+                caption: `📦 **SHOREKEEPER ELITE APK**\n\n🔑 Key: \`${order.key}\`\n📦 Package: ${order.package}`,
+                parse_mode: 'Markdown'
+            });
+        }
+    } catch (e) {
+        console.error('❌ Failed to send key to user:', e.message);
+    }
+}
+
+// ============================================================
+// TRIGGER UPDATE KE WEBSITE
+// ============================================================
+async function triggerWebUpdate() {
+    try {
+        const url = `http://localhost:${PORT}/api/trigger-update`;
+        await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update' })
+        }).catch(() => {});
+    } catch (e) {}
+}
+
+function refreshData() {
+    try { return loadData(); } catch (e) { return null; }
+}
+
+// ============================================================
+// API ENDPOINTS
 // ============================================================
 
 app.get('/api/stock', (req, res) => {
     try {
-        // 🔥 NO CACHE — selalu fresh dari file
         res.set({
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
             'Pragma': 'no-cache',
-            'Expires': '0',
-            'Surrogate-Control': 'no-store'
+            'Expires': '0'
         });
-
         const fresh = refreshData();
         if (!fresh) {
             return res.status(500).json({ success: false, message: 'Data error' });
         }
-        
         let total = 0;
         for (const label in fresh.stock) {
             total += fresh.stock[label].length;
         }
-        
         res.json({
             success: true,
             stock: fresh.stock,
@@ -321,7 +304,6 @@ app.get('/api/stock', (req, res) => {
             timestamp: new Date().toISOString()
         });
     } catch (e) {
-        console.error('❌ /api/stock error:', e.message);
         res.status(500).json({ success: false, error: e.message });
     }
 });
@@ -344,12 +326,15 @@ app.post('/api/trigger-update', (req, res) => {
     }
 });
 
+// ============================================================
+// 🔥 ORDER CREATE - KEY DIAMBIL DARI SERVER!
+// ============================================================
 app.post('/api/order/create', async (req, res) => {
     try {
         console.log('📩 Order request received!');
-        const { packageId, email, phone, key, method, proofImage, userChatId, username } = req.body;
+        const { packageId, email, phone, method, proofImage, userChatId, username } = req.body;
         
-        if (!packageId || !email || !phone || !key) {
+        if (!packageId || !email || !phone) {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
         
@@ -360,9 +345,10 @@ app.post('/api/order/create', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Package not found' });
         }
         
-        const stock = getStockCount(normalizedPkgId);
-        if (stock === 0) {
-            return res.status(400).json({ success: false, message: 'Stok habis!' });
+        // ✅ AMBIL KEY DARI STOK
+        const key = reserveKey(normalizedPkgId);
+        if (!key) {
+            return res.status(400).json({ success: false, message: 'Stock is empty!' });
         }
         
         const orderId = generateOrderId();
@@ -401,8 +387,6 @@ app.post('/api/order/create', async (req, res) => {
                 proofImage,
                 username || 'Customer'
             ).catch(e => console.log('⚠️ Notif error:', e.message));
-        } else {
-            console.log('⚠️ No proof image, skipping notification');
         }
         
         triggerWebUpdate().catch(e => {});
@@ -433,6 +417,9 @@ app.get('/api/order/:orderId', (req, res) => {
     }
 });
 
+// ============================================================
+// 🔥 FREE KEY REQUEST
+// ============================================================
 app.post('/api/free/request', (req, res) => {
     try {
         const { userId, key } = req.body;
@@ -469,6 +456,9 @@ app.post('/api/free/request', (req, res) => {
     }
 });
 
+// ============================================================
+// 🔥 VALIDATE KEY - UNTUK MOD
+// ============================================================
 app.post('/api/validate', (req, res) => {
     try {
         const fresh = refreshData();
@@ -539,6 +529,90 @@ app.post('/api/validate', (req, res) => {
     }
 });
 
+// ============================================================
+// 🔥 AUTO FEEDBACK ENDPOINT (UNTUK MOD)
+// ============================================================
+app.post('/api/feedback', async (req, res) => {
+    try {
+        const { image, teks } = req.body;
+        
+        if (!image) {
+            return res.status(400).json({ success: false, message: 'No image' });
+        }
+        
+        console.log('📸 Feedback received from mod!');
+        console.log('📝 Text:', teks || '(no text)');
+        console.log('📸 Image length:', image.length);
+        
+        // KIRIM KE TELEGRAM GRUP
+        try {
+            const imageBuffer = Buffer.from(image, 'base64');
+            const formData = new FormData();
+            formData.append('chat_id', '-1003778238930');
+            formData.append('photo', imageBuffer, {
+                filename: `feedback_${Date.now()}.jpg`,
+                contentType: 'image/jpeg'
+            });
+            formData.append('caption', teks || '📸 Auto Feedback from Nexora');
+            formData.append('parse_mode', 'HTML');
+            
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                method: 'POST',
+                body: formData,
+                headers: formData.getHeaders()
+            });
+            console.log('✅ Feedback sent to Telegram group!');
+        } catch (e) {
+            console.error('❌ Failed to send feedback to group:', e.message);
+        }
+        
+        // SIMPAN KE FILE
+        const feedbackDir = path.join(__dirname, 'feedback');
+        if (!fs.existsSync(feedbackDir)) {
+            fs.mkdirSync(feedbackDir, { recursive: true });
+        }
+        const filename = `feedback_${Date.now()}.jpg`;
+        const filepath = path.join(feedbackDir, filename);
+        fs.writeFileSync(filepath, Buffer.from(image, 'base64'));
+        console.log('💾 Feedback saved:', filename);
+        
+        res.json({ 
+            success: true, 
+            message: 'Feedback received!',
+            saved: filename
+        });
+        
+    } catch (e) {
+        console.error('❌ Feedback error:', e.message);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+app.get('/api/feedback/list', (req, res) => {
+    try {
+        const feedbackDir = path.join(__dirname, 'feedback');
+        if (!fs.existsSync(feedbackDir)) {
+            return res.json({ success: true, files: [] });
+        }
+        const files = fs.readdirSync(feedbackDir).filter(f => f.endsWith('.jpg'));
+        res.json({ 
+            success: true, 
+            files: files.map(f => ({
+                name: f,
+                url: `/feedback/${f}`,
+                time: fs.statSync(path.join(feedbackDir, f)).mtime
+            }))
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+app.use('/feedback', express.static(path.join(__dirname, 'feedback')));
+
+// ============================================================
+// API LAINNYA
+// ============================================================
 app.get('/api/payment', (req, res) => {
     res.json({
         success: true,
@@ -705,6 +779,9 @@ bot.onText(/\/buy/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
+// ============================================================
+// 🔥 /order - TIDAK LANGSUNG KASIH KEY!
+// ============================================================
 bot.onText(/\/order (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
@@ -735,71 +812,51 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
         return;
     }
     
-    await bot.sendMessage(chatId, 
-        `⏳ Processing order *${pkg.name}*...`,
+    // ❌ JANGAN RESERVE KEY DULU!
+    
+    const orderId = generateOrderId();
+    const order = {
+        orderId: orderId,
+        userId: userId,
+        username: username,
+        package: pkg.name,
+        packageId: pkg.id,
+        price: `Rp ${pkg.price.toLocaleString()}`,
+        priceNumber: pkg.price,
+        key: null,
+        status: 'pending_payment',
+        createdAt: new Date().toISOString(),
+        type: 'direct'
+    };
+    addPendingOrder(order);
+    refreshData();
+    
+    bot.sendMessage(chatId,
+        `🛒 **ORDER CREATED!**\n─────────────────\n\n` +
+        `📦 Package: ${pkg.name}\n` +
+        `💰 Price: Rp ${pkg.price.toLocaleString()}\n` +
+        `🆔 Order ID: \`${orderId}\`\n\n` +
+        `💳 **PAYMENT:**\n` +
+        `   • QRIS: Scan on website\n` +
+        `   • DANA/OVO: 0895401347006\n` +
+        `   • GIFT CARD: @Zelewin / @Yuangme\n\n` +
+        `📌 **AFTER PAYMENT:**\n` +
+        `   Send proof to admin or upload on website!\n` +
+        `   Key will be sent after verification.\n\n` +
+        `🔗 https://shorekeeper-skcheat.up.railway.app`,
         { parse_mode: 'Markdown' }
     );
     
-    try {
-        const key = reserveKey(pkg.id);
-        if (!key) {
-            bot.sendMessage(chatId, '❌ Out of stock!');
-            return;
-        }
-        
-        const orderId = generateOrderId();
-        
-        const order = {
-            orderId: orderId,
-            userId: userId,
-            username: username,
-            package: pkg.name,
-            packageId: pkg.id,
-            price: `Rp ${pkg.price.toLocaleString()}`,
-            priceNumber: pkg.price,
-            key: key,
-            status: 'approved',
-            createdAt: new Date().toISOString(),
-            type: 'direct'
-        };
-        addOrder(order);
-        refreshData();
-        
-        await triggerWebUpdate();
-        
-        bot.sendMessage(chatId,
-            `✅ **ORDER SUCCESS!**\n─────────────────\n\n` +
-            `🔑 **KEY:** \`${key}\`\n` +
-            `📦 Package: ${pkg.name}\n` +
-            `💰 Price: Rp ${pkg.price.toLocaleString()}\n` +
-            `🆔 Order ID: \`${orderId}\``,
-            { parse_mode: 'Markdown' }
-        );
-        
-        try {
-            const data = loadData();
-            if (data.apkFile && data.apkFile.fileId) {
-                await bot.sendDocument(chatId, data.apkFile.fileId, {
-                    caption: `📦 **SHOREKEEPER ELITE APK**\n\n🔑 Key: \`${key}\`\n📦 Package: ${pkg.name}`,
-                    parse_mode: 'Markdown'
-                });
-            }
-        } catch (e) {}
-        
-        bot.sendMessage(ADMIN_ID,
-            `🛒 **NEW ORDER!**\n─────────────────\n\n` +
-            `👤 ${username}\n` +
-            `📦 ${pkg.name}\n` +
-            `💰 Rp ${pkg.price.toLocaleString()}\n` +
-            `🔑 \`${key}\`\n` +
-            `🆔 ${orderId}`,
-            { parse_mode: 'Markdown' }
-        );
-        
-    } catch (error) {
-        console.error('❌ Error order:', error);
-        bot.sendMessage(chatId, `❌ Error: ${error.message}`);
-    }
+    // Notifikasi ke admin
+    bot.sendMessage(ADMIN_ID,
+        `📋 **NEW ORDER (PENDING PAYMENT)**\n─────────────────\n\n` +
+        `👤 ${username} (ID: ${userId})\n` +
+        `📦 ${pkg.name}\n` +
+        `💰 Rp ${pkg.price.toLocaleString()}\n` +
+        `🆔 ${orderId}\n\n` +
+        `⏳ Waiting for payment...`,
+        { parse_mode: 'Markdown' }
+    );
 });
 
 bot.onText(/\/cek (.+)/, (msg, match) => {
@@ -823,7 +880,7 @@ bot.onText(/\/cek (.+)/, (msg, match) => {
     if (order.status === 'approved') {
         statusText = 'ACTIVE ✅';
         statusEmoji = '✅';
-    } else if (order.status === 'pending') {
+    } else if (order.status === 'pending' || order.status === 'pending_payment') {
         statusText = 'WAITING VERIFICATION ⏳';
         statusEmoji = '⏳';
     } else {
@@ -841,7 +898,7 @@ bot.onText(/\/cek (.+)/, (msg, match) => {
         text += `\n🔑 **KEY:** \`${order.key}\``;
     }
     
-    if (order.status === 'pending') {
+    if (order.status === 'pending' || order.status === 'pending_payment') {
         text += `\n\n⏳ Please wait for admin verification.`;
     }
     
@@ -1109,7 +1166,8 @@ bot.onText(/\/orders/, (msg) => {
     if (pending.length > 0) {
         text += `⏳ **PENDING (${pending.length})**\n`;
         pending.slice(-5).forEach(o => {
-            text += `• ${o.orderId} - ${o.package} (${o.price})\n`;
+            const status = o.status === 'pending_payment' ? '⏳ waiting payment' : '⏳ pending';
+            text += `• ${o.orderId} - ${o.package} (${status})\n`;
         });
         text += '\n';
     }
@@ -1191,7 +1249,6 @@ bot.on('callback_query', async (callback) => {
     }
     
     await bot.answerCallbackQuery(callback.id);
-    console.log('✅ Admin verified');
     
     if (data.startsWith('approve_')) {
         const orderId = data.replace('approve_', '');
@@ -1207,44 +1264,81 @@ bot.on('callback_query', async (callback) => {
             return;
         }
         
-        const approved = approveOrder(orderId);
-        refreshData();
-        
-        if (approved) {
-            await triggerWebUpdate();
+        // CEK APAKAH KEY SUDAH ADA
+        if (order.key) {
+            // Key sudah ada, langsung approve
+            const approved = approveOrder(orderId);
+            refreshData();
             
-            await bot.editMessageText(
-                `✅ **ORDER APPROVED!**\n─────────────────\n\n` +
-                `🆔 ${orderId}\n` +
-                `📦 ${order.package}\n` +
-                `👤 ${order.username || 'Customer'}\n` +
-                `🔑 \`${order.key}\`\n\n` +
-                `📌 Key is now active!`,
-                {
-                    chat_id: chatId,
-                    message_id: messageId,
-                    parse_mode: 'Markdown'
+            if (approved) {
+                await triggerWebUpdate();
+                await bot.editMessageText(
+                    `✅ **ORDER APPROVED!**\n─────────────────\n\n` +
+                    `🆔 ${orderId}\n` +
+                    `📦 ${order.package}\n` +
+                    `👤 ${order.username || 'Customer'}\n` +
+                    `🔑 \`${order.key}\`\n\n` +
+                    `📌 Key is now active!`,
+                    {
+                        chat_id: chatId,
+                        message_id: messageId,
+                        parse_mode: 'Markdown'
+                    }
+                );
+                if (order.userChatId) {
+                    await sendKeyToUser(order);
                 }
-            );
+            }
+        } else {
+            // 🔥 AMBIL KEY DARI STOK!
+            const key = reserveKey(order.packageId);
+            if (!key) {
+                await bot.editMessageText(
+                    `❌ Stock *${order.package}* is empty!\nOrder rejected automatically.`,
+                    {
+                        chat_id: chatId,
+                        message_id: messageId,
+                        parse_mode: 'Markdown'
+                    }
+                );
+                rejectOrder(orderId);
+                return;
+            }
             
-            if (order.userChatId) {
-                bot.sendMessage(order.userChatId,
-                    `✅ **PAYMENT APPROVED!**\n─────────────────\n\n` +
-                    `🔑 **KEY:** \`${order.key}\`\n` +
-                    `📦 Package: ${order.package}\n\n` +
-                    `💡 Key is now active! Thank you!`,
-                    { parse_mode: 'Markdown' }
+            // UPDATE ORDER DENGAN KEY
+            const data = loadData();
+            const pending = data.pendingOrders || [];
+            const idx = pending.findIndex(o => o.orderId === orderId);
+            if (idx !== -1) {
+                pending[idx].key = key;
+                pending[idx].status = 'approved';
+                pending[idx].confirmedAt = new Date().toISOString();
+                data.pendingOrders.splice(idx, 1);
+                data.orders.push(pending[idx]);
+                data.totalSold = (data.totalSold || 0) + 1;
+                data.totalRevenue = (data.totalRevenue || 0) + (pending[idx].priceNumber || 0);
+                saveData(data);
+                markKeyAsUsed(key);
+                
+                await triggerWebUpdate();
+                
+                await bot.editMessageText(
+                    `✅ **ORDER APPROVED!**\n─────────────────\n\n` +
+                    `🆔 ${orderId}\n` +
+                    `📦 ${order.package}\n` +
+                    `👤 ${order.username || 'Customer'}\n` +
+                    `🔑 \`${key}\`\n\n` +
+                    `📌 Key is now active!`,
+                    {
+                        chat_id: chatId,
+                        message_id: messageId,
+                        parse_mode: 'Markdown'
+                    }
                 );
                 
-                try {
-                    const data = loadData();
-                    if (data.apkFile && data.apkFile.fileId) {
-                        await bot.sendDocument(order.userChatId, data.apkFile.fileId, {
-                            caption: `📦 **SHOREKEEPER ELITE APK**\n\n🔑 Key: \`${order.key}\`\n📦 Package: ${order.package}`,
-                            parse_mode: 'Markdown'
-                        });
-                    }
-                } catch (e) {}
+                if (order.userChatId) {
+                    await sendKeyToUser({ ...pending[idx], key: key });
+                }
             }
         }
     }
@@ -1267,8 +1361,7 @@ bot.on('callback_query', async (callback) => {
         refreshData();
         
         if (rejected) {
-            await triggerWebUpdate(); // 🔥 trigger update ke frontend
-
+            await triggerWebUpdate();
             await bot.editMessageText(
                 `❌ **ORDER REJECTED!**\n─────────────────\n\n` +
                 `🆔 ${orderId}\n` +
@@ -1296,7 +1389,7 @@ bot.on('callback_query', async (callback) => {
 });
 
 // ============================================================
-// HANDLE FILE APK DARI ADMIN
+// HANDLE FILE APK
 // ============================================================
 bot.on('document', async (msg) => {
     const chatId = msg.chat.id;
@@ -1345,7 +1438,7 @@ bot.on('document', async (msg) => {
 });
 
 // ============================================================
-// HANDLE PESAN DARI USER (BUAT ADDKEYS + ADDFREEKEYS)
+// HANDLE PESAN (ADDKEYS)
 // ============================================================
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -1367,6 +1460,7 @@ bot.on('message', async (msg) => {
         for (const line of lines) {
             const trimmed = line.trim();
             
+            // Panel format
             const panelMatch = trimmed.match(/^\d+\s+BS\s+(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([\d]+\s+(?:Day|Days|Hari|JAM|Jam))/i);
             if (panelMatch) {
                 const key = panelMatch[1].toUpperCase();
@@ -1417,6 +1511,7 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
+            // Simple format: BS-ABC123 0/1 1Day
             const match2 = trimmed.match(/^(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([A-Z0-9 ]+)$/i);
             if (match2) {
                 const key = match2[1].toUpperCase();
@@ -1469,6 +1564,7 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
+            // Format: package|key
             const match3 = trimmed.match(/^(.+)\|(BS-[A-Z0-9-]+)$/i);
             if (match3) {
                 const packageRaw = match3[1].trim().toUpperCase();
@@ -1514,6 +1610,7 @@ bot.on('message', async (msg) => {
                 continue;
             }
             
+            // Key only
             const keyOnly = trimmed.match(/^(BS-[A-Z0-9-]+)$/i);
             if (keyOnly) {
                 const key = keyOnly[1].toUpperCase();
@@ -1617,4 +1714,5 @@ app.listen(PORT, '0.0.0.0', () => {
 console.log('✅ Server + Bot ready!');
 console.log('🛒 Buyer: /buy, /order, /cek, /stok, /payment, /apk');
 console.log('🔑 Admin: /addkey, /addkeys, /addfreekey, /addfreekeys, /addapk, /orders, /stats');
+console.log('📸 AutoFeedback: /api/feedback');
 console.log('⚡ Notifications sent directly to Telegram!');

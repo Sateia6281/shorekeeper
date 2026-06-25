@@ -15,7 +15,6 @@ function loadData() {
     } catch (e) {
         console.error('❌ Error loading data.json:', e.message);
     }
-    // DEFAULT DATA
     return {
         stock: {
             "2Jam": [],
@@ -35,7 +34,8 @@ function loadData() {
         totalRevenue: 0,
         reviews: [],
         chatMessages: {},
-        apkFile: null
+        apkFile: null,
+        usedKeys: []
     };
 }
 
@@ -79,9 +79,22 @@ const LABEL_MAP = {
 };
 
 // ============================================================
-// 🔥 FUNGSI STOK
+// PAKET LIST
 // ============================================================
+const PKG_LIST = [
+    { id: '2Jam', name: '2 JAM', price: 5000 },
+    { id: '5Jam', name: '5 JAM', price: 10000 },
+    { id: '1Day', name: '1 HARI', price: 20000 },
+    { id: '3Day', name: '3 HARI', price: 50000 },
+    { id: '7Day', name: '7 HARI', price: 100000 },
+    { id: '14Day', name: '14 HARI', price: 150000 },
+    { id: '30Day', name: '30 HARI', price: 250000 },
+    { id: '60Day', name: '60 HARI', price: 400000 },
+];
 
+// ============================================================
+// FUNGSI STOK
+// ============================================================
 function addKey(label, key) {
     const data = loadData();
     const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
@@ -124,18 +137,56 @@ function reserveKey(label) {
         return null;
     }
     
-    const key = data.stock[normalizedLabel].shift();
+    // Cari key yang belum pernah dipakai
+    let key = null;
+    let indexToRemove = -1;
+    
+    for (let i = 0; i < data.stock[normalizedLabel].length; i++) {
+        const candidateKey = data.stock[normalizedLabel][i];
+        if (!isKeyUsed(candidateKey)) {
+            key = candidateKey;
+            indexToRemove = i;
+            break;
+        }
+    }
+    
+    if (!key) {
+        console.log(`❌ Semua key di ${normalizedLabel} sudah dipakai!`);
+        return null;
+    }
+    
+    data.stock[normalizedLabel].splice(indexToRemove, 1);
     saveData(data);
     
     console.log(`🗑️ reserveKey: ${key} dihapus dari ${normalizedLabel}`);
-    console.log(`📊 Stok ${normalizedLabel} sekarang: ${data.stock[normalizedLabel].length} key`);
     return key;
 }
 
-// ============================================================
-// 🔥 FUNGSI ORDER
-// ============================================================
+function isKeyUsed(key) {
+    const data = loadData();
+    if (data.usedKeys && data.usedKeys.includes(key)) {
+        return true;
+    }
+    const order = data.orders.find(o => o.key === key && o.status === 'approved');
+    if (order) return true;
+    return false;
+}
 
+function markKeyAsUsed(key) {
+    const data = loadData();
+    if (!data.usedKeys) data.usedKeys = [];
+    if (!data.usedKeys.includes(key)) {
+        data.usedKeys.push(key);
+        saveData(data);
+        console.log(`📌 Key ${key} ditandai sudah dipakai`);
+        return true;
+    }
+    return false;
+}
+
+// ============================================================
+// FUNGSI ORDER
+// ============================================================
 function addOrder(order) {
     const data = loadData();
     data.orders.push(order);
@@ -143,6 +194,7 @@ function addOrder(order) {
     data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
     saveData(data);
     console.log(`✅ Order ${order.orderId} ditambahkan`);
+    return order;
 }
 
 function getOrders() {
@@ -193,10 +245,13 @@ function approveOrder(orderId) {
     data.orders.push(order);
     data.totalSold = (data.totalSold || 0) + 1;
     data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
-    saveData(data);
     
+    if (order.key) {
+        markKeyAsUsed(order.key);
+    }
+    
+    saveData(data);
     console.log(`✅ Order ${orderId} DISETUJUI! Key: ${order.key}`);
-    console.log(`📊 Stok ${order.packageId} sekarang: ${data.stock[order.packageId]?.length || 0} key`);
     return order;
 }
 
@@ -209,35 +264,23 @@ function rejectOrder(orderId) {
     const order = pending[index];
     data.pendingOrders.splice(index, 1);
     
+    // Kembalikan key ke stok jika belum dipakai
     if (order.key && order.packageId) {
-        if (!data.stock[order.packageId]) {
-            data.stock[order.packageId] = [];
+        if (!isKeyUsed(order.key)) {
+            if (!data.stock[order.packageId]) {
+                data.stock[order.packageId] = [];
+            }
+            data.stock[order.packageId].push(order.key);
+            console.log(`↩️ Key ${order.key} dikembalikan ke stok ${order.packageId}`);
         }
-        data.stock[order.packageId].push(order.key);
-        console.log(`↩️ Key ${order.key} dikembalikan ke stok ${order.packageId}`);
     }
     saveData(data);
-    
     console.log(`❌ Order ${orderId} DITOLAK!`);
     return order;
 }
 
 // ============================================================
-// 🔥 PAKET LIST
-// ============================================================
-const PKG_LIST = [
-    { id: '2Jam', name: '2 JAM', price: 5000 },
-    { id: '5Jam', name: '5 JAM', price: 10000 },
-    { id: '1Day', name: '1 HARI', price: 20000 },
-    { id: '3Day', name: '3 HARI', price: 50000 },
-    { id: '7Day', name: '7 HARI', price: 100000 },
-    { id: '14Day', name: '14 HARI', price: 150000 },
-    { id: '30Day', name: '30 HARI', price: 250000 },
-    { id: '60Day', name: '60 HARI', price: 400000 },
-];
-
-// ============================================================
-// 🔥 EXPORT
+// EXPORT
 // ============================================================
 module.exports = {
     loadData,
@@ -255,5 +298,7 @@ module.exports = {
     approveOrder,
     rejectOrder,
     PKG_LIST,
-    LABEL_MAP
+    LABEL_MAP,
+    isKeyUsed,
+    markKeyAsUsed
 };
