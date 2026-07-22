@@ -2,49 +2,67 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const BOT_TOKEN = '8950107483:AAGtvDaNSXEA-fULAPn86B6r5jCEn2fEM-A';
 const ADMIN_ID = '6284402885';
-const API_URL = 'https://skcheat.my.id/api/bot';
+const API_URL = 'https://shorekeeper-skcheat.up.railway.app/api/bot';
 const API_KEY = 'SK-BOT-2024-SECURE-7X9K2M4N6P8Q';
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
+// ============================================================
+// /START — TAMPILAN MEMBER VS ADMIN
+// ============================================================
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     const isAdmin = String(chatId) === String(ADMIN_ID);
 
-    let text = '👋 SHOREKEEPER BOT\n─────────────────\n\n';
-    text += '🛒 PEMBELI:\n';
-    text += '   /buy - Lihat paket & harga\n';
+    let text = '╔══════════════════════════╗\n';
+    text += '║   SHOREKEEPER ELITE BOT   ║\n';
+    text += '╚══════════════════════════╝\n\n';
+
+    // ===== MEMBER / PEMBELI =====
+    text += '🛒 PEMBELI — Fitur Untuk Kamu\n';
+    text += '─────────────────────────────\n';
+    text += '   /buy   - Lihat paket & harga\n';
     text += '   /order [paket] - Order key\n';
     text += '   /cek [order_id] - Cek status key\n';
-    text += '   /stok - Cek stok key\n';
+    text += '   /stok  - Cek stok key\n';
     text += '   /payment - Cara pembayaran\n';
-    text += '   /apk - Download APK\n\n';
+    text += '   /apk   - Download APK\n\n';
 
+    // ===== ADMIN (hanya tampil jika admin) =====
     if (isAdmin) {
-        text += '🔑 ADMIN - GENERATE:\n';
+        text += '🔑 ADMIN — Fitur Khusus\n';
+        text += '─────────────────────────────\n';
         text += '   /genkey [paket] - Generate 1 key\n';
         text += '   /genfree - Generate 1 key gratis\n';
-        text += '   /massgen [paket] [jumlah] - Generate banyak key\n\n';
-        text += '🔑 ADMIN - MANAGE:\n';
+        text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
         text += '   /cekkey [key] - Cek detail key\n';
         text += '   /resetkey [key] - Reset devices\n';
-        text += '   /delkey [key] - Delete key\n\n';
-        text += '📊 ADMIN - MONITOR:\n';
+        text += '   /delkey [key] - Delete key\n';
         text += '   /orders - Lihat semua order\n';
         text += '   /stats - Statistik\n';
         text += '   /addapk - Upload APK file\n';
+        text += '   /broadcast [pesan] - Kirim pesan ke semua user\n\n';
+        text += '⚠️ ADMIN ID: ' + ADMIN_ID + '\n';
+    } else {
+        text += '─────────────────────────────\n';
+        text += '❓ /help - Bantuan\n';
+        text += '─────────────────────────────\n';
+        text += '📌 Belum punya key? /buy\n';
     }
-
-    text += '\n❓ /help - Bantuan';
 
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
+// ============================================================
+// /HELP — SAMA SEPERTI /START TAPI LEBIH SINGKAT
+// ============================================================
 bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
     const isAdmin = String(chatId) === String(ADMIN_ID);
 
-    let text = '❓ BANTUAN\n─────────────────\n\n';
+    let text = '❓ BANTUAN\n';
+    text += '─────────────────────────────\n\n';
+
     text += '🛒 PEMBELI:\n';
     text += '   /buy - Lihat paket & harga\n';
     text += '   /order [paket] - Order key\n';
@@ -55,38 +73,41 @@ bot.onText(/\/help/, (msg) => {
     text += '   /apk - Download APK\n\n';
 
     if (isAdmin) {
-        text += '🔑 ADMIN - GENERATE:\n';
+        text += '🔑 ADMIN:\n';
         text += '   /genkey [paket] - Generate 1 key\n';
         text += '      Contoh: /genkey 1DAY\n';
         text += '   /genfree - Generate 1 key gratis\n';
         text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
-        text += '      Contoh: /massgen 1DAY 5\n\n';
-        text += '🔑 ADMIN - MANAGE:\n';
+        text += '      Contoh: /massgen 1DAY 5\n';
         text += '   /cekkey [key] - Cek detail key\n';
         text += '   /resetkey [key] - Reset devices\n';
-        text += '   /delkey [key] - Delete key\n\n';
-        text += '📊 ADMIN - MONITOR:\n';
+        text += '   /delkey [key] - Delete key\n';
         text += '   /orders - Lihat semua order\n';
         text += '   /stats - Statistik\n';
         text += '   /addapk - Upload APK file\n';
+        text += '   /broadcast [pesan] - Kirim ke semua user\n';
     }
 
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
+// ============================================================
+// /BUY
+// ============================================================
 bot.onText(/\/buy/, (msg) => {
     const chatId = msg.chat.id;
 
-    let text = '🛒 DAFTAR PAKET\n─────────────────\n\n';
-    text += '📌 2 JAM - Rp5.000\n';
-    text += '📌 5 JAM - Rp10.000\n';
-    text += '📌 1 HARI - Rp20.000\n';
-    text += '📌 3 HARI - Rp50.000\n';
-    text += '📌 7 HARI - Rp100.000\n';
-    text += '📌 14 HARI - Rp150.000\n';
-    text += '📌 30 HARI - Rp250.000\n';
-    text += '📌 60 HARI - Rp400.000\n\n';
-    text += '─────────────────\n';
+    let text = '🛒 DAFTAR PAKET\n';
+    text += '─────────────────────────────\n\n';
+    text += '📌 2 JAM   - Rp 5.000\n';
+    text += '📌 5 JAM   - Rp 10.000\n';
+    text += '📌 1 HARI  - Rp 20.000\n';
+    text += '📌 3 HARI  - Rp 50.000\n';
+    text += '📌 7 HARI  - Rp 100.000\n';
+    text += '📌 14 HARI - Rp 150.000\n';
+    text += '📌 30 HARI - Rp 250.000\n';
+    text += '📌 60 HARI - Rp 400.000\n\n';
+    text += '─────────────────────────────\n';
     text += '📝 Cara order: /order [paket]\n';
     text += 'Contoh: /order 1HARI\n';
     text += '💳 /payment - Lihat cara bayar';
@@ -94,13 +115,17 @@ bot.onText(/\/buy/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
+// ============================================================
+// /PAYMENT
+// ============================================================
 bot.onText(/\/payment/, (msg) => {
     const chatId = msg.chat.id;
 
-    let text = '💳 METODE PEMBAYARAN\n─────────────────\n\n';
+    let text = '💳 METODE PEMBAYARAN\n';
+    text += '─────────────────────────────\n\n';
     text += '💰 QRIS:\n';
     text += '   Scan QRIS di website\n';
-    text += '   📱 https://skcheat.my.id\n\n';
+    text += '   📱 https://shorekeeper-skcheat.up.railway.app\n\n';
     text += '💰 DANA / OVO / GOPAY:\n';
     text += '   📞 0895401347006\n';
     text += '   👤 A/N SHOREKEEPER\n\n';
@@ -112,12 +137,16 @@ bot.onText(/\/payment/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
+// ============================================================
+// /APK
+// ============================================================
 bot.onText(/\/apk/, (msg) => {
     const chatId = msg.chat.id;
 
-    let text = '📦 SHOREKEEPER ELITE APK\n─────────────────\n\n';
+    let text = '📦 SHOREKEEPER ELITE APK\n';
+    text += '─────────────────────────────\n\n';
     text += '🔗 Download APK:\n';
-    text += '   https://skcheat.my.id/download.apk\n\n';
+    text += '   https://shorekeeper-skcheat.up.railway.app\n\n';
     text += '📌 Install APK, lalu masukkan key.\n';
     text += '💡 Butuh bantuan? Hubungi admin:\n';
     text += '   @Zelewin / @Yuangme';
@@ -125,6 +154,9 @@ bot.onText(/\/apk/, (msg) => {
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
+// ============================================================
+// /ORDER
+// ============================================================
 bot.onText(/\/order (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
@@ -157,7 +189,7 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
         return;
     }
 
-    await bot.sendMessage(chatId, `⏳ Memproses order ${packageId}...`, { parse_mode: 'Markdown' });
+    await bot.sendMessage(chatId, `⏳ Memproses order ${packageId}...`);
 
     try {
         const response = await fetch(`${API_URL}/generate`, {
@@ -177,12 +209,12 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
         if (result.success) {
             const paymentInfo =
                 `\n\n💳 CARA BAYAR:\n` +
-                `   QRIS: https://skcheat.my.id\n` +
+                `   QRIS: https://shorekeeper-skcheat.up.railway.app\n` +
                 `   DANA/OVO: 0895401347006\n` +
                 `   Kirim bukti ke @Zelewin atau @Yuangme`;
 
             bot.sendMessage(chatId,
-                `✅ ORDER BERHASIL!\n─────────────────\n\n` +
+                `✅ ORDER BERHASIL!\n─────────────────────────────\n\n` +
                 `🔑 KEY: ${result.key}\n` +
                 `📦 Paket: ${result.package}\n` +
                 `📅 Expired: ${result.expired}\n` +
@@ -193,7 +225,7 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
             );
 
             bot.sendMessage(ADMIN_ID,
-                `🛒 ORDER BARU!\n─────────────────\n\n` +
+                `🛒 ORDER BARU!\n─────────────────────────────\n\n` +
                 `👤 ${username} (ID: ${userId})\n` +
                 `📦 ${result.package}\n` +
                 `🔑 ${result.key}\n` +
@@ -208,6 +240,9 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     }
 });
 
+// ============================================================
+// /STOK
+// ============================================================
 bot.onText(/\/stok/, async (msg) => {
     const chatId = msg.chat.id;
 
@@ -223,7 +258,8 @@ bot.onText(/\/stok/, async (msg) => {
             return;
         }
 
-        let text = '📊 STOK KEY\n─────────────────\n\n';
+        let text = '📊 STOK KEY\n';
+        text += '─────────────────────────────\n\n';
 
         const packages = [
             { label: '2 JAM', id: '2 Hours' },
@@ -242,7 +278,8 @@ bot.onText(/\/stok/, async (msg) => {
         });
 
         text += `🎁 FREE: ${result.stock.FREE > 0 ? `✅ ${result.stock.FREE}` : '❌ 0'}\n`;
-        text += `\n─────────────────\n📦 Total: ${result.total} key`;
+        text += `\n─────────────────────────────\n`;
+        text += `📦 Total: ${result.total} key`;
         text += `\n\n🛒 /buy - Lihat paket & order`;
 
         bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -251,11 +288,21 @@ bot.onText(/\/stok/, async (msg) => {
     }
 });
 
+// ============================================================
+// 🔑 ADMIN COMMANDS — HANYA ADMIN
+// ============================================================
+
+// ===== CEK APAKAH ADMIN =====
+function isAdmin(chatId) {
+    return String(chatId) === String(ADMIN_ID);
+}
+
+// ===== /GENKEY =====
 bot.onText(/\/genkey (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
@@ -304,7 +351,7 @@ bot.onText(/\/genkey (.+)/, async (msg, match) => {
 
         if (result.success) {
             bot.sendMessage(chatId,
-                `✅ KEY GENERATED!\n─────────────────\n\n` +
+                `✅ KEY GENERATED!\n─────────────────────────────\n\n` +
                 `🔑 ${result.key}\n` +
                 `📦 ${result.package}\n` +
                 `📅 Expired: ${result.expired}`,
@@ -318,11 +365,12 @@ bot.onText(/\/genkey (.+)/, async (msg, match) => {
     }
 });
 
+// ===== /GENFREE =====
 bot.onText(/\/genfree/, async (msg) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
@@ -342,7 +390,7 @@ bot.onText(/\/genfree/, async (msg) => {
 
         if (result.success) {
             bot.sendMessage(chatId,
-                `🎁 FREE KEY GENERATED!\n─────────────────\n\n` +
+                `🎁 FREE KEY GENERATED!\n─────────────────────────────\n\n` +
                 `🔑 ${result.key}\n` +
                 `📦 ${result.package}\n` +
                 `📅 Expired: ${result.expired}`,
@@ -356,11 +404,12 @@ bot.onText(/\/genfree/, async (msg) => {
     }
 });
 
+// ===== /MASSGEN =====
 bot.onText(/\/massgen (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
@@ -421,7 +470,7 @@ bot.onText(/\/massgen (.+)/, async (msg, match) => {
     }
 
     if (success > 0) {
-        let text = `✅ ${success} KEY GENERATED!\n─────────────────\n\n`;
+        let text = `✅ ${success} KEY GENERATED!\n─────────────────────────────\n\n`;
         text += `📦 ${packageId}\n\n`;
         text += `🔑 Keys:\n`;
         keys.slice(0, 15).forEach(k => {
@@ -436,8 +485,15 @@ bot.onText(/\/massgen (.+)/, async (msg, match) => {
     }
 });
 
+// ===== /CEKKEY =====
 bot.onText(/\/cekkey (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
+
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
+        return;
+    }
+
     const key = match[1].trim().toUpperCase();
 
     try {
@@ -463,7 +519,7 @@ bot.onText(/\/cekkey (.+)/, async (msg, match) => {
         const data = result.key;
         const statusEmoji = data.status === 'Active' ? '✅' : '❌';
 
-        let text = `🔍 CEK KEY\n─────────────────\n\n`;
+        let text = `🔍 CEK KEY\n─────────────────────────────\n\n`;
         text += `🔑 Key: ${data.user_key}\n`;
         text += `🎮 Game: ${data.game}\n`;
         text += `📦 Paket: ${data.duration}\n`;
@@ -478,11 +534,12 @@ bot.onText(/\/cekkey (.+)/, async (msg, match) => {
     }
 });
 
+// ===== /RESETKEY =====
 bot.onText(/\/resetkey (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
@@ -502,7 +559,7 @@ bot.onText(/\/resetkey (.+)/, async (msg, match) => {
 
         if (result.success) {
             bot.sendMessage(chatId,
-                `✅ KEY RESET!\n─────────────────\n\n` +
+                `✅ KEY RESET!\n─────────────────────────────\n\n` +
                 `🔑 ${key}\n` +
                 `📱 Semua devices telah direset!`,
                 { parse_mode: 'Markdown' }
@@ -515,11 +572,12 @@ bot.onText(/\/resetkey (.+)/, async (msg, match) => {
     }
 });
 
+// ===== /DELKEY =====
 bot.onText(/\/delkey (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
@@ -539,7 +597,7 @@ bot.onText(/\/delkey (.+)/, async (msg, match) => {
 
         if (result.success) {
             bot.sendMessage(chatId,
-                `✅ KEY DELETED!\n─────────────────\n\n` +
+                `✅ KEY DELETED!\n─────────────────────────────\n\n` +
                 `🔑 ${key}\n` +
                 `🗑️ Key telah dihapus dari database!`,
                 { parse_mode: 'Markdown' }
@@ -552,29 +610,31 @@ bot.onText(/\/delkey (.+)/, async (msg, match) => {
     }
 });
 
+// ===== /ORDERS =====
 bot.onText(/\/orders/, (msg) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
     bot.sendMessage(chatId,
-        '📋 DAFTAR ORDER\n─────────────────\n\n' +
+        '📋 DAFTAR ORDER\n─────────────────────────────\n\n' +
         '📊 Lihat di panel admin:\n' +
-        '   https://skcheat.my.id/keys\n\n' +
+        '   https://skcheat.my.id\n\n' +
         '📌 Atau download semua key:\n' +
-        '   https://skcheat.my.id/keys/download_all_Keys',
+        '   https://skcheat.my.id/keys',
         { parse_mode: 'Markdown' }
     );
 });
 
+// ===== /STATS =====
 bot.onText(/\/stats/, async (msg) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
@@ -590,7 +650,7 @@ bot.onText(/\/stats/, async (msg) => {
             return;
         }
 
-        let text = '📊 STATISTIK\n─────────────────\n\n';
+        let text = '📊 STATISTIK\n─────────────────────────────\n\n';
         text += `📦 Total Stok: ${result.total}\n`;
         text += `🕐 ${new Date().toLocaleString('id-ID')}`;
 
@@ -600,26 +660,42 @@ bot.onText(/\/stats/, async (msg) => {
     }
 });
 
+// ===== /ADDAPK =====
 bot.onText(/\/addapk/, (msg) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
-        bot.sendMessage(chatId, '⛔ Hanya admin!');
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
     }
 
     bot.sendMessage(chatId,
-        '📦 UPLOAD APK\n─────────────────\n\n' +
+        '📦 UPLOAD APK\n─────────────────────────────\n\n' +
         'Kirim file APK sekarang!\n' +
         'File akan disimpan dan dikirim ke pembeli.',
         { parse_mode: 'Markdown' }
     );
 });
 
+// ===== /BROADCAST =====
+bot.onText(/\/broadcast (.+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
+        return;
+    }
+
+    const message = match[1];
+    bot.sendMessage(chatId, `📢 Broadcast dikirim ke semua user!\n\nPesan: ${message}`);
+    // Di sini nanti bisa ditambahin logic kirim ke semua user ID
+});
+
+// ===== HANDLE APK FILE =====
 bot.on('document', async (msg) => {
     const chatId = msg.chat.id;
 
-    if (String(chatId) !== String(ADMIN_ID)) {
+    if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Hanya admin!');
         return;
     }
@@ -637,7 +713,7 @@ bot.on('document', async (msg) => {
         const fileLink = await bot.getFileLink(fileId);
 
         bot.sendMessage(chatId,
-            `✅ APK BERHASIL DISIMPAN!\n─────────────────\n\n` +
+            `✅ APK BERHASIL DISIMPAN!\n─────────────────────────────\n\n` +
             `📦 File: ${fileName}\n` +
             `🕐 Diupdate: ${new Date().toLocaleString('id-ID')}\n\n` +
             `📌 Pembeli bisa dapatkan dengan:\n` +
@@ -652,3 +728,5 @@ bot.on('document', async (msg) => {
 console.log('🤖 Bot started!');
 console.log('🔑 API Key: SK-BOT-2024-SECURE-7X9K2M4N6P8Q');
 console.log('📌 Admin ID: ' + ADMIN_ID);
+console.log('🛒 Member commands: /buy, /order, /cek, /stok, /payment, /apk');
+console.log('🔑 Admin commands: /genkey, /genfree, /massgen, /cekkey, /resetkey, /delkey, /orders, /stats, /addapk, /broadcast');

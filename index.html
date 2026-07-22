@@ -55,8 +55,8 @@
         /* Splash */
         #splash { position: fixed; inset: 0; z-index: 10000; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease; padding: 20px; }
         #splash.hide { opacity: 0; pointer-events: none; }
-        .splash-icon { width: 120px; height: 120px; border-radius: 28px; background: var(--blue); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 16px 48px rgba(37,99,235,0.25); }
-        .splash-icon span { color: #fff; font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; }
+        .splash-avatar { width: 120px; height: 120px; border-radius: 28px; overflow: hidden; border: 3px solid var(--blue); box-shadow: 0 16px 48px rgba(37,99,235,0.25); margin-bottom: 16px; }
+        .splash-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .splash-title { font-size: 1.8rem; font-weight: 900; color: var(--text); }
         .splash-title .hl { color: var(--blue); }
         .splash-sub { font-size: 0.7rem; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
@@ -71,7 +71,8 @@
         /* Topbar */
         .topbar { position: sticky; top: 0; z-index: 100; background: var(--bg); padding: 12px 16px 10px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
         .topbar-left { display: flex; align-items: center; gap: 10px; }
-        .topbar-logo { width: 40px; height: 40px; border-radius: 12px; background: var(--blue); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 0.9rem; }
+        .topbar-avatar { width: 40px; height: 40px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; }
+        .topbar-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .topbar-title { font-size: 0.85rem; font-weight: 700; }
         .topbar-sub { font-size: 0.45rem; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .topbar-badge { font-size: 0.45rem; font-weight: 700; padding: 4px 14px; border-radius: 999px; background: rgba(22,163,74,0.12); color: var(--green); border: 1px solid rgba(22,163,74,0.2); }
@@ -90,8 +91,17 @@
         .title { font-size: 1.1rem; font-weight: 800; margin-bottom: 2px; }
         .sub { font-size: 0.65rem; color: var(--text3); margin-bottom: 12px; font-weight: 500; }
 
-        /* Hero */
-        .hero { background: var(--card); border-radius: var(--radius); padding: 22px 20px 24px; border: 1px solid var(--border); position: relative; overflow: hidden; }
+        /* Hero dengan Video */
+        .hero-video { position: relative; border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; min-height: 180px; }
+        .hero-video video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+        .hero-video .overlay { position: relative; z-index: 1; padding: 24px 20px; background: linear-gradient(180deg, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.6) 100%); min-height: 180px; display: flex; flex-direction: column; justify-content: flex-end; }
+        .hero-video .overlay .tag { display: inline-block; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); color: #fff; font-size: 0.5rem; font-weight: 700; padding: 4px 16px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; width: fit-content; }
+        .hero-video .overlay .title { color: #fff; font-size: 1.3rem; font-weight: 900; text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
+        .hero-video .overlay .title .hl { color: #fbbf24; }
+        .hero-video .overlay .sub { color: rgba(255,255,255,0.85); font-size: 0.55rem; font-weight: 500; }
+
+        /* Hero Biasa */
+        .hero { background: var(--card); border-radius: var(--radius); padding: 22px 20px 24px; border: 1px solid var(--border); }
         .hero-tag { display: inline-block; background: var(--blue); color: #fff; font-size: 0.5rem; font-weight: 700; padding: 4px 16px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
         .hero-title { font-size: 1.4rem; font-weight: 900; line-height: 1.3; margin-bottom: 4px; }
         .hero-title .hl { color: var(--blue); }
@@ -120,6 +130,8 @@
         .pkg:active { transform: scale(0.96); }
         .pkg.hot { border-color: var(--blue); background: var(--blue-light); }
         .pkg.out { opacity: 0.5; cursor: not-allowed; border-color: var(--red); background: rgba(220,38,38,0.04); }
+        .pkg .pkg-icon { width: 52px; height: 52px; border-radius: 12px; overflow: hidden; margin: 0 auto 6px; border: 1px solid var(--border); background: var(--input); }
+        .pkg .pkg-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .pkg .pkg-price { font-size: 0.85rem; font-weight: 800; color: var(--blue); }
         .pkg .pkg-name { font-size: 0.6rem; color: var(--text3); margin-top: 2px; font-weight: 600; }
         .pkg .pkg-stock { font-size: 0.45rem; color: var(--text3); margin-top: 2px; }
@@ -134,7 +146,8 @@
         .game:active { transform: scale(0.96); }
         .game.active { border-color: var(--green); background: rgba(22,163,74,0.04); }
         .game.coming { opacity: 0.5; cursor: default; border-color: var(--border); }
-        .game .game-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--input); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .game .game-icon { width: 48px; height: 48px; border-radius: 12px; overflow: hidden; background: var(--input); margin-bottom: 6px; border: 1px solid var(--border); }
+        .game .game-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .game .game-name { font-size: 0.7rem; font-weight: 700; }
         .game .game-status { font-size: 0.45rem; color: var(--text3); font-weight: 500; }
 
@@ -151,7 +164,8 @@
         /* Admin Contact */
         .admin-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); text-decoration: none; color: var(--text); transition: transform 0.15s; margin-bottom: 8px; }
         .admin-item:active { transform: scale(0.98); }
-        .admin-item .admin-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--blue-light); color: var(--blue); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+        .admin-item .admin-avatar { width: 40px; height: 40px; border-radius: 10px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border); }
+        .admin-item .admin-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .admin-item .admin-name { font-size: 0.8rem; font-weight: 700; }
         .admin-item .admin-sub { font-size: 0.52rem; color: var(--text3); }
         .admin-item .admin-badge { margin-left: auto; font-size: 0.45rem; font-weight: 700; color: var(--green); background: rgba(22,163,74,0.12); padding: 2px 12px; border-radius: 999px; }
@@ -228,6 +242,8 @@
             .stat-n { font-size: 1rem; }
             .pkg-grid { grid-template-columns: 1fr 1fr; }
             .stock-grid { grid-template-columns: repeat(4, 1fr); }
+            .hero-video { min-height: 140px; }
+            .hero-video .overlay { min-height: 140px; }
         }
     </style>
 </head>
@@ -235,7 +251,9 @@
 
 <!-- SPLASH -->
 <div id="splash">
-    <div class="splash-icon"><span>SK</span></div>
+    <div class="splash-avatar">
+        <img src="avatar.jpg" alt="Shorekeeper" onerror="this.parentElement.style.background='var(--blue)';this.style.display='none';this.parentElement.innerHTML='<span style=color:#fff;font-size:2.4rem;font-weight:900;>SK</span>'">
+    </div>
     <div class="splash-title">Shorekeeper <span class="hl">Elite</span></div>
     <div class="splash-sub">Premium Blood Strike Tool</div>
     <button class="splash-btn" onclick="closeSplash()">Enter</button>
@@ -251,7 +269,9 @@
 <div class="page active" id="page-home">
     <div class="topbar">
         <div class="topbar-left">
-            <div class="topbar-logo">SK</div>
+            <div class="topbar-avatar">
+                <img src="avatar.jpg" alt="SK" onerror="this.parentElement.style.background='var(--blue)';this.style.display='none';this.parentElement.innerHTML='<span style=color:#fff;font-size:1.2rem;font-weight:900;>SK</span>'">
+            </div>
             <div>
                 <div class="topbar-title">Shorekeeper</div>
                 <div class="topbar-sub">Elite Tool</div>
@@ -262,6 +282,18 @@
         </div>
     </div>
     <div class="content">
+
+        <!-- HERO DENGAN VIDEO -->
+        <div class="hero-video">
+            <video autoplay muted loop playsinline>
+                <source src="baner-video.mp4" type="video/mp4">
+            </video>
+            <div class="overlay">
+                <div class="tag">Blood Strike • No Root</div>
+                <div class="title">SHOREKEEPER <span class="hl">ELITE</span></div>
+                <div class="sub">Aim Assist • ESP • No Recoil • Undetected</div>
+            </div>
+        </div>
 
         <div class="hero">
             <div class="hero-tag">Blood Strike • No Root</div>
@@ -309,12 +341,12 @@
             <div class="title">Contact Admin</div>
             <div class="sub">Fast response</div>
             <a href="https://t.me/Zelewin" target="_blank" class="admin-item" style="border-color:var(--blue);">
-                <div class="admin-ic">Z</div>
+                <div class="admin-avatar"><img src="avatar.jpg" alt="Zelewin" onerror="this.style.display='none';this.parentElement.style.background='var(--blue)';this.parentElement.innerHTML='<span style=color:#fff;font-size:1rem;font-weight:800;>Z</span>'"></div>
                 <div><div class="admin-name">@Zelewin</div><div class="admin-sub">Admin 1</div></div>
                 <div class="admin-badge">Online</div>
             </a>
             <a href="https://t.me/Yuangme" target="_blank" class="admin-item" style="border-color:var(--green);">
-                <div class="admin-ic">Y</div>
+                <div class="admin-avatar"><img src="avatar.jpg" alt="Yuangme" onerror="this.style.display='none';this.parentElement.style.background='var(--green)';this.parentElement.innerHTML='<span style=color:#fff;font-size:1rem;font-weight:800;>Y</span>'"></div>
                 <div><div class="admin-name">@Yuangme</div><div class="admin-sub">Admin 2</div></div>
                 <div class="admin-badge">Online</div>
             </a>
@@ -367,7 +399,7 @@
 <div class="page" id="page-game">
     <div class="topbar">
         <div class="topbar-left">
-            <div class="topbar-logo">SK</div>
+            <div class="topbar-avatar"><img src="avatar.jpg" alt="SK" onerror="this.parentElement.style.background='var(--blue)';this.style.display='none';this.parentElement.innerHTML='<span style=color:#fff;font-size:1.2rem;font-weight:900;>SK</span>'"></div>
             <div><div class="topbar-title">Packages</div><div class="topbar-sub">Select Game</div></div>
         </div>
         <button onclick="navigateTo('home')" style="background:var(--input);border:1px solid var(--border);border-radius:8px;padding:6px 16px;font-size:0.6rem;font-weight:600;color:var(--text2);cursor:pointer;">Back</button>
@@ -377,7 +409,7 @@
         <div id="pkgContainer" style="display:none;">
             <div class="card">
                 <div class="flex items-center gap-1">
-                    <span id="selectedGameIcon" style="font-size:1.2rem;">🎮</span>
+                    <div class="game-icon" style="width:40px;height:40px;"><img id="selectedGameIcon" src="" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></div>
                     <span style="font-size:1rem;font-weight:800;" id="selectedGameName">-</span>
                     <button onclick="closePackages()" style="margin-left:auto;background:var(--input);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:0.6rem;cursor:pointer;font-weight:600;color:var(--text2);">Close</button>
                 </div>
@@ -401,7 +433,7 @@
 <div class="page" id="page-cekkey">
     <div class="topbar">
         <div class="topbar-left">
-            <div class="topbar-logo">SK</div>
+            <div class="topbar-avatar"><img src="avatar.jpg" alt="SK" onerror="this.parentElement.style.background='var(--blue)';this.style.display='none';this.parentElement.innerHTML='<span style=color:#fff;font-size:1.2rem;font-weight:900;>SK</span>'"></div>
             <div><div class="topbar-title">Check Key</div><div class="topbar-sub">Verify your order</div></div>
         </div>
         <button onclick="navigateTo('home')" style="background:var(--input);border:1px solid var(--border);border-radius:8px;padding:6px 16px;font-size:0.6rem;font-weight:600;color:var(--text2);cursor:pointer;">Back</button>
@@ -430,7 +462,7 @@
 <div class="page" id="page-freekey">
     <div class="topbar">
         <div class="topbar-left">
-            <div class="topbar-logo">SK</div>
+            <div class="topbar-avatar"><img src="avatar.jpg" alt="SK" onerror="this.parentElement.style.background='var(--blue)';this.style.display='none';this.parentElement.innerHTML='<span style=color:#fff;font-size:1.2rem;font-weight:900;>SK</span>'"></div>
             <div><div class="topbar-title">Free Key</div><div class="topbar-sub">1 Day Trial</div></div>
         </div>
         <button onclick="navigateTo('home')" style="background:var(--input);border:1px solid var(--border);border-radius:8px;padding:6px 16px;font-size:0.6rem;font-weight:600;color:var(--text2);cursor:pointer;">Back</button>
@@ -450,7 +482,7 @@
         <div class="card-flat" style="margin-bottom:12px;">
             <div style="font-size:0.6rem;font-weight:700;">3. Upload the screenshot to claim</div>
         </div>
-        <a href="https://t.me/share/url?url=https://shorekeeper-skcheat.up.railway.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="btn btn-telegram" style="text-decoration:none;margin-bottom:12px;">Share to Telegram</a>
+        <a href="https://t.me/share/url?url=https://skcheatshop.up.railway.app&text=DAPATKAN%20KEY%20BLOOD%20STRIKE%20GRATIS%20DI%20SHOREKEEPER" target="_blank" class="btn btn-telegram" style="text-decoration:none;margin-bottom:12px;">Share to Telegram</a>
         <div class="card">
             <div style="font-size:0.6rem;font-weight:700;margin-bottom:8px;">Upload Sharing Proof</div>
             <div class="upload-area" onclick="document.getElementById('freeFileIn').click()">
@@ -555,7 +587,7 @@
                     <div class="orow"><span class="label">Package</span><span class="value" id="s3pkg">-</span></div>
                     <div class="orow"><span class="label">Price</span><span class="value" id="s3price">-</span></div>
                     <div class="orow"><span class="label">Email</span><span class="value" id="s3email" style="font-size:0.58rem;">-</span></div>
-                    <div class="orow"><span class="label">Status</span><span style="color:var(--orange);font-weight:700;font-size:0.65rem;" id="s3status">⏳ Waiting Verification</span></div>
+                    <div class="orow"><span class="label">Status</span><span style="color:var(--orange);font-weight:700;font-size:0.65rem;" id="s3status">Waiting Verification</span></div>
                 </div>
                 <div style="font-size:0.5rem;color:var(--text3);font-weight:600;">Order ID</div>
                 <div style="font-size:0.7rem;font-weight:700;font-family:monospace;background:var(--input);padding:8px 12px;border-radius:var(--radius-sm);text-align:center;border:1px solid var(--border);" id="s3oid">-</div>
@@ -575,9 +607,7 @@
 // ============================================================
 // 🔥 CONFIG — GANTI DENGAN DOMAIN BACKEND KAMU
 // ============================================================
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? ''
-    : 'https://shorekeeper-skcheat.up.railway.app';
+const API_BASE = 'https://skcheatshop.up.railway.app';
 
 // ============================================================
 // SPLASH
@@ -615,12 +645,12 @@ function navigateTo(page) {
 // DATA
 // ============================================================
 const GAMES = [
-    { id: 'bloodstrike', name: 'Blood Strike', icon: '🔫', status: 'active' },
-    { id: 'freefire', name: 'Free Fire', icon: '🔥', status: 'coming' },
-    { id: 'mlbb', name: 'Mobile Legends', icon: '⚔️', status: 'coming' },
-    { id: 'pubg', name: 'PUBG Mobile', icon: '🎯', status: 'coming' },
-    { id: 'arenabreakout', name: 'Arena Breakout', icon: '🎮', status: 'coming' },
-    { id: 'sausageman', name: 'Sausage Man', icon: '🌭', status: 'coming' }
+    { id: 'bloodstrike', name: 'Blood Strike', icon: 'bloodstrike-icon.png', status: 'active' },
+    { id: 'freefire', name: 'Free Fire', icon: 'freefire-icon.png', status: 'coming' },
+    { id: 'mlbb', name: 'Mobile Legends', icon: 'mlbb-icon.png', status: 'coming' },
+    { id: 'pubg', name: 'PUBG Mobile', icon: 'pubg-icon.png', status: 'coming' },
+    { id: 'arenabreakout', name: 'Arena Breakout', icon: 'arenabreakout-icon.png', status: 'coming' },
+    { id: 'sausageman', name: 'Sausage Man', icon: 'sausageman-icon.png', status: 'coming' }
 ];
 
 const PKGS = [
@@ -633,6 +663,17 @@ const PKGS = [
     { id: '30Day', name: '30 HARI', price: 'Rp 250.000', hot: false },
     { id: '60Day', name: '60 HARI', price: 'Rp 400.000', hot: true }
 ];
+
+const PKG_ICONS = {
+    '2Jam': 'bloodstrike-icon.png',
+    '5Jam': 'bloodstrike-icon.png',
+    '1Day': 'bloodstrike-icon.png',
+    '3Day': 'bloodstrike-icon.png',
+    '7Day': 'bloodstrike-icon.png',
+    '14Day': 'bloodstrike-icon.png',
+    '30Day': 'bloodstrike-icon.png',
+    '60Day': 'bloodstrike-icon.png'
+};
 
 let cachedStock = null;
 let lastFetch = 0;
@@ -675,6 +716,7 @@ async function renderHome() {
         html += `
             <div class="pkg ${cls} ${pkg.hot ? 'hot' : ''}" ${onclick}>
                 ${pkg.hot ? '<div class="hot-tag">Best Seller</div>' : ''}
+                <div class="pkg-icon"><img src="${PKG_ICONS[pkg.id] || 'bloodstrike-icon.png'}" alt="${pkg.name}" onerror="this.parentElement.innerHTML='📦'"></div>
                 <div class="pkg-price">${pkg.price}</div>
                 <div class="pkg-name">${pkg.name}</div>
                 <div class="pkg-stock ${stockCls}">${avail ? count + ' left' : 'Out of Stock'}</div>
@@ -710,7 +752,7 @@ function renderGameGrid(containerId) {
         const onclick = game.status === 'active' ? `onclick="selectGame('${game.id}')"` : '';
         html += `
             <div class="game ${cls}" ${onclick}>
-                <div class="game-icon">${game.icon}</div>
+                <div class="game-icon"><img src="${game.icon}" alt="${game.name}" onerror="this.parentElement.innerHTML='🎮'"></div>
                 <div class="game-name">${game.name}</div>
                 <div class="game-status">${game.status === 'active' ? 'Available' : 'Soon'}</div>
             </div>
@@ -736,7 +778,7 @@ function selectGame(gameId) {
     document.getElementById('comingSoonMsg').style.display = 'none';
     document.getElementById('pkgContainer').style.display = 'block';
     document.getElementById('selectedGameName').innerText = game.name;
-    document.getElementById('selectedGameIcon').innerText = game.icon;
+    document.getElementById('selectedGameIcon').src = game.icon;
     renderPackages();
 }
 
@@ -760,6 +802,7 @@ async function renderPackages() {
         html += `
             <div class="pkg ${cls} ${pkg.hot ? 'hot' : ''}" ${onclick}>
                 ${pkg.hot ? '<div class="hot-tag">Best Seller</div>' : ''}
+                <div class="pkg-icon"><img src="${PKG_ICONS[pkg.id] || 'bloodstrike-icon.png'}" alt="${pkg.name}" onerror="this.parentElement.innerHTML='📦'"></div>
                 <div class="pkg-price">${pkg.price}</div>
                 <div class="pkg-name">${pkg.name}</div>
                 <div class="pkg-stock ${stockCls}">${avail ? count + ' left' : 'Out of Stock'}</div>
@@ -1116,7 +1159,7 @@ renderGamePage();
 renderFreeStatus();
 
 console.log('🚀 Shorekeeper Elite ready');
-console.log('📍 API Base:', API_BASE || '(localhost)');
+console.log('📍 API Base:', API_BASE);
 </script>
 </body>
 </html>
