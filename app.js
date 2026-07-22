@@ -19,7 +19,6 @@ app.use(express.static(__dirname));
 // DATABASE FUNCTIONS — PAKAI MySQL
 // ============================================================
 
-// AMBIL STOK
 async function getStockCount(packageId) {
     const [rows] = await db.query(
         `SELECT COUNT(*) as count 
@@ -32,15 +31,13 @@ async function getStockCount(packageId) {
     return rows[0].count;
 }
 
-// RESERVE KEY
 async function reserveKey(packageId) {
     const conn = await db.getConnection();
     try {
         await conn.beginTransaction();
 
         const [rows] = await conn.query(
-            `SELECT user_key, duration, expired_date 
-             FROM keys_code 
+            `SELECT user_key FROM keys_code 
              WHERE game = ? 
                AND status = 1 
                AND (expired_date IS NULL OR expired_date > NOW())
@@ -70,7 +67,6 @@ async function reserveKey(packageId) {
     }
 }
 
-// TAMBAH ORDER
 async function addPendingOrder(order) {
     await db.query(
         `INSERT INTO pending_orders 
@@ -86,7 +82,6 @@ async function addPendingOrder(order) {
     );
 }
 
-// CEK ORDER
 async function getOrderById(orderId) {
     const [rows] = await db.query(
         `SELECT * FROM pending_orders WHERE order_id = ? 
@@ -97,95 +92,6 @@ async function getOrderById(orderId) {
     return rows[0] || null;
 }
 
-// APPROVE ORDER
-async function approveOrder(orderId) {
-    const conn = await db.getConnection();
-    try {
-        await conn.beginTransaction();
-
-        const [rows] = await conn.query(
-            `SELECT * FROM pending_orders WHERE order_id = ?`,
-            [orderId]
-        );
-
-        if (rows.length === 0) {
-            await conn.rollback();
-            return null;
-        }
-
-        const order = rows[0];
-
-        await conn.query(
-            `INSERT INTO orders 
-             (order_id, package, package_id, key_code, price, price_number,
-              email, phone, username, status, created_at, confirmed_at, 
-              proof_image, user_chat_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, NOW(), ?, ?)`,
-            [
-                order.order_id, order.package, order.package_id, order.key_code,
-                order.price, order.price_number, order.email, order.phone,
-                order.username, order.created_at, order.proof_image,
-                order.user_chat_id
-            ]
-        );
-
-        await conn.query(
-            `DELETE FROM pending_orders WHERE order_id = ?`,
-            [orderId]
-        );
-
-        await conn.commit();
-        return order;
-    } catch (e) {
-        await conn.rollback();
-        throw e;
-    } finally {
-        conn.release();
-    }
-}
-
-// REJECT ORDER
-async function rejectOrder(orderId) {
-    const conn = await db.getConnection();
-    try {
-        await conn.beginTransaction();
-
-        const [rows] = await conn.query(
-            `SELECT * FROM pending_orders WHERE order_id = ?`,
-            [orderId]
-        );
-
-        if (rows.length === 0) {
-            await conn.rollback();
-            return null;
-        }
-
-        const order = rows[0];
-
-        // Kembalikan key ke stok
-        if (order.key_code) {
-            await conn.query(
-                `UPDATE keys_code SET status = 1 WHERE user_key = ?`,
-                [order.key_code]
-            );
-        }
-
-        await conn.query(
-            `DELETE FROM pending_orders WHERE order_id = ?`,
-            [orderId]
-        );
-
-        await conn.commit();
-        return order;
-    } catch (e) {
-        await conn.rollback();
-        throw e;
-    } finally {
-        conn.release();
-    }
-}
-
-// GET TOTAL STOCK
 async function getTotalStock() {
     const [rows] = await db.query(
         `SELECT COUNT(*) as total 
@@ -210,14 +116,8 @@ app.get('/api/stock', async (req, res) => {
         );
 
         const stock = {
-            '2Jam': 0,
-            '5Jam': 0,
-            '1Day': 0,
-            '3Day': 0,
-            '7Day': 0,
-            '14Day': 0,
-            '30Day': 0,
-            '60Day': 0,
+            '2Jam': 0, '5Jam': 0, '1Day': 0, '3Day': 0,
+            '7Day': 0, '14Day': 0, '30Day': 0, '60Day': 0,
             'Free1Day': 0
         };
 
@@ -231,10 +131,13 @@ app.get('/api/stock', async (req, res) => {
         const [pendingRows] = await db.query(`SELECT COUNT(*) as pending FROM pending_orders`);
 
         res.json({
+            success: true,
             stock: stock,
             total: await getTotalStock(),
             totalSold: orderRows[0].total || 0,
-            pending: pendingRows[0].pending || 0
+            pending: pendingRows[0].pending || 0,
+            totalRevenue: 0,
+            timestamp: new Date().toISOString()
         });
     } catch (e) {
         console.error('Error /api/stock:', e);
@@ -253,27 +156,15 @@ app.post('/api/order/create', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
-        // Mapping package
         const packageMap = {
-            '2JAM': '2Jam',
-            '5JAM': '5Jam',
-            '1HARI': '1Day',
-            '1DAY': '1Day',
-            '3HARI': '3Day',
-            '3DAY': '3Day',
-            '7HARI': '7Day',
-            '7DAY': '7Day',
-            '14HARI': '14Day',
-            '14DAY': '14Day',
-            '30HARI': '30Day',
-            '30DAY': '30Day',
-            '60HARI': '60Day',
-            '60DAY': '60Day'
+            '2JAM': '2Jam', '5JAM': '5Jam', '1HARI': '1Day', '1DAY': '1Day',
+            '3HARI': '3Day', '3DAY': '3Day', '7HARI': '7Day', '7DAY': '7Day',
+            '14HARI': '14Day', '14DAY': '14Day', '30HARI': '30Day', '30DAY': '30Day',
+            '60HARI': '60Day', '60DAY': '60Day'
         };
 
         const normalizedPkgId = packageMap[packageId.toUpperCase().replace(/\s+/g, '')] || packageId;
 
-        // Ambil key dari database
         const key = await reserveKey(normalizedPkgId);
         if (!key) {
             return res.status(400).json({ success: false, message: 'Stock is empty!' });
@@ -281,7 +172,6 @@ app.post('/api/order/create', async (req, res) => {
 
         const orderId = 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
 
-        // Dapatkan nama package dari database
         const [pkgRows] = await db.query(
             `SELECT DISTINCT game FROM keys_code WHERE game = ?`,
             [normalizedPkgId]
@@ -289,37 +179,21 @@ app.post('/api/order/create', async (req, res) => {
         const packageName = pkgRows.length > 0 ? pkgRows[0].game : normalizedPkgId;
 
         const order = {
-            orderId: orderId,
-            package: packageName,
-            packageId: normalizedPkgId,
-            price: 'Rp 0',
-            priceNumber: 0,
-            key: key,
-            email: email,
-            phone: phone,
-            username: username || 'Customer',
-            method: method || 'qris',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            proofImage: proofImage || null,
-            type: 'paid',
-            userChatId: userChatId || null
+            orderId, package: packageName, packageId: normalizedPkgId,
+            price: 'Rp 0', priceNumber: 0, key, email, phone,
+            username: username || 'Customer', method: method || 'qris',
+            status: 'pending', createdAt: new Date().toISOString(),
+            proofImage: proofImage || null, type: 'paid', userChatId: userChatId || null
         };
 
         await addPendingOrder(order);
 
-        res.json({ success: true, orderId: orderId, status: 'pending' });
+        res.json({ success: true, orderId, status: 'pending' });
 
-        // Kirim notifikasi ke admin
         if (proofImage) {
             sendNotificationToAdmin(
-                orderId,
-                packageName,
-                'Rp 0',
-                email,
-                phone,
-                proofImage,
-                username || 'Customer'
+                orderId, packageName, 'Rp 0',
+                email, phone, proofImage, username || 'Customer'
             ).catch(e => console.log('Notif error:', e.message));
         }
 
@@ -370,7 +244,7 @@ app.post('/api/free/request', async (req, res) => {
             [orderId, key, userId]
         );
 
-        res.json({ success: true, orderId: orderId, key: key });
+        res.json({ success: true, orderId, key });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
@@ -410,13 +284,9 @@ app.post('/api/validate', async (req, res) => {
         res.json({
             status: true,
             data: {
-                token: token,
-                rng: now,
-                EXP: expStr,
-                MOD_NAME: 'Shorekeeper Elite',
-                MOD_STATUS: 'SAFE',
-                username: 'User',
-                package: data.game,
+                token, rng: now, EXP: expStr,
+                MOD_NAME: 'Shorekeeper Elite', MOD_STATUS: 'SAFE',
+                username: 'User', package: data.game,
                 days_left: Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24)),
                 created: new Date().toISOString(),
                 menu_block: false,
@@ -517,7 +387,6 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
             headers: formData.getHeaders()
         });
 
-        // Kirim tombol approve
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
