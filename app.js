@@ -197,8 +197,35 @@ function rejectOrder(orderId) {
 }
 
 // ============================================================
-// NOTIFIKASI TELEGRAM
+// TELEGRAM FUNCTIONS
 // ============================================================
+async function sendTelegramMessage(chatId, text, options = {}) {
+    try {
+        const payload = {
+            chat_id: chatId,
+            text: text,
+            parse_mode: 'Markdown'
+        };
+        if (options.approveBtn) {
+            payload.reply_markup = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ APPROVE', callback_data: `approve_${options.approveBtn}` },
+                        { text: '❌ REJECT', callback_data: `reject_${options.approveBtn}` }
+                    ]
+                ]
+            };
+        }
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.error('Telegram error:', e.message);
+    }
+}
+
 async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
     try {
         if (!proofImage || proofImage.length < 100) {
@@ -256,37 +283,11 @@ async function sendNotificationToAdmin(orderId, packageName, price, email, phone
     }
 }
 
-async function sendTelegramMessage(chatId, text, options = {}) {
-    try {
-        const payload = {
-            chat_id: chatId,
-            text: text,
-            parse_mode: 'Markdown'
-        };
-        if (options.approveBtn) {
-            payload.reply_markup = {
-                inline_keyboard: [
-                    [
-                        { text: '✅ APPROVE', callback_data: `approve_${options.approveBtn}` },
-                        { text: '❌ REJECT', callback_data: `reject_${options.approveBtn}` }
-                    ]
-                ]
-            };
-        }
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-    } catch (e) {
-        console.error('Telegram error:', e.message);
-    }
-}
-
 // ============================================================
-// ENDPOINT API
+// API ENDPOINTS
 // ============================================================
 
+// STOCK
 app.get('/api/stock', (req, res) => {
     const data = loadData();
     let total = 0;
@@ -302,6 +303,7 @@ app.get('/api/stock', (req, res) => {
     });
 });
 
+// ORDER CREATE
 app.post('/api/order/create', async (req, res) => {
     try {
         const { packageId, email, phone, method, proofImage, userChatId, username } = req.body;
@@ -363,6 +365,7 @@ app.post('/api/order/create', async (req, res) => {
     }
 });
 
+// GET ORDER
 app.get('/api/order/:orderId', (req, res) => {
     const { orderId } = req.params;
     const order = getOrderById(orderId);
@@ -377,6 +380,7 @@ app.get('/api/order/:orderId', (req, res) => {
     res.json({ success: false, message: 'Order not found' });
 });
 
+// FREE KEY REQUEST
 app.post('/api/free/request', (req, res) => {
     const { userId, key } = req.body;
     if (!userId || !key) {
@@ -401,6 +405,7 @@ app.post('/api/free/request', (req, res) => {
     res.json({ success: true, orderId: orderId, key: key });
 });
 
+// VALIDATE KEY
 app.post('/api/validate', (req, res) => {
     const data = loadData();
     const { user_key } = req.body;
@@ -465,6 +470,88 @@ app.post('/api/validate', (req, res) => {
     });
 });
 
+// BOT API — TAMBAH 1 KEY
+app.post('/api/bot/addkey', (req, res) => {
+    try {
+        const { packageId, key } = req.body;
+        if (!packageId || !key) {
+            return res.json({ success: false, message: 'Missing packageId or key' });
+        }
+
+        const data = loadData();
+        if (!data.stock[packageId]) {
+            return res.json({ success: false, message: 'Package not found: ' + packageId });
+        }
+        if (data.stock[packageId].includes(key)) {
+            return res.json({ success: false, message: 'Key already exists: ' + key });
+        }
+
+        data.stock[packageId].push(key);
+        saveData(data);
+
+        console.log(`✅ Key ${key} ditambahkan ke ${packageId} via Bot`);
+        res.json({ success: true, message: 'Key added!', package: packageId, key: key });
+    } catch (e) {
+        console.error('Error /api/bot/addkey:', e);
+        res.json({ success: false, message: e.message });
+    }
+});
+
+// BOT API — TAMBAH BANYAK KEY
+app.post('/api/bot/addkeys', (req, res) => {
+    try {
+        const { keys } = req.body;
+        if (!keys || !Array.isArray(keys) || keys.length === 0) {
+            return res.json({ success: false, message: 'Invalid keys array' });
+        }
+
+        const data = loadData();
+        let added = 0;
+        let skipped = 0;
+        let failed = 0;
+        let results = [];
+
+        keys.forEach(({ packageId, key }) => {
+            if (!packageId || !key) {
+                failed++;
+                results.push(`❌ Invalid: ${key || 'no key'}`);
+                return;
+            }
+
+            if (!data.stock[packageId]) {
+                failed++;
+                results.push(`❌ Package not found: ${packageId}`);
+                return;
+            }
+
+            if (data.stock[packageId].includes(key)) {
+                skipped++;
+                results.push(`⏭️ Already exists: ${key}`);
+                return;
+            }
+
+            data.stock[packageId].push(key);
+            added++;
+            results.push(`✅ ${key} → ${packageId}`);
+        });
+
+        saveData(data);
+
+        console.log(`📊 Bot added ${added} keys, skipped ${skipped}, failed ${failed}`);
+        res.json({
+            success: true,
+            added: added,
+            skipped: skipped,
+            failed: failed,
+            results: results
+        });
+    } catch (e) {
+        console.error('Error /api/bot/addkeys:', e);
+        res.json({ success: false, message: e.message });
+    }
+});
+
+// PAYMENT
 app.get('/api/payment', (req, res) => {
     res.json({
         qris: { image: 'qris.jpg', nominal: 'Sesuai paket yang dipilih' },
@@ -479,6 +566,7 @@ app.get('/api/payment', (req, res) => {
     });
 });
 
+// GAMES
 app.get('/api/games', (req, res) => {
     res.json([
         { id: 'bloodstrike', name: 'Blood Strike', icon: 'bloodstrike-icon.png' },
@@ -490,6 +578,7 @@ app.get('/api/games', (req, res) => {
     ]);
 });
 
+// STATS
 app.get('/api/stats', (req, res) => {
     const data = loadData();
     let total = 0;
@@ -506,6 +595,7 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
+// REVIEWS
 app.get('/api/reviews', (req, res) => {
     const data = loadData();
     res.json({ reviews: data.reviews || [] });
