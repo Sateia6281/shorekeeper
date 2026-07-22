@@ -8,7 +8,7 @@ const API_KEY = 'SK-BOT-2024-SECURE-7X9K2M4N6P8Q';
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 // ============================================================
-// /START — TAMPILAN MEMBER VS ADMIN
+// /START — SEMUA BISA LIHAT SEMUA FITUR
 // ============================================================
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
@@ -18,7 +18,6 @@ bot.onText(/\/start/, (msg) => {
     text += '║   SHOREKEEPER ELITE BOT   ║\n';
     text += '╚══════════════════════════╝\n\n';
 
-    // ===== MEMBER / PEMBELI =====
     text += '🛒 PEMBELI — Fitur Untuk Kamu\n';
     text += '─────────────────────────────\n';
     text += '   /buy   - Lihat paket & harga\n';
@@ -28,25 +27,26 @@ bot.onText(/\/start/, (msg) => {
     text += '   /payment - Cara pembayaran\n';
     text += '   /apk   - Download APK\n\n';
 
-    // ===== ADMIN (hanya tampil jika admin) =====
+    // 🔥 SEMUA BISA LIHAT (tapi ga bisa akses)
+    text += '🔑 ADMIN — Fitur Khusus (Hanya Admin)\n';
+    text += '─────────────────────────────\n';
+    text += '   /genkey [paket] - Generate 1 key\n';
+    text += '   /genfree - Generate 1 key gratis\n';
+    text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
+    text += '   /cekkey [key] - Cek detail key\n';
+    text += '   /resetkey [key] - Reset devices\n';
+    text += '   /delkey [key] - Delete key\n';
+    text += '   /orders - Lihat semua order\n';
+    text += '   /stats - Statistik\n';
+    text += '   /addapk - Upload APK file\n';
+    text += '   /broadcast [pesan] - Kirim pesan ke semua user\n\n';
+
     if (isAdmin) {
-        text += '🔑 ADMIN — Fitur Khusus\n';
-        text += '─────────────────────────────\n';
-        text += '   /genkey [paket] - Generate 1 key\n';
-        text += '   /genfree - Generate 1 key gratis\n';
-        text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
-        text += '   /cekkey [key] - Cek detail key\n';
-        text += '   /resetkey [key] - Reset devices\n';
-        text += '   /delkey [key] - Delete key\n';
-        text += '   /orders - Lihat semua order\n';
-        text += '   /stats - Statistik\n';
-        text += '   /addapk - Upload APK file\n';
-        text += '   /broadcast [pesan] - Kirim pesan ke semua user\n\n';
+        text += '✅ STATUS: ADMIN TERDETEKSI\n';
         text += '⚠️ ADMIN ID: ' + ADMIN_ID + '\n';
     } else {
         text += '─────────────────────────────\n';
         text += '❓ /help - Bantuan\n';
-        text += '─────────────────────────────\n';
         text += '📌 Belum punya key? /buy\n';
     }
 
@@ -54,7 +54,7 @@ bot.onText(/\/start/, (msg) => {
 });
 
 // ============================================================
-// /HELP — SAMA SEPERTI /START TAPI LEBIH SINGKAT
+// /HELP — SEMUA BISA LIHAT
 // ============================================================
 bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
@@ -72,20 +72,22 @@ bot.onText(/\/help/, (msg) => {
     text += '   /payment - Cara pembayaran\n';
     text += '   /apk - Download APK\n\n';
 
+    text += '🔑 ADMIN (Hanya Admin yang Bisa Pakai):\n';
+    text += '   /genkey [paket] - Generate 1 key\n';
+    text += '      Contoh: /genkey 1DAY\n';
+    text += '   /genfree - Generate 1 key gratis\n';
+    text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
+    text += '      Contoh: /massgen 1DAY 5\n';
+    text += '   /cekkey [key] - Cek detail key\n';
+    text += '   /resetkey [key] - Reset devices\n';
+    text += '   /delkey [key] - Delete key\n';
+    text += '   /orders - Lihat semua order\n';
+    text += '   /stats - Statistik\n';
+    text += '   /addapk - Upload APK file\n';
+    text += '   /broadcast [pesan] - Kirim ke semua user\n';
+
     if (isAdmin) {
-        text += '🔑 ADMIN:\n';
-        text += '   /genkey [paket] - Generate 1 key\n';
-        text += '      Contoh: /genkey 1DAY\n';
-        text += '   /genfree - Generate 1 key gratis\n';
-        text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
-        text += '      Contoh: /massgen 1DAY 5\n';
-        text += '   /cekkey [key] - Cek detail key\n';
-        text += '   /resetkey [key] - Reset devices\n';
-        text += '   /delkey [key] - Delete key\n';
-        text += '   /orders - Lihat semua order\n';
-        text += '   /stats - Statistik\n';
-        text += '   /addapk - Upload APK file\n';
-        text += '   /broadcast [pesan] - Kirim ke semua user\n';
+        text += '\n✅ STATUS: ADMIN TERDETEKSI';
     }
 
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -125,7 +127,7 @@ bot.onText(/\/payment/, (msg) => {
     text += '─────────────────────────────\n\n';
     text += '💰 QRIS:\n';
     text += '   Scan QRIS di website\n';
-    text += '   📱 https://shorekeeper-skcheat.up.railway.app\n\n';
+    text += '   📱 https://skcheatshop.up.railway.app\n\n';
     text += '💰 DANA / OVO / GOPAY:\n';
     text += '   📞 0895401347006\n';
     text += '   👤 A/N SHOREKEEPER\n\n';
@@ -146,7 +148,7 @@ bot.onText(/\/apk/, (msg) => {
     let text = '📦 SHOREKEEPER ELITE APK\n';
     text += '─────────────────────────────\n\n';
     text += '🔗 Download APK:\n';
-    text += '   https://shorekeeper-skcheat.up.railway.app\n\n';
+    text += '   https://skcheatshop.up.railway.app\n\n';
     text += '📌 Install APK, lalu masukkan key.\n';
     text += '💡 Butuh bantuan? Hubungi admin:\n';
     text += '   @Zelewin / @Yuangme';
@@ -209,7 +211,7 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
         if (result.success) {
             const paymentInfo =
                 `\n\n💳 CARA BAYAR:\n` +
-                `   QRIS: https://shorekeeper-skcheat.up.railway.app\n` +
+                `   QRIS: https://skcheatshop.up.railway.app\n` +
                 `   DANA/OVO: 0895401347006\n` +
                 `   Kirim bukti ke @Zelewin atau @Yuangme`;
 
@@ -289,10 +291,54 @@ bot.onText(/\/stok/, async (msg) => {
 });
 
 // ============================================================
-// 🔑 ADMIN COMMANDS — HANYA ADMIN
+// /CEK
+// ============================================================
+bot.onText(/\/cek (.+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const orderId = match[1].trim();
+
+    try {
+        const response = await fetch(`${API_URL}/order/${orderId}`, {
+            headers: { 'X-API-Key': API_KEY }
+        });
+
+        const result = await response.json();
+
+        if (!result.success || !result.order) {
+            bot.sendMessage(chatId,
+                `❌ Order ${orderId} tidak ditemukan!`,
+                { parse_mode: 'Markdown' }
+            );
+            return;
+        }
+
+        const order = result.order;
+        const isPending = order.status === 'pending' || order.status === 'pending_payment';
+        const statusEmoji = isPending ? '⏳' : '✅';
+        const statusText = isPending ? 'Menunggu Verifikasi' : 'Aktif';
+
+        let text = `🔍 CEK ORDER\n─────────────────────────────\n\n`;
+        text += `🆔 Order: ${order.orderId}\n`;
+        text += `📦 Paket: ${order.package}\n`;
+        text += `💰 Harga: ${order.price}\n`;
+        text += `📊 Status: ${statusEmoji} ${statusText}\n`;
+
+        if (!isPending && order.key) {
+            text += `\n🔑 KEY: ${order.key}\n`;
+        } else {
+            text += `\n⏳ Key akan muncul setelah diverifikasi admin`;
+        }
+
+        bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
+    } catch (e) {
+        bot.sendMessage(chatId, `❌ Error: ${e.message}`);
+    }
+});
+
+// ============================================================
+// 🔑 ADMIN COMMANDS — TETAP ADA CEK ADMIN
 // ============================================================
 
-// ===== CEK APAKAH ADMIN =====
 function isAdmin(chatId) {
     return String(chatId) === String(ADMIN_ID);
 }
@@ -622,9 +668,9 @@ bot.onText(/\/orders/, (msg) => {
     bot.sendMessage(chatId,
         '📋 DAFTAR ORDER\n─────────────────────────────\n\n' +
         '📊 Lihat di panel admin:\n' +
-        '   https://skcheat.my.id\n\n' +
+        '   https://skcheatshop.up.railway.app\n\n' +
         '📌 Atau download semua key:\n' +
-        '   https://skcheat.my.id/keys',
+        '   https://skcheatshop.up.railway.app/keys',
         { parse_mode: 'Markdown' }
     );
 });
@@ -688,7 +734,6 @@ bot.onText(/\/broadcast (.+)/, async (msg, match) => {
 
     const message = match[1];
     bot.sendMessage(chatId, `📢 Broadcast dikirim ke semua user!\n\nPesan: ${message}`);
-    // Di sini nanti bisa ditambahin logic kirim ke semua user ID
 });
 
 // ===== HANDLE APK FILE =====
