@@ -17,5 +17,6 @@
   "totalRevenue": 0,
   "reviews": [],
   "chatMessages": {},
-  "apkFile": null
+  "apkFile": null,
+  "usedKeys": []
 }
