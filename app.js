@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const FormData = require('form-data');
-const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,138 +15,293 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.static(__dirname));
 
 // ============================================================
-// DATABASE FUNCTIONS — PAKAI MySQL
+// DATABASE — PAKAI data.json (FILE)
 // ============================================================
 
-async function getStockCount(packageId) {
-    const [rows] = await db.query(
-        `SELECT COUNT(*) as count 
-         FROM keys_code 
-         WHERE game = ? 
-           AND status = 1 
-           AND (expired_date IS NULL OR expired_date > NOW())`,
-        [packageId]
-    );
-    return rows[0].count;
+const DATA_FILE = path.join(__dirname, 'data.json');
+
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const raw = fs.readFileSync(DATA_FILE, 'utf8');
+            return JSON.parse(raw);
+        }
+    } catch (e) {
+        console.error('❌ Error loading data.json:', e.message);
+    }
+    return {
+        stock: {
+            "2Jam": [],
+            "5Jam": [],
+            "1Day": [],
+            "3Day": [],
+            "7Day": [],
+            "14Day": [],
+            "30Day": [],
+            "60Day": [],
+            "Free1Day": []
+        },
+        orders: [],
+        pendingOrders: [],
+        lastOrderId: 0,
+        totalSold: 0,
+        totalRevenue: 0,
+        reviews: [],
+        chatMessages: {},
+        apkFile: null,
+        usedKeys: []
+    };
 }
 
-async function reserveKey(packageId) {
-    const conn = await db.getConnection();
+function saveData(data) {
     try {
-        await conn.beginTransaction();
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    } catch (e) {
+        console.error('❌ Error saving data.json:', e.message);
+    }
+}
 
-        const [rows] = await conn.query(
-            `SELECT user_key FROM keys_code 
-             WHERE game = ? 
-               AND status = 1 
-               AND (expired_date IS NULL OR expired_date > NOW())
-             LIMIT 1`,
-            [packageId]
-        );
+// ============================================================
+// LABEL MAP
+// ============================================================
+const LABEL_MAP = {
+    '2JAM': '2Jam', '2 JAM': '2Jam',
+    '5JAM': '5Jam', '5 JAM': '5Jam',
+    '1HARI': '1Day', '1 HARI': '1Day', '1DAY': '1Day',
+    '3HARI': '3Day', '3 HARI': '3Day', '3DAY': '3Day',
+    '7HARI': '7Day', '7 HARI': '7Day', '7DAY': '7Day',
+    '14HARI': '14Day', '14 HARI': '14Day', '14DAY': '14Day',
+    '30HARI': '30Day', '30 HARI': '30Day', '30DAY': '30Day',
+    '60HARI': '60Day', '60 HARI': '60Day', '60DAY': '60Day',
+    'FREE': 'Free1Day', 'FREE1DAY': 'Free1Day', 'FREE 1 HARI': 'Free1Day'
+};
 
-        if (rows.length === 0) {
-            await conn.rollback();
-            return null;
+const PKG_LIST = [
+    { id: '2Jam', name: '2 JAM', price: 5000 },
+    { id: '5Jam', name: '5 JAM', price: 10000 },
+    { id: '1Day', name: '1 HARI', price: 20000 },
+    { id: '3Day', name: '3 HARI', price: 50000 },
+    { id: '7Day', name: '7 HARI', price: 100000 },
+    { id: '14Day', name: '14 HARI', price: 150000 },
+    { id: '30Day', name: '30 HARI', price: 250000 },
+    { id: '60Day', name: '60 HARI', price: 400000 },
+];
+
+// ============================================================
+// FUNGSI STOK
+// ============================================================
+function addKey(label, key) {
+    const data = loadData();
+    const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
+    if (!data.stock[normalizedLabel]) data.stock[normalizedLabel] = [];
+    if (!data.stock[normalizedLabel].includes(key)) {
+        data.stock[normalizedLabel].push(key);
+        saveData(data);
+        return true;
+    }
+    return false;
+}
+
+function getStockCount(label) {
+    const data = loadData();
+    const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
+    if (!data.stock[normalizedLabel]) return 0;
+    return data.stock[normalizedLabel].length;
+}
+
+function getTotalStock() {
+    const data = loadData();
+    let total = 0;
+    for (const label in data.stock) {
+        total += data.stock[label].length;
+    }
+    return total;
+}
+
+function reserveKey(label) {
+    const data = loadData();
+    const normalizedLabel = LABEL_MAP[label.toUpperCase().replace(/\s+/g, '')] || label;
+    if (!data.stock[normalizedLabel] || data.stock[normalizedLabel].length === 0) {
+        return null;
+    }
+    const key = data.stock[normalizedLabel].pop();
+    saveData(data);
+    return key;
+}
+
+function markKeyAsUsed(key) {
+    const data = loadData();
+    if (!data.usedKeys) data.usedKeys = [];
+    if (!data.usedKeys.includes(key)) {
+        data.usedKeys.push(key);
+        saveData(data);
+        return true;
+    }
+    return false;
+}
+
+function generateOrderId() {
+    const data = loadData();
+    data.lastOrderId = (data.lastOrderId || 0) + 1;
+    saveData(data);
+    return 'ORD' + Date.now().toString(36).toUpperCase() + String(data.lastOrderId).padStart(4, '0');
+}
+
+function addPendingOrder(order) {
+    const data = loadData();
+    if (!data.pendingOrders) data.pendingOrders = [];
+    data.pendingOrders.push(order);
+    saveData(data);
+    return order;
+}
+
+function getOrderById(orderId) {
+    const data = loadData();
+    const pending = data.pendingOrders || [];
+    const found = pending.find(o => o.orderId === orderId);
+    if (found) return found;
+    const orders = data.orders || [];
+    return orders.find(o => o.orderId === orderId);
+}
+
+function approveOrder(orderId) {
+    const data = loadData();
+    const pending = data.pendingOrders || [];
+    const index = pending.findIndex(o => o.orderId === orderId);
+    if (index === -1) return null;
+    const order = pending[index];
+    data.pendingOrders.splice(index, 1);
+    order.status = 'approved';
+    order.confirmedAt = new Date().toISOString();
+    data.orders.push(order);
+    data.totalSold = (data.totalSold || 0) + 1;
+    data.totalRevenue = (data.totalRevenue || 0) + (order.priceNumber || 0);
+    if (order.key) markKeyAsUsed(order.key);
+    saveData(data);
+    return order;
+}
+
+function rejectOrder(orderId) {
+    const data = loadData();
+    const pending = data.pendingOrders || [];
+    const index = pending.findIndex(o => o.orderId === orderId);
+    if (index === -1) return null;
+    const order = pending[index];
+    data.pendingOrders.splice(index, 1);
+    if (order.key && order.packageId) {
+        if (!data.stock[order.packageId]) data.stock[order.packageId] = [];
+        data.stock[order.packageId].push(order.key);
+    }
+    saveData(data);
+    return order;
+}
+
+// ============================================================
+// NOTIFIKASI TELEGRAM
+// ============================================================
+async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
+    try {
+        if (!proofImage || proofImage.length < 100) {
+            await sendTelegramMessage(ADMIN_ID, `⚠️ Order ${orderId} - Gambar tidak valid!`);
+            return false;
         }
 
-        const key = rows[0].user_key;
-
-        await conn.query(
-            `UPDATE keys_code SET status = 0 WHERE user_key = ?`,
-            [key]
-        );
-
-        await conn.commit();
-        return key;
-    } catch (e) {
-        await conn.rollback();
-        throw e;
-    } finally {
-        conn.release();
-    }
-}
-
-async function addPendingOrder(order) {
-    await db.query(
-        `INSERT INTO pending_orders 
-         (order_id, package, package_id, key_code, price, price_number, 
-          email, phone, username, status, created_at, proof_image, user_chat_id) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            order.orderId, order.package, order.packageId, order.key,
-            order.price, order.priceNumber, order.email, order.phone,
-            order.username, order.status, order.createdAt,
-            order.proofImage, order.userChatId
-        ]
-    );
-}
-
-async function getOrderById(orderId) {
-    const [rows] = await db.query(
-        `SELECT * FROM pending_orders WHERE order_id = ? 
-         UNION 
-         SELECT * FROM orders WHERE order_id = ?`,
-        [orderId, orderId]
-    );
-    return rows[0] || null;
-}
-
-async function getTotalStock() {
-    const [rows] = await db.query(
-        `SELECT COUNT(*) as total 
-         FROM keys_code 
-         WHERE status = 1 
-           AND (expired_date IS NULL OR expired_date > NOW())`
-    );
-    return rows[0].total;
-}
-
-// ============================================================
-// ENDPOINT STOCK
-// ============================================================
-app.get('/api/stock', async (req, res) => {
-    try {
-        const [rows] = await db.query(
-            `SELECT game, COUNT(*) as count 
-             FROM keys_code 
-             WHERE status = 1 
-               AND (expired_date IS NULL OR expired_date > NOW())
-             GROUP BY game`
-        );
-
-        const stock = {
-            '2Jam': 0, '5Jam': 0, '1Day': 0, '3Day': 0,
-            '7Day': 0, '14Day': 0, '30Day': 0, '60Day': 0,
-            'Free1Day': 0
-        };
-
-        rows.forEach(row => {
-            if (stock[row.game] !== undefined) {
-                stock[row.game] = row.count;
+        let imageBuffer;
+        if (proofImage.startsWith('data:image')) {
+            const matches = proofImage.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/);
+            if (matches) {
+                imageBuffer = Buffer.from(matches[2], 'base64');
+            } else {
+                imageBuffer = Buffer.from(proofImage, 'base64');
             }
+        } else {
+            imageBuffer = Buffer.from(proofImage, 'base64');
+        }
+
+        const formData = new FormData();
+        formData.append('chat_id', ADMIN_ID);
+        formData.append('photo', imageBuffer, {
+            filename: `proof_${orderId}.jpg`,
+            contentType: 'image/jpeg'
         });
 
-        const [orderRows] = await db.query(`SELECT COUNT(*) as total FROM orders`);
-        const [pendingRows] = await db.query(`SELECT COUNT(*) as pending FROM pending_orders`);
+        const caption =
+            `📸 PAYMENT PROOF!\n─────────────────\n\n` +
+            `🆔 Order: ${orderId}\n` +
+            `👤 User: ${username || 'Customer'}\n` +
+            `📦 Package: ${packageName}\n` +
+            `💰 Price: ${price}\n` +
+            `📧 Email: ${email}\n` +
+            `📱 WA: ${phone}`;
 
-        res.json({
-            success: true,
-            stock: stock,
-            total: await getTotalStock(),
-            totalSold: orderRows[0].total || 0,
-            pending: pendingRows[0].pending || 0,
-            totalRevenue: 0,
-            timestamp: new Date().toISOString()
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'Markdown');
+
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+            method: 'POST',
+            body: formData,
+            headers: formData.getHeaders()
+        });
+
+        await sendTelegramMessage(
+            ADMIN_ID,
+            `🔑 Verify Order: ${orderId}\n\nClick button below:`,
+            { approveBtn: orderId }
+        );
+
+        return true;
+    } catch (e) {
+        console.error('Notif error:', e.message);
+        return false;
+    }
+}
+
+async function sendTelegramMessage(chatId, text, options = {}) {
+    try {
+        const payload = {
+            chat_id: chatId,
+            text: text,
+            parse_mode: 'Markdown'
+        };
+        if (options.approveBtn) {
+            payload.reply_markup = {
+                inline_keyboard: [
+                    [
+                        { text: '✅ APPROVE', callback_data: `approve_${options.approveBtn}` },
+                        { text: '❌ REJECT', callback_data: `reject_${options.approveBtn}` }
+                    ]
+                ]
+            };
+        }
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         });
     } catch (e) {
-        console.error('Error /api/stock:', e);
-        res.status(500).json({ success: false, error: e.message });
+        console.error('Telegram error:', e.message);
     }
+}
+
+// ============================================================
+// ENDPOINT API
+// ============================================================
+
+app.get('/api/stock', (req, res) => {
+    const data = loadData();
+    let total = 0;
+    for (const label in data.stock) {
+        total += data.stock[label].length;
+    }
+    res.json({
+        stock: data.stock,
+        total: total,
+        totalSold: data.totalSold || 0,
+        pending: (data.pendingOrders || []).length,
+        totalRevenue: data.totalRevenue || 0
+    });
 });
 
-// ============================================================
-// ENDPOINT ORDER CREATE
-// ============================================================
 app.post('/api/order/create', async (req, res) => {
     try {
         const { packageId, email, phone, method, proofImage, userChatId, username } = req.body;
@@ -156,44 +310,50 @@ app.post('/api/order/create', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
-        const packageMap = {
-            '2JAM': '2Jam', '5JAM': '5Jam', '1HARI': '1Day', '1DAY': '1Day',
-            '3HARI': '3Day', '3DAY': '3Day', '7HARI': '7Day', '7DAY': '7Day',
-            '14HARI': '14Day', '14DAY': '14Day', '30HARI': '30Day', '30DAY': '30Day',
-            '60HARI': '60Day', '60DAY': '60Day'
-        };
+        const normalizedPkgId = LABEL_MAP[packageId.toUpperCase().replace(/\s+/g, '')] || packageId;
+        const pkg = PKG_LIST.find(p => p.id === normalizedPkgId);
 
-        const normalizedPkgId = packageMap[packageId.toUpperCase().replace(/\s+/g, '')] || packageId;
+        if (!pkg) {
+            return res.status(400).json({ success: false, message: 'Package not found' });
+        }
 
-        const key = await reserveKey(normalizedPkgId);
+        const key = reserveKey(normalizedPkgId);
         if (!key) {
             return res.status(400).json({ success: false, message: 'Stock is empty!' });
         }
 
-        const orderId = 'ORD' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
-
-        const [pkgRows] = await db.query(
-            `SELECT DISTINCT game FROM keys_code WHERE game = ?`,
-            [normalizedPkgId]
-        );
-        const packageName = pkgRows.length > 0 ? pkgRows[0].game : normalizedPkgId;
-
+        const orderId = generateOrderId();
         const order = {
-            orderId, package: packageName, packageId: normalizedPkgId,
-            price: 'Rp 0', priceNumber: 0, key, email, phone,
-            username: username || 'Customer', method: method || 'qris',
-            status: 'pending', createdAt: new Date().toISOString(),
-            proofImage: proofImage || null, type: 'paid', userChatId: userChatId || null
+            orderId: orderId,
+            package: pkg.name,
+            packageId: normalizedPkgId,
+            price: 'Rp ' + pkg.price.toLocaleString(),
+            priceNumber: pkg.price,
+            key: key,
+            email: email,
+            phone: phone,
+            username: username || 'Customer',
+            method: method || 'qris',
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            proofImage: proofImage || null,
+            type: 'paid',
+            userChatId: userChatId || null
         };
 
-        await addPendingOrder(order);
+        addPendingOrder(order);
 
-        res.json({ success: true, orderId, status: 'pending' });
+        res.json({ success: true, orderId: orderId, status: 'pending' });
 
         if (proofImage) {
             sendNotificationToAdmin(
-                orderId, packageName, 'Rp 0',
-                email, phone, proofImage, username || 'Customer'
+                orderId,
+                pkg.name,
+                'Rp ' + pkg.price.toLocaleString(),
+                email,
+                phone,
+                proofImage,
+                username || 'Customer'
             ).catch(e => console.log('Notif error:', e.message));
         }
 
@@ -203,106 +363,108 @@ app.post('/api/order/create', async (req, res) => {
     }
 });
 
-// ============================================================
-// ENDPOINT CEK ORDER
-// ============================================================
-app.get('/api/order/:orderId', async (req, res) => {
-    try {
-        const { orderId } = req.params;
-        const order = await getOrderById(orderId);
+app.get('/api/order/:orderId', (req, res) => {
+    const { orderId } = req.params;
+    const order = getOrderById(orderId);
+    if (order) {
+        const result = { ...order };
+        if (order.status === 'pending') {
+            result.key = null;
+            result.message = 'Menunggu verifikasi admin';
+        }
+        return res.json({ success: true, order: result });
+    }
+    res.json({ success: false, message: 'Order not found' });
+});
 
+app.post('/api/free/request', (req, res) => {
+    const { userId, key } = req.body;
+    if (!userId || !key) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+    const orderId = 'FREE' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
+    const order = {
+        orderId: orderId,
+        userId: userId,
+        package: 'GRATIS 1 HARI',
+        packageId: 'Free1Day',
+        price: 'Rp 0',
+        priceNumber: 0,
+        key: key,
+        status: 'approved',
+        createdAt: new Date().toISOString(),
+        type: 'free'
+    };
+    const data = loadData();
+    data.orders.push(order);
+    saveData(data);
+    res.json({ success: true, orderId: orderId, key: key });
+});
+
+app.post('/api/validate', (req, res) => {
+    const data = loadData();
+    const { user_key } = req.body;
+    if (!user_key) {
+        return res.json({ status: false, reason: 'Key tidak boleh kosong' });
+    }
+
+    let foundKey = null;
+    let foundPkg = null;
+
+    for (const label in data.stock) {
+        if (data.stock[label].includes(user_key)) {
+            foundKey = user_key;
+            foundPkg = label;
+            break;
+        }
+    }
+
+    if (!foundKey) {
+        const order = data.orders.find(o => o.key === user_key && o.status === 'approved');
         if (order) {
-            const result = { ...order };
-            if (order.status === 'pending') {
-                result.key = null;
-                result.message = 'Menunggu verifikasi admin';
-            }
-            return res.json({ success: true, order: result });
+            foundKey = order.key;
+            foundPkg = order.packageId;
         }
-        res.json({ success: false, message: 'Order not found' });
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
     }
+
+    if (!foundKey) {
+        return res.json({ status: false, reason: 'Key tidak valid!' });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const token = 'SK-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+    const pkg = PKG_LIST.find(p => p.id === foundPkg);
+    const pkgName = pkg ? pkg.name : foundPkg;
+
+    const daysMap = {
+        '2Jam': 0.08, '5Jam': 0.2, '1Day': 1, '3Day': 3,
+        '7Day': 7, '14Day': 14, '30Day': 30, '60Day': 60
+    };
+    const expDays = daysMap[foundPkg] || 30;
+    const expDate = new Date();
+    expDate.setDate(expDate.getDate() + expDays);
+    const expStr = expDate.toISOString().split('T')[0];
+
+    res.json({
+        status: true,
+        data: {
+            token: token,
+            rng: now,
+            EXP: expStr,
+            MOD_NAME: 'Shorekeeper Elite',
+            MOD_STATUS: '✅ SAFE',
+            username: 'User',
+            package: pkgName,
+            days_left: expDays,
+            created: new Date().toISOString(),
+            menu_block: false,
+            floating_text: 'Shorekeeper Elite • ' + pkgName,
+            sig: ''
+        }
+    });
 });
 
-// ============================================================
-// ENDPOINT FREE KEY
-// ============================================================
-app.post('/api/free/request', async (req, res) => {
-    try {
-        const { userId, key } = req.body;
-        if (!userId || !key) {
-            return res.status(400).json({ success: false, message: 'Missing required fields' });
-        }
-
-        const orderId = 'FREE' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 4).toUpperCase();
-
-        await db.query(
-            `INSERT INTO orders 
-             (order_id, package, package_id, key_code, price, price_number, username, status, created_at)
-             VALUES (?, 'GRATIS 1 HARI', 'Free1Day', ?, 'Rp 0', 0, ?, 'approved', NOW())`,
-            [orderId, key, userId]
-        );
-
-        res.json({ success: true, orderId, key });
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
-    }
-});
-
-// ============================================================
-// ENDPOINT VALIDATE — UNTUK MOD
-// ============================================================
-app.post('/api/validate', async (req, res) => {
-    try {
-        const { user_key } = req.body;
-
-        if (!user_key) {
-            return res.json({ status: false, reason: 'Key tidak boleh kosong' });
-        }
-
-        const [rows] = await db.query(
-            `SELECT game, duration, expired_date 
-             FROM keys_code 
-             WHERE user_key = ? 
-               AND status = 1 
-               AND (expired_date IS NULL OR expired_date > NOW())`,
-            [user_key]
-        );
-
-        if (rows.length === 0) {
-            return res.json({ status: false, reason: 'Key tidak valid atau sudah expired!' });
-        }
-
-        const data = rows[0];
-        const now = Math.floor(Date.now() / 1000);
-        const token = 'SK-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 6).toUpperCase();
-
-        const expDate = data.expired_date ? new Date(data.expired_date) : new Date();
-        const expStr = expDate.toISOString().split('T')[0];
-
-        res.json({
-            status: true,
-            data: {
-                token, rng: now, EXP: expStr,
-                MOD_NAME: 'Shorekeeper Elite', MOD_STATUS: 'SAFE',
-                username: 'User', package: data.game,
-                days_left: Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24)),
-                created: new Date().toISOString(),
-                menu_block: false,
-                floating_text: 'Shorekeeper Elite • ' + data.game,
-                sig: ''
-            }
-        });
-    } catch (e) {
-        console.error('Validate error:', e);
-        res.status(500).json({ status: false, reason: 'Server error' });
-    }
-});
-
-// ============================================================
-// ENDPOINT LAINNYA
-// ============================================================
 app.get('/api/payment', (req, res) => {
     res.json({
         qris: { image: 'qris.jpg', nominal: 'Sesuai paket yang dipilih' },
@@ -328,96 +490,59 @@ app.get('/api/games', (req, res) => {
     ]);
 });
 
-app.get('/api/stats', async (req, res) => {
-    try {
-        const [orderRows] = await db.query(`SELECT COUNT(*) as total FROM orders`);
-        const [pendingRows] = await db.query(`SELECT COUNT(*) as pending FROM pending_orders`);
-        const totalStock = await getTotalStock();
-
-        res.json({
-            totalOrders: orderRows[0].total || 0,
-            totalSold: orderRows[0].total || 0,
-            totalStock: totalStock,
-            pending: pendingRows[0].pending || 0,
-            totalRevenue: 0,
-            timestamp: new Date().toISOString()
-        });
-    } catch (e) {
-        res.status(500).json({ success: false, error: e.message });
+app.get('/api/stats', (req, res) => {
+    const data = loadData();
+    let total = 0;
+    for (const label in data.stock) {
+        total += data.stock[label].length;
     }
+    res.json({
+        totalOrders: data.orders.length,
+        totalSold: data.totalSold || 0,
+        totalStock: total,
+        pending: (data.pendingOrders || []).length,
+        totalRevenue: data.totalRevenue || 0,
+        timestamp: new Date().toISOString()
+    });
 });
 
 app.get('/api/reviews', (req, res) => {
-    res.json({ reviews: [] });
+    const data = loadData();
+    res.json({ reviews: data.reviews || [] });
 });
 
 app.post('/api/reviews', (req, res) => {
-    res.json({ success: true });
-});
-
-// ============================================================
-// NOTIFIKASI KE ADMIN
-// ============================================================
-async function sendNotificationToAdmin(orderId, packageName, price, email, phone, proofImage, username) {
-    try {
-        const formData = new FormData();
-        const imageBuffer = Buffer.from(proofImage.split(',')[1] || proofImage, 'base64');
-
-        formData.append('chat_id', ADMIN_ID);
-        formData.append('photo', imageBuffer, {
-            filename: `proof_${orderId}.jpg`,
-            contentType: 'image/jpeg'
-        });
-
-        const caption =
-            `📸 PAYMENT PROOF!\n─────────────────\n\n` +
-            `🆔 Order: ${orderId}\n` +
-            `👤 User: ${username || 'Customer'}\n` +
-            `📦 Package: ${packageName}\n` +
-            `💰 Price: ${price}\n` +
-            `📧 Email: ${email}\n` +
-            `📱 WA: ${phone}`;
-
-        formData.append('caption', caption);
-        formData.append('parse_mode', 'Markdown');
-
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-            method: 'POST',
-            body: formData,
-            headers: formData.getHeaders()
-        });
-
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: ADMIN_ID,
-                text: `🔑 Verify Order: ${orderId}\n\nClick button below:`,
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '✅ APPROVE', callback_data: `approve_${orderId}` },
-                            { text: '❌ REJECT', callback_data: `reject_${orderId}` }
-                        ]
-                    ]
-                }
-            })
-        });
-
-    } catch (e) {
-        console.error('Notif error:', e.message);
+    const { name, city, rating, text } = req.body;
+    if (!name || !rating || !text) {
+        return res.status(400).json({ success: false, message: 'Missing fields' });
     }
-}
+    const data = loadData();
+    if (!data.reviews) data.reviews = [];
+    data.reviews.push({
+        name: name.toUpperCase(),
+        city: city ? city.toUpperCase() : '',
+        rating: rating,
+        text: text,
+        time: 'BARU SAJA'
+    });
+    saveData(data);
+    res.json({ success: true, reviews: data.reviews });
+});
 
 // ============================================================
 // START SERVER
 // ============================================================
-app.listen(PORT, '0.0.0.0', async () => {
-    const totalStock = await getTotalStock();
+app.listen(PORT, '0.0.0.0', () => {
+    const data = loadData();
+    let total = 0;
+    for (const label in data.stock) {
+        total += data.stock[label].length;
+    }
     console.log(`\n🚀 Server running on port ${PORT}`);
-    console.log(`📊 Total stock: ${totalStock} keys`);
+    console.log(`📊 Total stock: ${total} keys`);
+    console.log(`📋 Pending orders: ${(data.pendingOrders || []).length}`);
     console.log(`🌐 Web: http://localhost:${PORT}`);
+    console.log(`📦 Total orders: ${data.orders.length}\n`);
 });
 
 console.log('✅ Server + Bot ready!');
