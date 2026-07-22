@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 
 const BOT_TOKEN = '8950107483:AAGtvDaNSXEA-fULAPn86B6r5jCEn2fEM-A';
 const ADMIN_ID = '6284402885';
-const API_URL = 'https://shorekeeper-skcheat.up.railway.app/api/bot';
+const API_URL = 'https://skcheatshop.up.railway.app/api/bot';
 const API_KEY = 'SK-BOT-2024-SECURE-7X9K2M4N6P8Q';
 
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
