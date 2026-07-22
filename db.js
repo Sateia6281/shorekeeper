@@ -1,7 +1,7 @@
 const mysql = require('mysql2');
 
 const pool = mysql.createPool({
-    host: 'localhost',
+    host: 'guntur.iixcp.rumahweb.net',  // ← PAKE INI!
     user: 'skcc6858_sk',
     password: 'Satria123',
     database: 'skcc6858_sk',
