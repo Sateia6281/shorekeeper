@@ -8,7 +8,7 @@ const API_KEY = 'SK-BOT-2024-SECURE-7X9K2M4N6P8Q';
 const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 // ============================================================
-// /START — SEMUA BISA LIHAT SEMUA FITUR
+// /START
 // ============================================================
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
@@ -27,22 +27,21 @@ bot.onText(/\/start/, (msg) => {
     text += '   /payment - Cara pembayaran\n';
     text += '   /apk   - Download APK\n\n';
 
-    // 🔥 SEMUA BISA LIHAT (tapi ga bisa akses)
-    text += '🔑 ADMIN — Fitur Khusus (Hanya Admin)\n';
-    text += '─────────────────────────────\n';
-    text += '   /genkey [paket] - Generate 1 key\n';
-    text += '   /genfree - Generate 1 key gratis\n';
-    text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
-    text += '   /cekkey [key] - Cek detail key\n';
-    text += '   /resetkey [key] - Reset devices\n';
-    text += '   /delkey [key] - Delete key\n';
-    text += '   /orders - Lihat semua order\n';
-    text += '   /stats - Statistik\n';
-    text += '   /addapk - Upload APK file\n';
-    text += '   /broadcast [pesan] - Kirim pesan ke semua user\n\n';
-
     if (isAdmin) {
-        text += '✅ STATUS: ADMIN TERDETEKSI\n';
+        text += '🔑 ADMIN — Fitur Khusus\n';
+        text += '─────────────────────────────\n';
+        text += '   /genkey [paket] - Generate 1 key\n';
+        text += '   /genfree - Generate 1 key gratis\n';
+        text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
+        text += '   /cekkey [key] - Cek detail key\n';
+        text += '   /resetkey [key] - Reset devices\n';
+        text += '   /delkey [key] - Delete key\n';
+        text += '   /orders - Lihat semua order\n';
+        text += '   /stats - Statistik\n';
+        text += '   /addapk - Upload APK file\n';
+        text += '   /broadcast [pesan] - Kirim pesan ke semua user\n';
+        text += '   /addkey [paket] [key] - Tambah 1 key\n';
+        text += '   /addkeys - Tambah banyak key (kirim list)\n\n';
         text += '⚠️ ADMIN ID: ' + ADMIN_ID + '\n';
     } else {
         text += '─────────────────────────────\n';
@@ -54,14 +53,13 @@ bot.onText(/\/start/, (msg) => {
 });
 
 // ============================================================
-// /HELP — SEMUA BISA LIHAT
+// /HELP
 // ============================================================
 bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
     const isAdmin = String(chatId) === String(ADMIN_ID);
 
-    let text = '❓ BANTUAN\n';
-    text += '─────────────────────────────\n\n';
+    let text = '❓ BANTUAN\n─────────────────────────────\n\n';
 
     text += '🛒 PEMBELI:\n';
     text += '   /buy - Lihat paket & harga\n';
@@ -72,22 +70,22 @@ bot.onText(/\/help/, (msg) => {
     text += '   /payment - Cara pembayaran\n';
     text += '   /apk - Download APK\n\n';
 
-    text += '🔑 ADMIN (Hanya Admin yang Bisa Pakai):\n';
-    text += '   /genkey [paket] - Generate 1 key\n';
-    text += '      Contoh: /genkey 1DAY\n';
-    text += '   /genfree - Generate 1 key gratis\n';
-    text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
-    text += '      Contoh: /massgen 1DAY 5\n';
-    text += '   /cekkey [key] - Cek detail key\n';
-    text += '   /resetkey [key] - Reset devices\n';
-    text += '   /delkey [key] - Delete key\n';
-    text += '   /orders - Lihat semua order\n';
-    text += '   /stats - Statistik\n';
-    text += '   /addapk - Upload APK file\n';
-    text += '   /broadcast [pesan] - Kirim ke semua user\n';
-
     if (isAdmin) {
-        text += '\n✅ STATUS: ADMIN TERDETEKSI';
+        text += '🔑 ADMIN:\n';
+        text += '   /genkey [paket] - Generate 1 key\n';
+        text += '      Contoh: /genkey 1DAY\n';
+        text += '   /genfree - Generate 1 key gratis\n';
+        text += '   /massgen [paket] [jumlah] - Generate banyak key\n';
+        text += '      Contoh: /massgen 1DAY 5\n';
+        text += '   /cekkey [key] - Cek detail key\n';
+        text += '   /resetkey [key] - Reset devices\n';
+        text += '   /delkey [key] - Delete key\n';
+        text += '   /orders - Lihat semua order\n';
+        text += '   /stats - Statistik\n';
+        text += '   /addapk - Upload APK file\n';
+        text += '   /broadcast [pesan] - Kirim ke semua user\n';
+        text += '   /addkey [paket] [key] - Tambah 1 key\n';
+        text += '   /addkeys - Tambah banyak key (kirim list)\n';
     }
 
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
@@ -98,9 +96,7 @@ bot.onText(/\/help/, (msg) => {
 // ============================================================
 bot.onText(/\/buy/, (msg) => {
     const chatId = msg.chat.id;
-
-    let text = '🛒 DAFTAR PAKET\n';
-    text += '─────────────────────────────\n\n';
+    let text = '🛒 DAFTAR PAKET\n─────────────────────────────\n\n';
     text += '📌 2 JAM   - Rp 5.000\n';
     text += '📌 5 JAM   - Rp 10.000\n';
     text += '📌 1 HARI  - Rp 20.000\n';
@@ -113,7 +109,6 @@ bot.onText(/\/buy/, (msg) => {
     text += '📝 Cara order: /order [paket]\n';
     text += 'Contoh: /order 1HARI\n';
     text += '💳 /payment - Lihat cara bayar';
-
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
@@ -122,9 +117,7 @@ bot.onText(/\/buy/, (msg) => {
 // ============================================================
 bot.onText(/\/payment/, (msg) => {
     const chatId = msg.chat.id;
-
-    let text = '💳 METODE PEMBAYARAN\n';
-    text += '─────────────────────────────\n\n';
+    let text = '💳 METODE PEMBAYARAN\n─────────────────────────────\n\n';
     text += '💰 QRIS:\n';
     text += '   Scan QRIS di website\n';
     text += '   📱 https://skcheatshop.up.railway.app\n\n';
@@ -135,7 +128,6 @@ bot.onText(/\/payment/, (msg) => {
     text += '   @Zelewin\n';
     text += '   @Yuangme\n\n';
     text += '📌 Setelah transfer, kirim bukti ke admin!';
-
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
@@ -144,15 +136,12 @@ bot.onText(/\/payment/, (msg) => {
 // ============================================================
 bot.onText(/\/apk/, (msg) => {
     const chatId = msg.chat.id;
-
-    let text = '📦 SHOREKEEPER ELITE APK\n';
-    text += '─────────────────────────────\n\n';
+    let text = '📦 SHOREKEEPER ELITE APK\n─────────────────────────────\n\n';
     text += '🔗 Download APK:\n';
     text += '   https://skcheatshop.up.railway.app\n\n';
     text += '📌 Install APK, lalu masukkan key.\n';
     text += '💡 Butuh bantuan? Hubungi admin:\n';
     text += '   @Zelewin / @Yuangme';
-
     bot.sendMessage(chatId, text, { parse_mode: 'Markdown' });
 });
 
@@ -247,7 +236,6 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
 // ============================================================
 bot.onText(/\/stok/, async (msg) => {
     const chatId = msg.chat.id;
-
     try {
         const response = await fetch(`${API_URL}/stock`, {
             headers: { 'X-API-Key': API_KEY }
@@ -260,8 +248,7 @@ bot.onText(/\/stok/, async (msg) => {
             return;
         }
 
-        let text = '📊 STOK KEY\n';
-        text += '─────────────────────────────\n\n';
+        let text = '📊 STOK KEY\n─────────────────────────────\n\n';
 
         const packages = [
             { label: '2 JAM', id: '2 Hours' },
@@ -336,15 +323,15 @@ bot.onText(/\/cek (.+)/, async (msg, match) => {
 });
 
 // ============================================================
-// 🔑 ADMIN COMMANDS — TETAP ADA CEK ADMIN
+// 🔑 ADMIN COMMANDS
 // ============================================================
 
 function isAdmin(chatId) {
     return String(chatId) === String(ADMIN_ID);
 }
 
-// ===== /GENKEY =====
-bot.onText(/\/genkey (.+)/, async (msg, match) => {
+// ===== /ADDKEY — TAMBAH 1 KEY VIA API =====
+bot.onText(/\/addkey (.+) (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
 
     if (!isAdmin(chatId)) {
@@ -353,22 +340,275 @@ bot.onText(/\/genkey (.+)/, async (msg, match) => {
     }
 
     const packageInput = match[1].trim().toUpperCase();
+    const key = match[2].trim().toUpperCase();
 
     const packageMap = {
-        '2JAM': '2JAM',
-        '5JAM': '5JAM',
-        '1HARI': '1DAY',
-        '1DAY': '1DAY',
-        '3HARI': '3DAY',
-        '3DAY': '3DAY',
-        '7HARI': '7DAY',
-        '7DAY': '7DAY',
-        '14HARI': '14DAY',
-        '14DAY': '14DAY',
-        '30HARI': '30DAY',
-        '30DAY': '30DAY',
-        '60HARI': '60DAY',
-        '60DAY': '60DAY',
+        '2JAM': '2Jam',
+        '5JAM': '5Jam',
+        '1HARI': '1Day',
+        '1DAY': '1Day',
+        '3HARI': '3Day',
+        '3DAY': '3Day',
+        '7HARI': '7Day',
+        '7DAY': '7Day',
+        '14HARI': '14Day',
+        '14DAY': '14Day',
+        '30HARI': '30Day',
+        '30DAY': '30Day',
+        '60HARI': '60Day',
+        '60DAY': '60Day',
+    };
+
+    const packageId = packageMap[packageInput];
+    if (!packageId) {
+        bot.sendMessage(chatId,
+            `❌ Paket ${packageInput} tidak ditemukan!\n` +
+            `📋 Paket: 2JAM, 5JAM, 1DAY, 3DAY, 7DAY, 14DAY, 30DAY, 60DAY`,
+            { parse_mode: 'Markdown' }
+        );
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/addkey`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': API_KEY
+            },
+            body: JSON.stringify({ packageId, key })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            bot.sendMessage(chatId,
+                `✅ KEY ADDED!\n─────────────────────────────\n\n` +
+                `🔑 ${key}\n` +
+                `📦 ${packageId}\n` +
+                `📊 Stok ${packageId}: ${result.stock || '?'}`,
+                { parse_mode: 'Markdown' }
+            );
+        } else {
+            bot.sendMessage(chatId, `❌ ${result.message || 'Gagal tambah key!'}`);
+        }
+    } catch (e) {
+        bot.sendMessage(chatId, `❌ Error: ${e.message}`);
+    }
+});
+
+// ===== /ADDKEYS — TAMBAH BANYAK KEY =====
+bot.onText(/\/addkeys/, (msg) => {
+    const chatId = msg.chat.id;
+
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
+        return;
+    }
+
+    bot.sendMessage(chatId,
+        '📝 **ADD MULTIPLE KEYS**\n─────────────────────────────\n\n' +
+        'Send key list (SUPPORTS PANEL FORMAT!):\n\n' +
+        '📌 Panel Format:\n' +
+        '`1313  BS  BS-ADF0P1TT  0/1  1 Day  (not started yet)`\n\n' +
+        '📌 Simple Format:\n' +
+        '`BS-ABC123 0/1 1Day`\n\n' +
+        '📌 Minimal Format:\n' +
+        '`BS-ABC123`\n\n' +
+        '📌 Send in 1 message, multiple lines allowed!',
+        { parse_mode: 'Markdown' }
+    );
+
+    // Simpan state
+    userStates.set(chatId, { step: 'waiting_keys' });
+});
+
+// ===== HANDLE PESAN UNTUK /ADDKEYS =====
+const userStates = new Map();
+
+bot.on('message', async (msg) => {
+    const chatId = msg.chat.id;
+    const text = msg.text || '';
+
+    if (text.startsWith('/')) return;
+    if (msg.document) return;
+
+    const state = userStates.get(chatId);
+    if (!state || state.step !== 'waiting_keys') return;
+
+    if (!isAdmin(chatId)) {
+        userStates.delete(chatId);
+        return;
+    }
+
+    const lines = text.split('\n').filter(line => line.trim().length > 0);
+    const keysToSend = [];
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+
+        // Format: BS-ABC123 0/1 1Day
+        const match = trimmed.match(/^(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([A-Z0-9 ]+)$/i);
+        if (match) {
+            const key = match[1].toUpperCase();
+            const status = match[2];
+            const packageRaw = match[3].toUpperCase().trim();
+
+            if (status.startsWith('1/')) continue;
+
+            const packageMap = {
+                '1JAM': '2Jam', '2JAM': '2Jam', '5JAM': '5Jam',
+                '1HARI': '1Day', '1DAY': '1Day',
+                '3HARI': '3Day', '3DAY': '3Day',
+                '7HARI': '7Day', '7DAY': '7Day',
+                '14HARI': '14Day', '14DAY': '14Day',
+                '30HARI': '30Day', '30DAY': '30Day',
+                '60HARI': '60Day', '60DAY': '60Day'
+            };
+
+            let packageId = packageMap[packageRaw.replace(/\s+/g, '')];
+            if (!packageId) {
+                const found = ['2Jam', '5Jam', '1Day', '3Day', '7Day', '14Day', '30Day', '60Day']
+                    .find(p => packageRaw.includes(p.toUpperCase()) || p.toUpperCase().includes(packageRaw));
+                if (found) packageId = found;
+            }
+
+            if (packageId) {
+                keysToSend.push({ packageId, key });
+            }
+            continue;
+        }
+
+        // Format panel: 1313  BS  BS-ADF0P1TT  0/1  1 Day
+        const panelMatch = trimmed.match(/^\d+\s+BS\s+(BS-[A-Z0-9-]+)\s+([01]\/[0-9]+)\s+([\d]+\s+(?:Day|Days|Hari|JAM|Jam))/i);
+        if (panelMatch) {
+            const key = panelMatch[1].toUpperCase();
+            const status = panelMatch[2];
+            const packageRaw = panelMatch[3].trim();
+
+            if (status.startsWith('1/')) continue;
+
+            const daysMatch = packageRaw.match(/(\d+)/);
+            if (daysMatch) {
+                const days = parseInt(daysMatch[1]);
+                let packageId;
+                if (days === 1) packageId = '1Day';
+                else if (days === 2) packageId = '2Jam';
+                else if (days === 3) packageId = '3Day';
+                else if (days === 5) packageId = '5Jam';
+                else if (days === 7) packageId = '7Day';
+                else if (days === 14) packageId = '14Day';
+                else if (days === 30) packageId = '30Day';
+                else if (days === 60) packageId = '60Day';
+
+                if (packageId) {
+                    keysToSend.push({ packageId, key });
+                }
+            }
+            continue;
+        }
+
+        // Format: package|key
+        const pipeMatch = trimmed.match(/^(.+)\|(BS-[A-Z0-9-]+)$/i);
+        if (pipeMatch) {
+            const packageRaw = pipeMatch[1].trim().toUpperCase();
+            const key = pipeMatch[2].trim().toUpperCase();
+
+            const packageMap = {
+                '1JAM': '2Jam', '2JAM': '2Jam', '5JAM': '5Jam',
+                '1HARI': '1Day', '1DAY': '1Day',
+                '3HARI': '3Day', '3DAY': '3Day',
+                '7HARI': '7Day', '7DAY': '7Day',
+                '14HARI': '14Day', '14DAY': '14Day',
+                '30HARI': '30Day', '30DAY': '30Day',
+                '60HARI': '60Day', '60DAY': '60Day'
+            };
+
+            let packageId = packageMap[packageRaw.replace(/\s+/g, '')];
+            if (!packageId) {
+                const found = ['2Jam', '5Jam', '1Day', '3Day', '7Day', '14Day', '30Day', '60Day']
+                    .find(p => packageRaw.includes(p.toUpperCase()) || p.toUpperCase().includes(packageRaw));
+                if (found) packageId = found;
+            }
+
+            if (packageId) {
+                keysToSend.push({ packageId, key });
+            }
+            continue;
+        }
+
+        // Key only
+        const keyOnly = trimmed.match(/^(BS-[A-Z0-9-]+)$/i);
+        if (keyOnly) {
+            // Skip, karena ga ada package
+            continue;
+        }
+    }
+
+    if (keysToSend.length === 0) {
+        bot.sendMessage(chatId, '❌ Tidak ada key yang valid ditemukan! Pastikan formatnya benar.');
+        userStates.delete(chatId);
+        return;
+    }
+
+    await bot.sendMessage(chatId, `⏳ Memproses ${keysToSend.length} key...`);
+
+    try {
+        const response = await fetch(`${API_URL}/addkeys`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': API_KEY
+            },
+            body: JSON.stringify({ keys: keysToSend })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            let reply = '📊 **ADD KEY RESULTS**\n─────────────────────────────\n\n';
+            reply += `✅ Success: ${result.added}\n`;
+            reply += `⏭️ Skipped: ${result.skipped}\n`;
+            reply += `❌ Failed: ${result.failed}\n\n`;
+            reply += '📋 **DETAILS:**\n';
+            reply += result.results.slice(0, 20).join('\n');
+
+            if (result.results.length > 20) {
+                reply += `\n\n... and ${result.results.length - 20} more`;
+            }
+
+            bot.sendMessage(chatId, reply, { parse_mode: 'Markdown' });
+        } else {
+            bot.sendMessage(chatId, `❌ ${result.message || 'Gagal tambah key!'}`);
+        }
+    } catch (e) {
+        bot.sendMessage(chatId, `❌ Error: ${e.message}`);
+    }
+
+    userStates.delete(chatId);
+});
+
+// ============================================================
+// ADMIN COMMANDS LAINNYA (GENKEY, GENFREE, DLL)
+// ============================================================
+
+// ===== /GENKEY =====
+bot.onText(/\/genkey (.+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    if (!isAdmin(chatId)) {
+        bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
+        return;
+    }
+
+    const packageInput = match[1].trim().toUpperCase();
+    const packageMap = {
+        '2JAM': '2JAM', '5JAM': '5JAM',
+        '1HARI': '1DAY', '1DAY': '1DAY',
+        '3HARI': '3DAY', '3DAY': '3DAY',
+        '7HARI': '7DAY', '7DAY': '7DAY',
+        '14HARI': '14DAY', '14DAY': '14DAY',
+        '30HARI': '30DAY', '30DAY': '30DAY',
+        '60HARI': '60DAY', '60DAY': '60DAY',
     };
 
     const packageId = packageMap[packageInput];
@@ -414,7 +654,6 @@ bot.onText(/\/genkey (.+)/, async (msg, match) => {
 // ===== /GENFREE =====
 bot.onText(/\/genfree/, async (msg) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -453,7 +692,6 @@ bot.onText(/\/genfree/, async (msg) => {
 // ===== /MASSGEN =====
 bot.onText(/\/massgen (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -464,20 +702,13 @@ bot.onText(/\/massgen (.+)/, async (msg, match) => {
     const count = Math.min(parseInt(parts[1]) || 5, 50);
 
     const packageMap = {
-        '2JAM': '2JAM',
-        '5JAM': '5JAM',
-        '1HARI': '1DAY',
-        '1DAY': '1DAY',
-        '3HARI': '3DAY',
-        '3DAY': '3DAY',
-        '7HARI': '7DAY',
-        '7DAY': '7DAY',
-        '14HARI': '14DAY',
-        '14DAY': '14DAY',
-        '30HARI': '30DAY',
-        '30DAY': '30DAY',
-        '60HARI': '60DAY',
-        '60DAY': '60DAY',
+        '2JAM': '2JAM', '5JAM': '5JAM',
+        '1HARI': '1DAY', '1DAY': '1DAY',
+        '3HARI': '3DAY', '3DAY': '3DAY',
+        '7HARI': '7DAY', '7DAY': '7DAY',
+        '14HARI': '14DAY', '14DAY': '14DAY',
+        '30HARI': '30DAY', '30DAY': '30DAY',
+        '60HARI': '60DAY', '60DAY': '60DAY',
     };
 
     const packageId = packageMap[packageInput];
@@ -534,7 +765,6 @@ bot.onText(/\/massgen (.+)/, async (msg, match) => {
 // ===== /CEKKEY =====
 bot.onText(/\/cekkey (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -583,7 +813,6 @@ bot.onText(/\/cekkey (.+)/, async (msg, match) => {
 // ===== /RESETKEY =====
 bot.onText(/\/resetkey (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -621,7 +850,6 @@ bot.onText(/\/resetkey (.+)/, async (msg, match) => {
 // ===== /DELKEY =====
 bot.onText(/\/delkey (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -659,7 +887,6 @@ bot.onText(/\/delkey (.+)/, async (msg, match) => {
 // ===== /ORDERS =====
 bot.onText(/\/orders/, (msg) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -668,9 +895,9 @@ bot.onText(/\/orders/, (msg) => {
     bot.sendMessage(chatId,
         '📋 DAFTAR ORDER\n─────────────────────────────\n\n' +
         '📊 Lihat di panel admin:\n' +
-        '   https://skcheatshop.up.railway.app\n\n' +
+        '   https://skcheat.my.id\n\n' +
         '📌 Atau download semua key:\n' +
-        '   https://skcheatshop.up.railway.app/keys',
+        '   https://skcheat.my.id/keys',
         { parse_mode: 'Markdown' }
     );
 });
@@ -678,7 +905,6 @@ bot.onText(/\/orders/, (msg) => {
 // ===== /STATS =====
 bot.onText(/\/stats/, async (msg) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -709,7 +935,6 @@ bot.onText(/\/stats/, async (msg) => {
 // ===== /ADDAPK =====
 bot.onText(/\/addapk/, (msg) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -726,7 +951,6 @@ bot.onText(/\/addapk/, (msg) => {
 // ===== /BROADCAST =====
 bot.onText(/\/broadcast (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Akses ditolak! Fitur ini hanya untuk admin.');
         return;
@@ -739,7 +963,6 @@ bot.onText(/\/broadcast (.+)/, async (msg, match) => {
 // ===== HANDLE APK FILE =====
 bot.on('document', async (msg) => {
     const chatId = msg.chat.id;
-
     if (!isAdmin(chatId)) {
         bot.sendMessage(chatId, '⛔ Hanya admin!');
         return;
@@ -774,4 +997,4 @@ console.log('🤖 Bot started!');
 console.log('🔑 API Key: SK-BOT-2024-SECURE-7X9K2M4N6P8Q');
 console.log('📌 Admin ID: ' + ADMIN_ID);
 console.log('🛒 Member commands: /buy, /order, /cek, /stok, /payment, /apk');
-console.log('🔑 Admin commands: /genkey, /genfree, /massgen, /cekkey, /resetkey, /delkey, /orders, /stats, /addapk, /broadcast');
+console.log('🔑 Admin commands: /genkey, /genfree, /massgen, /cekkey, /resetkey, /delkey, /orders, /stats, /addapk, /addkey, /addkeys, /broadcast');
